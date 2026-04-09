@@ -389,8 +389,7 @@ PUBLIC  R_DrawSkyPlaneDynamic_
 ; bp - A maxx
 ; bp - C 4 >> detailshift
 
-push  si
-push  di
+
 push  bp
 mov   bp, sp
 
@@ -496,8 +495,6 @@ jge   exitfunc_dynamic
 jmp   start_drawing_next_vga_plane_dynamic
 exitfunc_dynamic:
 LEAVE_MACRO
-pop   di
-pop   si
 
 retf
 
@@ -521,8 +518,6 @@ PUBLIC  R_DrawSkyPlane_
 ; bp - A maxx
 ; bp - C 4 >> detailshift
 
-push  si
-push  di
 push  bp
 mov   bp, sp
 
@@ -627,8 +622,6 @@ jge   exitfunc
 jmp   start_drawing_next_vga_plane
 exitfunc:
 LEAVE_MACRO
-pop   di
-pop   si
 
 retf
 

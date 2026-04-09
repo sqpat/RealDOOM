@@ -11,7 +11,7 @@
 #define R_WriteBackViewConstantsMaskedFLOffset  0x0
 #define R_WriteBackMaskedFrameConstantsFLOffset 0x8D
 #define R_DrawPlanes24Offset                    0xA18
-#define R_WriteBackViewConstantsSpan24Offset    0xDE8
+#define R_WriteBackViewConstantsSpan24Offset    0xDE2
 #define R_DrawPlanes16Offset                    0x9EE
 #define R_WriteBackViewConstantsSpan16Offset    0xE6F
 #define R_DrawPlanes0Offset                     0x14B
@@ -19,7 +19,7 @@
 #define R_DrawPlanesFLOffset                    0xB7
 #define R_WriteBackViewConstantsSpanFLOffset    0x4FB
 #define R_DrawSkyColumnOffset                   0x0
-#define R_DrawSkyPlaneOffset                    0xD13
+#define R_DrawSkyPlaneOffset                    0xD0F
 #define R_DrawSkyPlaneDynamicOffset             0xCA2
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
@@ -61,7 +61,7 @@
 #define R_DrawColumn16CodeSize         0xCB4
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawColumnFLCodeSize         0x58E
-#define R_DrawSpan24CodeSize           0xF48
+#define R_DrawSpan24CodeSize           0xF42
 #define R_DrawSpan16CodeSize           0xF67
 #define R_DrawSpan0CodeSize            0x640
 #define R_DrawSpanFLCodeSize           0x597
@@ -73,7 +73,7 @@
 #define R_MaskedConstants16CodeSize    0xEB
 #define R_MaskedConstants0CodeSize     0xEB
 #define R_MaskedConstantsFLCodeSize    0xEB
-#define R_DrawSkyColumnCodeSize        0xD84
+#define R_DrawSkyColumnCodeSize        0xD7C
 #define R_DrawSkyColumnFLCodeSize      0x303
 #define M_MenuCodeSize                 0x1559
 #define R_BSP24CodeSize                0x3EA0

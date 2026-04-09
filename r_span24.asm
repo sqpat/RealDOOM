@@ -1124,17 +1124,14 @@ jmp   done_with_span_fixedcolormap_selfmodify
 
 ALIGN_MACRO	
 do_sky_flat_draw:
-; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
-mov   bx, sp
-mov   es, word ptr ss:[bx+2]
-mov   bx, bp
 
-mov   cx, es ; and segment
+; bx is the correct ptr already
+mov   cx, word ptr ss:[bx]
+mov   bx, bp
 ; ax already has minx
 mov   dx, word ptr ds:[si]  ; maxx
 
-; todo adjust the params to this function to be less weird, have less juggling...
-
+; preserves BP 
 ;call  [_R_DrawSkyPlaneCallHigh]
 SELFMODIFY_SPAN_draw_skyplane_call:
 call  dword ptr ds:[_R_DrawSkyPlane_addr]
@@ -1168,6 +1165,8 @@ jg    do_next_drawplanes_loop_short
 cmp   byte ptr ds:[si + VISPLANEHEADER_T.visplaneheader_dirty - VISPLANEHEADER_T.visplaneheader_maxx], 0
 je    do_next_drawplanes_loop_short
 
+mov   bx, sp
+
 loop_visplane_page_check:
 cmp   bp, VISPLANE_BYTES_PER_PAGE
 jnb   check_next_visplane_page
@@ -1186,7 +1185,7 @@ je    do_sky_flat_draw
 
 do_nonsky_flat_draw:
 
-sub   si, OFFSET VISPLANEHEADER_T.visplaneheader_maxx  ; offset for later... todo just bake this into later uses
+
 
 
 mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN24_STARTMARKER_], cl 
@@ -1239,8 +1238,7 @@ ALIGN_MACRO
 check_next_visplane_page:
 ; do next visplane page
 sub   bp, VISPLANE_BYTES_PER_PAGE
-
-mov   bx, sp
+; bx = sp
 add   word ptr ss:[bx], 0400h  ; si not pushed yet
 jmp   loop_visplane_page_check
 ALIGN_MACRO	
@@ -1414,7 +1412,7 @@ mov   byte ptr cs:[_ds_source_offset_span+3], al            ; low byte always ze
 
 ; planeheight = labs(plheader->height - viewz.w);
 
-mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_height]
+mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_height - VISPLANEHEADER_T.visplaneheader_maxx]
 
 SELFMODIFY_SPAN_viewz_13_3_1:
 sub   ax, 01000h
@@ -1424,7 +1422,7 @@ xor   ax, dx
 sub   ax, dx   
 
 mov   word ptr cs:[SELFMODIFY_SPAN_plane_height+1], ax
-mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]
+mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx - VISPLANEHEADER_T.visplaneheader_maxx]
 mov   di, ax
 mov   bx, sp
 mov   es, word ptr ss:[bx+2]
@@ -1432,7 +1430,7 @@ mov   bx, bp
 
 
 mov   byte ptr es:[bx + di + 3], 0ffh
-mov   si, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx]
+mov   si, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx - VISPLANEHEADER_T.visplaneheader_maxx]
 mov   byte ptr es:[bx + si + 1], 0ffh
 inc   ax
 
