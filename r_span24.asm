@@ -1126,12 +1126,15 @@ ALIGN_MACRO
 do_sky_flat_draw:
 ; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
 mov   bx, sp
-mov   es, word ptr ss:[bx]
+mov   es, word ptr ss:[bx+2]
 mov   bx, bp
 
 mov   cx, es ; and segment
-les   ax, dword ptr ds:[si + 4]
-mov   dx, es
+; ax already has minx
+mov   dx, word ptr ds:[si]  ; maxx
+
+; todo adjust the params to this function to be less weird, have less juggling...
+
 ;call  [_R_DrawSkyPlaneCallHigh]
 SELFMODIFY_SPAN_draw_skyplane_call:
 call  dword ptr ds:[_R_DrawSkyPlane_addr]
@@ -1141,8 +1144,9 @@ call  dword ptr ds:[_R_DrawSkyPlane_addr]
 ALIGN_MACRO	
 
 do_next_drawplanes_loop:	
-SELFMODIFY_SPAN_drawplaneiter:
-mov   si, OFFSET _visplaneheaders ; visplaneheader + 6
+
+pop   si  ; READ VISPLANE_HEADER
+
 do_next_drawplanes_loop_short:
 ADD   SI, SIZE VISPLANEHEADER_T - LODSW_OFFSET   ; add one element minus 2 - si is plus 4 (minx)
 
@@ -1167,21 +1171,23 @@ je    do_next_drawplanes_loop_short
 loop_visplane_page_check:
 cmp   bp, VISPLANE_BYTES_PER_PAGE
 jnb   check_next_visplane_page
+
 ; write +6 offset.
-mov   word ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], si
-sub   si, OFFSET VISPLANEHEADER_T.visplaneheader_maxx
 
-
-mov   bx, si
+push  si   ; WRITE VISPLANE_HEADER
 
 
 
-mov   cx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_piclight]
+
+mov   cx, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_piclight - VISPLANEHEADER_T.visplaneheader_maxx]
 SELFMODIFY_SPAN_skyflatnum:
 cmp   cl, 0
 je    do_sky_flat_draw
 
 do_nonsky_flat_draw:
+
+sub   si, OFFSET VISPLANEHEADER_T.visplaneheader_maxx  ; offset for later... todo just bake this into later uses
+
 
 mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN24_STARTMARKER_], cl 
 mov   al, ch
@@ -1235,7 +1241,7 @@ check_next_visplane_page:
 sub   bp, VISPLANE_BYTES_PER_PAGE
 
 mov   bx, sp
-add   word ptr ss:[bx], 0400h
+add   word ptr ss:[bx], 0400h  ; si not pushed yet
 jmp   loop_visplane_page_check
 ALIGN_MACRO	
 
@@ -1421,7 +1427,7 @@ mov   word ptr cs:[SELFMODIFY_SPAN_plane_height+1], ax
 mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]
 mov   di, ax
 mov   bx, sp
-mov   es, word ptr ss:[bx]
+mov   es, word ptr ss:[bx+2]
 mov   bx, bp
 
 
@@ -1485,7 +1491,7 @@ start_single_plane_draw_loop:
 single_plane_draw_loop:
 ; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
 mov   bx, sp
-mov   es, word ptr ss:[bx]
+mov   es, word ptr ss:[bx+2]
 mov   bx, bp
 
 
