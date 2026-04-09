@@ -1097,7 +1097,8 @@ mov   ax, word ptr ds:[_destview+0]
 mov   word ptr cs:[SELFMODIFY_SPAN_destview_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 mov   al, byte ptr ds:[_player + PLAYER_T.player_extralightvalue]
-mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+1 - OFFSET R_SPAN24_STARTMARKER_], al
+SHIFT_MACRO shl al 4
+mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+2 - OFFSET R_SPAN24_STARTMARKER_], al
 
 mov   ax, 0c089h  ; nop
 
@@ -1125,8 +1126,8 @@ jmp   done_with_span_fixedcolormap_selfmodify
 ALIGN_MACRO	
 do_sky_flat_draw:
 
-; bx is the correct ptr already
-mov   cx, word ptr ss:[bx]
+; di is the correct ptr already
+mov   cx, word ptr ss:[di]
 mov   bx, bp
 ; ax already has minx
 mov   dx, word ptr ds:[si]  ; maxx
@@ -1165,7 +1166,7 @@ jg    do_next_drawplanes_loop_short
 cmp   byte ptr ds:[si + VISPLANEHEADER_T.visplaneheader_dirty - VISPLANEHEADER_T.visplaneheader_maxx], 0
 je    do_next_drawplanes_loop_short
 
-mov   bx, sp ; bx = sp for the loop area...
+mov   di, sp ; di = sp for the loop area...
 
 loop_visplane_page_check:
 cmp   bp, VISPLANE_BYTES_PER_PAGE
@@ -1186,39 +1187,70 @@ je    do_sky_flat_draw
 do_nonsky_flat_draw:
 push  bp
 
-mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN24_STARTMARKER_], cl 
-mov   al, ch
-xor   ah, ah
+xchg  ax, cx
 
-SHIFT_MACRO sar ax LIGHTSEGSHIFT
+mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN24_STARTMARKER_], al
+
+
+mov  di, ax  ; HACK back up cx
+
+
+
+
+    XOR BX, BX
+    
+    MOV DX, FLATTRANSLATION_SEGMENT
+    MOV ES, DX
+    XLAT ES:[BX]
+    MOV DX, FLATINDEX_SEGMENT
+    MOV ES, DX
+    XCHG AL, BL  ; NOTE: Just saves AL for later in BL,
+    XLAT ES:[BX] ; doesn't matter for XLAT because BL was 0
+    
+; al flatindex
+; bl flattranslation
+; ah visplane light
 
 
 SELFMODIFY_SPAN_extralight_1:
-add   al, 0
-cmp   al, LIGHTLEVELS
-jb    lightlevel_in_range
-mov   al, LIGHTLEVELS-1
-lightlevel_in_range:
-; ah is 0
-; shift 7
-xchg  al, ah
-sar   ax, 1
+    ADD AH, 0
+    SBB CX, CX
+IF COMPISA LE COMPILE_286
+    OR CL, AH
+    SHL CX, 1
+    SHL CX, 1
+    SHL CX, 1
+    AND CX, 00780h
+ELSE
+    OR CX, AX
+    SHR CX, 12  
+    SHL CX, 7
+ENDIF
+    MOV WORD PTR DS:[_planezlight], CX
+    
+    ;MOV CX, 0FF01h
+    ;MOV AH, 0BAh ; MOV DX, imm
 
 
+    ; Register state (all not listed are junk/scratch):
+    ; DS = SS = FIXED_DS_SEGMENT
+    ; ES = FLATINDEX_SEGMENT
+    ; AL = usedflatindex
+    ; AH = self modify instruction constant
+    ; CL = 1
+    ; CH = -1
+    ; DX = FLATINDEX_SEGMENT
+    ; BL = FLATINDEX_SEGMENT offset
+    ; BH = 0
+    ; SI = &_visplaneheaders[i].visplaneheader_maxx
+    ; DI = SP    
 
-mov   word ptr ds:[_planezlight], ax
-;mov   word ptr ds:[_planezlight + 2], ZLIGHT_SEGMENT  ; this is static and set in memory.asm
 
-mov   ax, FLATTRANSLATION_SEGMENT
-mov   es, ax
-mov   bl, cl
-xor   bh, bh
+mov   cx, di ; HACK: retrieve cx
 
-mov   bl, byte ptr es:[bx]
-mov   ax, FLATINDEX_SEGMENT
-mov   es, ax
+; al has right value.
 
-mov   al, byte ptr es:[bx]
+
 ; going to use di to hold flatunloaded
 xor   di, di
 cmp   al, 0ffh
@@ -1236,8 +1268,8 @@ ALIGN_MACRO
 check_next_visplane_page:
 ; do next visplane page
 sub   bp, VISPLANE_BYTES_PER_PAGE
-; bx = sp
-add   word ptr ss:[bx], 0400h  ; si not pushed yet
+; di = sp
+add   word ptr ss:[di], 0400h  ; si not pushed yet
 jmp   loop_visplane_page_check
 ALIGN_MACRO	
 
