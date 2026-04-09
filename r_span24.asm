@@ -1001,10 +1001,9 @@ PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 xor   ax, ax
-push  ax        ; bp - 2
+push  ax        ; bp - 2  UNUSED
 push  ax        ; bp - 4
-mov   dx, FIRST_VISPLANE_PAGE_SEGMENT
-push  dx        ; bp - 6
+PUSH_MACRO_WITH_REG DX FIRST_VISPLANE_PAGE_SEGMENT 
 push  ax        ; bp - 8
 
 ; inline R_WriteBackSpanFrameConstants_
@@ -1023,27 +1022,47 @@ mov      byte ptr cs:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_SPAN24_STARTMARK
 
 mov      ds, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
 
+MOV      SI, CS ; 2 byte, 2 cycle
+MOV      ES, SI ; 2 byte, 2 cycle
 
 mov   si, _BASEXSCALE_OFFSET_R_BSP
-lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_basexscale_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
-lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_basexscale_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_baseyscale_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
-lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_baseyscale_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+IF COMPISA LE COMPILE_286
+    MOV DI, SELFMODIFY_SPAN_basexscale_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    INC DI ; SELFMODIFY_SPAN_basexscale_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    
+    MOV DI, SELFMODIFY_SPAN_baseyscale_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    INC DI ; SELFMODIFY_SPAN_baseyscale_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    
+    MOV DI, SELFMODIFY_SPAN_viewx_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    ADD DI, 2 ; SELFMODIFY_SPAN_viewx_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    
+    MOV DI, SELFMODIFY_SPAN_viewy_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    ADD DI, 2 ; SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+ELSE
 
-lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_viewx_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
-lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_viewx_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
+    ; todo... actually do this.
+    MOV DI, SELFMODIFY_SPAN_basexscale_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSD ES:[DI], DS:[SI]
+    
+    MOV DI, SELFMODIFY_SPAN_baseyscale_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSD ES:[DI], DS:[SI]
+    
+    MOV DI, SELFMODIFY_SPAN_viewx_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSD ES:[DI], DS:[SI]
+    
+    MOV DI, SELFMODIFY_SPAN_viewy_full_1+3 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSD ES:[DI], DS:[SI]
+ENDIF
 
-lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_viewy_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
-lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 lodsw  ; viewz_shortheight
 mov   word ptr cs:[SELFMODIFY_SPAN_viewz_13_3_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
@@ -1197,7 +1216,7 @@ ALIGN_MACRO
 check_next_visplane_page:
 ; do next visplane page
 sub   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
-inc   byte ptr [bp - 2]
+
 add   word ptr [bp - 6], 0400h
 jmp   loop_visplane_page_check
 ALIGN_MACRO	
