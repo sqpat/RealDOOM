@@ -1123,12 +1123,6 @@ done_with_span_fixedcolormap_selfmodify:
 ; modify instruction
 mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-mov       ax, OFFSET _R_DrawSkyPlane_addr
-cmp       byte ptr ds:[_screenblocks], 10
-jge       setup_dynamic_skyplane
-mov       ax, OFFSET _R_DrawSkyPlaneDynamic_addr
-setup_dynamic_skyplane:
-mov       word ptr cs:[SELFMODIFY_SPAN_draw_skyplane_call + 2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 
 
@@ -1855,6 +1849,13 @@ mov      ax, word ptr ss:[_BSP_MUL_80_LOOKUP_SEGMENT]
 mov      word ptr ds:[SELFMODIFY_SET_dc_yl_lookuptable+1], ax
 
 
+
+mov       ax, OFFSET _R_DrawSkyPlane_addr
+cmp       byte ptr ss:[_screenblocks], 10
+jge       setup_dynamic_skyplane
+mov       ax, OFFSET _R_DrawSkyPlaneDynamic_addr
+setup_dynamic_skyplane:
+mov       word ptr ds:[SELFMODIFY_SPAN_draw_skyplane_call + 2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 
 
