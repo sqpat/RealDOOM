@@ -140,8 +140,7 @@ jmp   generate_distance_steps
 ;
 ; R_MapPlane24_
 ; void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 )
-; bp - 02h   distance low
-; bp - 04h   distance high
+
 
 ;cachedheight   9000:0000
 ;yslope         9032:0000
@@ -978,6 +977,21 @@ ENDIF
 
 ENDP
 
+; TODO THIS
+
+; Documentation macro for correcting stack offsets.
+; Positive argument is number of PUSH compared to normal frame.
+; Negative argument is number of POP compared to normal frame.
+PUSH_OFFSETS MACRO count
+(&count * 2)
+ENDM
+
+; Documentation macro for correcting stack offsets.
+; Argument is number of LODSW to subtract from the size
+LODSW_OFFSETS MACRO count
+(&count * -2)
+ENDM
+
 
 ;R_DrawPlanes_
 
@@ -991,20 +1005,24 @@ PUBLIC R_DrawPlanes24_
 ; STACK
 
 
-; bp - 8 visplaneoffset
-; bp - 6 visplanesegment
-; bp - 4 usedflatindex
-; bp - 3 usedflatindex AND 3
-; bp - 2 physindex
 
-PUSHA_NO_AX_OR_BP_MACRO
-push  bp
-mov   bp, sp
-xor   ax, ax
-push  ax        ; bp - 2  UNUSED
-push  ax        ; bp - 4
-PUSH_MACRO_WITH_REG DX FIRST_VISPLANE_PAGE_SEGMENT 
-push  ax        ; bp - 8
+
+ ; TODO THIS
+; NORMAL STACK (negatives are pushed temps)
+; SP - 2 = &_visplaneheaders[i]
+; SP + 0 = visplaneoffset
+; SP + 2 = visplanesegment
+; SP + 4 = Return addr
+
+; OUTER FUNCTION HAS A POPA
+
+; bp equals visplaneoffset
+; sp points to visplanesegment
+
+
+
+ PUSH_MACRO_WITH_REG DX FIRST_VISPLANE_PAGE_SEGMENT ; SP = this offset.
+ XOR BP, BP ; SP + 0 (will be pushed later)
 
 ; inline R_WriteBackSpanFrameConstants_
 ; get whole dword at the end here.
@@ -1092,9 +1110,8 @@ jmp   drawplanes_loop
 
 
 exit_drawplanes:
-LEAVE_MACRO 
-POPA_NO_AX_OR_BP_MACRO
-
+public exit_drawplanes
+add   sp, 2
 retf   
 
 ALIGN_MACRO	
@@ -1107,7 +1124,10 @@ jmp   done_with_span_fixedcolormap_selfmodify
 ALIGN_MACRO	
 do_sky_flat_draw:
 ; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
-les   bx, dword ptr [bp - 8] ; get visplane offset
+mov   bx, sp
+mov   es, word ptr ss:[bx]
+mov   bx, bp
+
 mov   cx, es ; and segment
 les   ax, dword ptr ds:[si + 4]
 mov   dx, es
@@ -1129,7 +1149,7 @@ SELFMODIFY_SPAN_last_iter_compare:
 cmp   si, 01000h   ; todo self modify constant in drawplanes24
 jae   exit_drawplanes
 
-add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
+add   bp, VISPLANE_BYTE_SIZE
 
 
 drawplanes_loop:
@@ -1147,7 +1167,7 @@ cmp   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]			; fetch visp
 jg    do_next_drawplanes_loop
 
 loop_visplane_page_check:
-cmp   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
+cmp   bp, VISPLANE_BYTES_PER_PAGE
 jnb   check_next_visplane_page
 
 
@@ -1211,9 +1231,10 @@ ALIGN_MACRO
 
 check_next_visplane_page:
 ; do next visplane page
-sub   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
+sub   bp, VISPLANE_BYTES_PER_PAGE
 
-add   word ptr [bp - 6], 0400h
+mov   bx, sp
+add   word ptr ss:[bx], 0400h
 jmp   loop_visplane_page_check
 ALIGN_MACRO	
 
@@ -1249,7 +1270,10 @@ flat_loaded:
 ; ah is already set above..
 mov   ah, al
 and   ah, 3
-mov   word ptr [bp - 4], ax     ; store usedflatindex only once, along with AND 3 of it
+mov   byte ptr cs:[SELFMODIFY_get_usedflatindex+1], al     ; store usedflatindex only once, along with AND 3 of it
+mov   byte ptr cs:[SELFMODIFY_get_usedflatindex_and_3_1+1], ah
+mov   byte ptr cs:[SELFMODIFY_get_usedflatindex_and_3_2+1], ah
+
 
 ; al is guaranteed usedflatindex...
 ; consider cwd mov dl, al
@@ -1350,7 +1374,8 @@ mov   byte ptr ds:[_lastflatcacheindicesused+2], ah
 in_flat_page_1:
 mov   word ptr ds:[_lastflatcacheindicesused], cx
 l1_cache_finished_updating:
-mov   al, byte ptr [bp - 4]
+SELFMODIFY_get_usedflatindex:
+mov   al, 010h
 SHIFT_MACRO sar al 2
 
 ;cbw  
@@ -1374,7 +1399,8 @@ flat_not_unloaded:
 ; 7000h + 400h * l1 pagenumber + 100h * (usedflatindex &3)
 mov   al, cl
 SHIFT_MACRO sal   al 2
-add   al, byte ptr [bp - 3]
+SELFMODIFY_get_usedflatindex_and_3_1:
+add   al, 010h
 add   al, 070h
 
 mov   byte ptr cs:[_ds_source_offset_span+3], al            ; low byte always zero!
@@ -1393,7 +1419,10 @@ sub   ax, dx
 mov   word ptr cs:[SELFMODIFY_SPAN_plane_height+1], ax
 mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]
 mov   di, ax
-les   bx, dword ptr [bp - 8]
+mov   bx, sp
+mov   es, word ptr ss:[bx]
+mov   bx, bp
+
 
 mov   byte ptr es:[bx + di + 3], 0ffh
 mov   si, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx]
@@ -1434,7 +1463,8 @@ mov   al, byte ptr es:[00]    ; uses picnum from way above.
 
 xor   ah, ah
 add   ax, word ptr ds:[_firstflat]
-mov   bl, byte ptr [bp - 3]     ; usedflatindex AND 3
+SELFMODIFY_get_usedflatindex_and_3_2:
+mov   bl, 010h     ; usedflatindex AND 3
 
 add   bx, bx
 mov   bx, word ptr ds:[bx + _MULT_4096]
@@ -1453,7 +1483,10 @@ start_single_plane_draw_loop:
 
 single_plane_draw_loop:
 ; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
-les    bx, dword ptr [bp - 8]
+mov   bx, sp
+mov   es, word ptr ss:[bx]
+mov   bx, bp
+
 
 ;			t1 = pl->top[x - 1];
 ;			b1 = pl->bottom[x - 1];
