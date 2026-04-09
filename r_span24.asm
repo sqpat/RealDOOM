@@ -1165,7 +1165,7 @@ jg    do_next_drawplanes_loop_short
 cmp   byte ptr ds:[si + VISPLANEHEADER_T.visplaneheader_dirty - VISPLANEHEADER_T.visplaneheader_maxx], 0
 je    do_next_drawplanes_loop_short
 
-mov   bx, sp
+mov   bx, sp ; bx = sp for the loop area...
 
 loop_visplane_page_check:
 cmp   bp, VISPLANE_BYTES_PER_PAGE
@@ -1184,9 +1184,7 @@ cmp   cl, 0
 je    do_sky_flat_draw
 
 do_nonsky_flat_draw:
-
-
-
+push  bp
 
 mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN24_STARTMARKER_], cl 
 mov   al, ch
@@ -1425,7 +1423,7 @@ mov   word ptr cs:[SELFMODIFY_SPAN_plane_height+1], ax
 mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx - VISPLANEHEADER_T.visplaneheader_maxx]
 mov   di, ax
 mov   bx, sp
-mov   es, word ptr ss:[bx+2]
+mov   es, word ptr ss:[bx+4]
 mov   bx, bp
 
 
@@ -1438,6 +1436,7 @@ mov   word ptr cs:[SELFMODIFY_SPAN_comparestop+2 - OFFSET R_SPAN24_STARTMARKER_]
 
 cmp   si, ax
 jle   start_single_plane_draw_loop
+pop   bp
 jmp   do_next_drawplanes_loop
 ALIGN_MACRO	
 
@@ -1489,7 +1488,7 @@ start_single_plane_draw_loop:
 single_plane_draw_loop:
 ; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
 mov   bx, sp
-mov   es, word ptr ss:[bx+2]
+mov   es, word ptr ss:[bx+4]
 mov   bx, bp
 
 
@@ -1550,7 +1549,7 @@ SELFMODIFY_SPAN_comparestop:
 cmp   si, 1000h
 jle   single_plane_draw_loop
 
-
+pop   bp
 jmp   do_next_drawplanes_loop
 ALIGN_MACRO	
 
