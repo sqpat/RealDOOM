@@ -167,12 +167,8 @@ ALIGN_MACRO
 PROC    R_MapPlane24_ NEAR
 PUBLIC  R_MapPlane24_
 
-push  cx
-push  si
-push  di
-push  es
-push  dx
-push  bp
+push es
+PUSHA_NO_AX_MACRO
 
 ; ax is x1
 ; di is ds_y
@@ -797,12 +793,9 @@ sti								; reenable interrupts
 
 ; todo popa/pusha is not working for some reason
 
-pop   bp
-pop   dx
-pop   es
-pop   di
-pop   si
-pop   cx
+
+POPA_NO_AX_MACRO
+pop es
 
 
 ret  
@@ -947,6 +940,7 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     ; restore distance once more
     xchg ax, di
     MOV  DX, ES
+    
     pop   di              ; x1 << 1  from push ax at func start..
 
     
