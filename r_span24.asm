@@ -991,6 +991,7 @@ ENDM
 LODSW_OFFSETS MACRO count
 (&count * -2)
 ENDM
+LODSW_OFFSET = 2
 
 
 ;R_DrawPlanes_
@@ -1031,7 +1032,7 @@ PUBLIC R_DrawPlanes24_
 mov      al, byte ptr ds:[_lastvisplane]
 mov      ah, SIZE VISPLANEHEADER_T
 mul      ah
-add      ax, OFFSET _visplaneheaders
+add      ax, OFFSET _visplaneheaders + VISPLANEHEADER_T.visplaneheader_minx ; compare at lodsw offset
 mov      word ptr cs:[SELFMODIFY_SPAN_last_iter_compare+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 
@@ -1105,7 +1106,7 @@ jne   do_span_fixedcolormap_selfmodify
 done_with_span_fixedcolormap_selfmodify:
 ; modify instruction
 mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_1 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov   si, OFFSET _visplaneheaders ; initial case.
+mov   si, OFFSET _visplaneheaders + VISPLANEHEADER_T.visplaneheader_minx ; initial case.
 jmp   drawplanes_loop
 
 
@@ -1141,9 +1142,9 @@ ALIGN_MACRO
 
 do_next_drawplanes_loop:	
 SELFMODIFY_SPAN_drawplaneiter:
-mov   si, OFFSET _visplaneheaders ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
-
-add   si, SIZE VISPLANEHEADER_T
+mov   si, OFFSET _visplaneheaders ; visplaneheader + 6
+do_next_drawplanes_loop_short:
+ADD   SI, SIZE VISPLANEHEADER_T - LODSW_OFFSET   ; add one element minus 2 - si is plus 4 (minx)
 
 SELFMODIFY_SPAN_last_iter_compare:
 cmp   si, 01000h   ; todo self modify constant in drawplanes24
@@ -1153,27 +1154,27 @@ add   bp, VISPLANE_BYTE_SIZE
 
 
 drawplanes_loop:
+public drawplanes_loop
 ; si is _visplaneheaders pointer here.
 ; write back current one for next iter.
-mov   word ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], si
 
-
-
-
-cmp   byte ptr ds:[si + VISPLANEHEADER_T.visplaneheader_dirty], 0
-je    do_next_drawplanes_loop
-mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx]			; fetch visplane minx
-cmp   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]			; fetch visplane maxx
-jg    do_next_drawplanes_loop
+lodsw   ;                             ; grab visplane minx.  si is plus 6 
+CMP   AX, WORD PTR DS:[SI]                     ; cmp to visplane maxx
+jg    do_next_drawplanes_loop_short
+cmp   byte ptr ds:[si + VISPLANEHEADER_T.visplaneheader_dirty - VISPLANEHEADER_T.visplaneheader_maxx], 0
+je    do_next_drawplanes_loop_short
 
 loop_visplane_page_check:
 cmp   bp, VISPLANE_BYTES_PER_PAGE
 jnb   check_next_visplane_page
+; write +6 offset.
+mov   word ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], si
+sub   si, OFFSET VISPLANEHEADER_T.visplaneheader_maxx
 
 
-; todo: DI is (mostly) unused here. Can probably be used to hold something usedful.
+mov   bx, si
 
-mov   bx, word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_]
+
 
 mov   cx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_piclight]
 SELFMODIFY_SPAN_skyflatnum:
@@ -1545,7 +1546,6 @@ SELFMODIFY_SPAN_comparestop:
 cmp   si, 1000h
 jle   single_plane_draw_loop
 
-;jmp exit_drawplanes
 
 jmp   do_next_drawplanes_loop
 ALIGN_MACRO	
