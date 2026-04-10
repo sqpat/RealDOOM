@@ -44,7 +44,7 @@ ALIGN_MACRO
 PROC   R_DrawPlanes24_ FAR
 PUBLIC R_DrawPlanes24_
 
-; ARGS
+; ARGS 
 ; none
 
 ; NORMAL STACK (negatives are pushed temps)
@@ -137,9 +137,9 @@ ENDIF
     MOV AL, MAXLIGHTZ - 1
     STOSB
 IF COMPISA LE COMPILE_286
-    MOV AX, 0xFA83 ; CMP DX
+    MOV AX, 0FA83h ; CMP DX
 ELSE
-    MOV AX, 0x8366 ; CMP EDI
+    MOV AX, 08366h ; CMP EDI
 ENDIF
     STOSW
     MOV DI, SP
@@ -150,7 +150,7 @@ ENDIF
 ALIGN_MACRO
 do_span_fixedcolormap_selfmodify:
     STOSB
-    MOV AX, ((colormap_fixed - SELFMODIFY_SPAN_fixedcolormap_1+2) SHL 8) OR 0xEB ; JMP colormap_fixed
+    MOV AX, ((colormap_fixed - SELFMODIFY_SPAN_fixedcolormap_1+2) SHL 8) OR 0EBh ; JMP colormap_fixed
     STOSW
     MOV DI, SP
     JMP drawplanes_start
@@ -160,7 +160,7 @@ do_span_fixedcolormap_selfmodify:
 ALIGN_MACRO
 next_visplane_page:
     XOR BP, BP
-    ADD WORD DS:[DI + local_visplanesegment + (PUSH_OFFSETS -1)], 0x400
+    ADD WORD DS:[DI + local_visplanesegment + (PUSH_OFFSETS -1)], 0400h
     JMP visplane_set
     
     ; ==================== HOLE HOLE HOLE ====================
@@ -196,7 +196,7 @@ drawplanes_loop: ; LOOP DEPTH: 1
 visplane_set:
 drawplanes_start:
 SELFMODIFY_SPAN_lastvisplane:
-    CMP SI, 0x1000 ; TODO: self modify constant (&_visplaneheaders[_lastvisplane].visplaneheader_minx)
+    CMP SI, 01000h ; TODO: self modify constant (&_visplaneheaders[_lastvisplane].visplaneheader_minx)
     JA exit_drawplanes
     
     LODSW ; fetch visplane minx
@@ -214,6 +214,8 @@ SELFMODIFY_SPAN_skyflatnum:
     MOV CS:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN24_STARTMARKER_], AL
     
     PUSH BP ; SP + 0
+
+; todo copy from here
     XOR BX, BX
     
     MOV DX, FLATTRANSLATION_SEGMENT
@@ -232,7 +234,7 @@ IF COMPISA LE COMPILE_286
     SHL CX, 1
     SHL CX, 1
     SHL CX, 1
-    AND CX, 0x0780
+    AND CX, 00780h
 ELSE
     OR CX, AX
     SHR CX, 12
@@ -240,9 +242,12 @@ ELSE
 ENDIF
     MOV DS:[_planezlight], CX
     
-    MOV CX, 0xFF01
+    MOV CX, 0FF01h
     
-    MOV AH, 0xBA ; MOV DX, imm
+    MOV AH, 0BAh ; MOV DX, imm
+    
+; hERE
+
     
     ; Register state (all not listed are junk/scratch):
     ; DS = SS = FIXED_DS_SEGMENT
@@ -305,11 +310,11 @@ loop_find_flat: ; LOOP DEPTH: 2
     XOR SI, SI
     MOV BX, -1
     MOV DS, DX ; NOTE: Can be removed if following flat loop isn't slower with ES:
-    MOV DL, 0xFC
+    MOV DL, 0FCh
     MOV CX, MAX_FLATS
 ;   for (i = 0; i < MAX_FLATS; i++) {
 ;       if ((flatindex[i] >> 2) == evictedpage) {
-;           flatindex[i] = 0xFF;
+;           flatindex[i] = 0FFh;
 ;       }
 ;  	}
 ALIGN_MACRO
@@ -338,7 +343,7 @@ found_flat:
 done_with_evict_flatcache_ems_page:
     STOSB
     MOV SI, BP
-    MOV AH, 0xE9
+    MOV AH, 0E9h
 flat_loaded:
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
@@ -406,26 +411,26 @@ done_with_mruL2:
     ; DS = SS = FIXED_DS_SEGMENT
     ; AH = usedflatindex & 3
     ; CL = flatpageindex
-    ; BH = 0
+    ; BH = 0 !!! wrong
     ; SI = &_visplaneheaders[i].visplaneheader_maxx
 
     SHIFT_MACRO SHL CL 2
     ADD CL, (FLAT_CACHE_BASE_SEGMENT SHR 8)
     MOV CH, CL
-    MOV CL, BH
+    MOV CL, 0  ; BH is
 SELFMODIFY_SPAN_flat_unloaded:
     JMP LONG flat_is_unloaded
     ADD CH, AH
 flat_not_unloaded:
-    MOV DS:[_ds_source_offset+3], CH
+    MOV CS:[_ds_source_offset+3], CH
     
     ; Register state (all not listed are junk/scratch):
     ; DS = SS = FIXED_DS_SEGMENT
     ; SI = &_visplaneheaders[i].visplaneheader_maxx
     
-    MOV AX, DS:[SI - (VISPLANEHEADER_T.visplaneheader_height - VISPLANEHEADER_T.visplaneheader_maxx)]
+    MOV AX, DS:[SI + (VISPLANEHEADER_T.visplaneheader_height - VISPLANEHEADER_T.visplaneheader_maxx)]
 SELFMODIFY_SPAN_viewz_13_3_1:
-    SUB AX, 0x1000
+    SUB AX, 01000h
     CWD ; ABS
     XOR AX, DX
     SUB AX, DX
@@ -435,27 +440,27 @@ SELFMODIFY_SPAN_viewz_13_3_1:
     PUSH SI ; It's probably not worth a self-modify write ahead here...
     ; NOTE: SP relative indexing now needs +2 (except current DI)
     
-    MOV BP, DS:[SI - (VISPLANEHEADER_T.visplaneheader_minx - VISPLANEHEADER_T.visplaneheader_maxx)]
+    MOV BP, DS:[SI + (VISPLANEHEADER_T.visplaneheader_minx - VISPLANEHEADER_T.visplaneheader_maxx)]
     MOV BX, DS:[SI] ; Already pointing to visplaneheader_maxx
     MOV CS:[SELFMODIFY_SPAN_loop_stop+1 - OFFSET R_SPAN24_STARTMARKER_], BX ; stop = maxx (not +1 because of increment change)
     LDS SI, DS:[DI + local_visplaneoffset]
     
-    MOV DX, 0x00FF
+    MOV DX, 000FFh
     
     ; NOTE: Handling of x2 is a bit of a hack, this section needs work
     
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
     ; DS = visplanesegment
-    ; DL = 0xFF (initial t1 value)
+    ; DL = 0FFh (initial t1 value)
     ; DH = 0
     ; BX = _visplaneheaders[i].visplaneheader_maxx
     ; BP = _visplaneheaders[i].visplaneheader_minx
     ; SI = &visplanes[i]
     
-    MOV DS:[BX + SI + VISPLANE_T.vp_top + 1], DL ; visplanes[i].vp_top[maxx + 1] = 0xFF
+    MOV DS:[BX + SI + VISPLANE_T.vp_top + 1], DL ; visplanes[i].vp_top[maxx + 1] = 0FFh
     LEA SI, [BP + SI + VISPLANE_T.vp_top]
-    MOV DS:[SI - 1], DL ; visplanes[i].vp_top[minx - 1] = 0xFF
+    MOV DS:[SI - 1], DL ; visplanes[i].vp_top[minx - 1] = 0FFh
     
     MOV AX, SI ; NOTE: Using NOT instead of NEG here allows omitting the +1 from stop
     NOT AX ; -(&visplanes[i].vp_top[minx + 1])
@@ -469,6 +474,7 @@ SELFMODIFY_SPAN_viewz_13_3_1:
     
     ; NOTE: t1 was just written, don't re-read
     MOV BX, DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) - 1] ; b1/b2
+
 ALIGN_MACRO
 single_plane_draw_loop: ; LOOP DEPTH: 2
 
@@ -502,7 +508,7 @@ single_plane_draw_loop: ; LOOP DEPTH: 2
     
     ; CL = b1 + 1
     ; CH = b2 + 1
-    LEA CX, [BX + 0x0101] ; INC both BL and BH, values won't carry
+    LEA CX, [BX + 00101h] ; INC both BL and BH, values won't carry
     
     ; AL = t1_bound = min(t2, b1 + 1)
     MOV AH, AL
@@ -576,7 +582,7 @@ single_plane_draw_loop: ; LOOP DEPTH: 2
     SUB DX, SI
     JZ skip_first_mapplane_loop
     PUSH BX
-    MOV BYTE DS:[SELFMODIFY_SPAN_map_planes_dir_flag - OFFSET R_SPAN24_STARTMARKER_], 0x3E ; Useless DS prefix
+    MOV BYTE DS:[SELFMODIFY_SPAN_map_planes_dir_flag - OFFSET R_SPAN24_STARTMARKER_], 03Eh ; Useless DS prefix
     PUSH DX ; Count argument
     CALL R_MapPlanes24_
     XOR DX, DX
@@ -596,7 +602,7 @@ skip_first_mapplane_loop:
     SUB BX, DX
     JZ skip_second_mapplane_loop
     ; NOTE: Does this really *need* to go backwards? Test this, could simplify
-    MOV BYTE CS:[SELFMODIFY_SPAN_map_planes_dir_flag - OFFSET R_SPAN24_STARTMARKER_], 0xFD ; STD
+    MOV BYTE CS:[SELFMODIFY_SPAN_map_planes_dir_flag - OFFSET R_SPAN24_STARTMARKER_], 0FDh ; STD
     PUSH BX ; Count argument
     CALL R_MapPlanes24_
 skip_second_mapplane_loop:
@@ -604,22 +610,22 @@ skip_second_mapplane_loop:
     
     POP SI
 SELFMODIFY_SPAN_loop_calc_x:
-    LEA AX, [SI - 0x1000] ; Calculate X from current pointer
+    LEA AX, [SI - 01000h] ; Calculate X from current pointer
     
     ; NOTE: Only the low byte is written for
-    ; these values so using 0x1000 would break
+    ; these values so using 01000h would break
 SELFMODIFY_SPAN_t2_loop_count:
-    MOV CX, 0x0000
+    MOV CX, 00000h
 SELFMODIFY_SPAN_t2_loop_index:
-    MOV DI, 0x0000
+    MOV DI, 00000h
     MOV DX, DI ; Recover t2 to use as t1 next iter
     FAST_SHL1 DI
     REP STOSW
     ; CX = 0
 SELFMODIFY_SPAN_b2_loop_count:
-    MOV CL, 0x00
+    MOV CL, 000h
 SELFMODIFY_SPAN_b2_loop_index:
-    MOV DI, 0x0000
+    MOV DI, 00000h
     MOV BX, DI ; Recover b2 to use as b1 next iter
     FAST_SHL1 DI
     STD
@@ -636,7 +642,7 @@ SELFMODIFY_SPAN_b2_loop_index:
     ; SI = &visplanes[i].vp_top[x] (for next iter)
     
 SELFMODIFY_SPAN_loop_stop:
-    CMP AX, 0x1000
+    CMP AX, 01000h
     JA end_draw_loop_iteration
     
     INC AX
@@ -730,7 +736,7 @@ flatcachemruL2:
     CMP AL, CH
     ; nodelist[index].prev = flatcache_l2_head
     ; nodelist[index].next = -1
-    MOV CH, 0xFF
+    MOV CH, 0FFh
     MOV DS:[BX + SI], CX
     JE index_is_tail
     MOV BL, DL
@@ -771,7 +777,7 @@ ENDIF
     MOV ES, DX
     
 SELFMODIFY_SPAN_lookuppicnum:
-    MOV AL, ES:[0x00FF]
+    MOV AL, ES:[000FFh]
     XOR AH, AH ; NOTE: Can this be CBW?
     ADD AX, DS:[_firstflat]
     
@@ -808,9 +814,9 @@ IF COMPISA LE COMPILE_286
     MOV ES, DX
     
 SELFMODIFY_SPAN_baseyscale_lo_1:
-    MOV BP, 0x1000
+    MOV BP, 01000h
 SELFMODIFY_SPAN_baseyscale_hi_1:
-    MOV CX, 0x1000
+    MOV CX, 01000h
     
     ; ds_ystep = cachedystep[y] = R_FixedMulLocal(distance, baseyscale)
     CALL R_FixedMulLocal24_
@@ -828,9 +834,9 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     MOV CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
     
 SELFMODIFY_SPAN_basexscale_lo_1:
-    MOV BP, 0x1000
+    MOV BP, 01000h
 SELFMODIFY_SPAN_basexscale_hi_1:
-    MOV CX, 0x1000
+    MOV CX, 01000h
     
     MOV AX, DI
     MOV DX, ES
@@ -856,13 +862,13 @@ ELSE
     SHR EDI, 3
     MOV DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)], EDI
 SELFMODIFY_SPAN_baseyscale_full_1:
-    MOV EAX, 0x10000000
+    MOV EAX, 010000000h
     IMUL EDI
     SHRD EAX, EDX, 22 ; Convert to 6.10
     MOV DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
     MOV CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
 SELFMODIFY_SPAN_basexscale_full_1:
-    MOV EAX, 0x10000000
+    MOV EAX, 010000000h
     IMUL EDI
     SHRD EAX, EDX, 22 ; Convert to 6.10
     MOV DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
@@ -914,7 +920,7 @@ map_planes_loop: ; LOOP DEPTH: 3
     MOV DS, BP
 
 SELFMODIFY_SPAN_plane_height:
-    MOV AX, 0x1000
+    MOV AX, 01000h
     MOV BX, SI ; Convert to DWORD index
 IF (COMPISA EQ COMPILE_8086) OR (COMPISA GE COMPILE_386)
     CMP AX, DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)]
@@ -990,11 +996,11 @@ ENDIF
     MOV SI, AX
     SHIFT_MACRO SHR SI 2
 SELFMODIFY_SPAN_destview_1:
-    LEA BX, [BX + SI + 0x1000]
+    LEA BX, [BX + SI + 01000h]
     MOV CS:[SELFMODIFY_SPAN_write_ahead_start_pixel+1 - OFFSET R_SPAN24_STARTMARKER_], BX
     
 SELFMODIFY_SPAN_write_ahead_x2:
-    MOV SI, 0x1000
+    MOV SI, 01000h
     SUB SI, AX
     ; SI should have the number pixels to render. Figure out what to do with this...
     
@@ -1010,7 +1016,7 @@ ENDIF
 IF COMPISA LE COMPILE_286
     LES BP, DS:[DI + ((DISTSCALE_SEGMENT - SPANSTART_SEGMENT) * 16)]
     MOV CX, ES
-    AND BH, 0x1F ; MOD_FINE_ANGLE mod high bits
+    AND BH, 01Fh ; MOD_FINE_ANGLE mod high bits
     MOV DI, BX
     CALL R_FixedMulLocal24_
     
@@ -1023,9 +1029,9 @@ IF COMPISA LE COMPILE_286
     ; CX:BX = sine
     
 SELFMODIFY_SPAN_viewx_lo_1:
-    ADD AX, 0x1000
+    ADD AX, 01000h
 SELFMODIFY_SPAN_viewx_hi_1:
-    ADC DX, 0x1000
+    ADC DX, 01000h
     
     ; Convert to 6.10
     SHL AX, 1
@@ -1038,9 +1044,9 @@ SELFMODIFY_SPAN_viewx_hi_1:
     MOV CS:[SELFMODIFY_SPAN_ds_xfrac+1 - OFFSET R_SPAN24_STARTMARKER_], AX
     
 SELFMODIFY_SPAN_viewy_lo_1:
-    ADD BX, 0x1000
+    ADD BX, 01000h
 SELFMODIFY_SPAN_viewy_hi_1:
-    ADC CX, 0x1000
+    ADC CX, 01000h
     NEG CX
     NEG BX
     SBB CX, 0
@@ -1070,7 +1076,7 @@ ELSE
     IMUL EDI ; FixedMul
     SHRD EAX, EDX, 16
 SELFMODIFY_SPAN_viewy_full_1:
-    ADD EAX, 0x10000000
+    ADD EAX, 010000000h
     NEG EAX
     SHR EAX, 6 ; Convert to 6.10
     ;MOV CS:[SELFMODIFY_SPAN_ds_yfrac+1 - OFFSET R_SPAN24_STARTMARKER_], AX
@@ -1080,7 +1086,7 @@ SELFMODIFY_SPAN_viewy_full_1:
     IMUL EDI ; FixedMul
     SHRD EAX, EDX, 16
 SELFMODIFY_SPAN_viewx_full_1:
-    ADD EAX, 0x10000000
+    ADD EAX, 010000000h
     SHR EAX, 6 ; Convert to 6.10
     ;MOV CS:[SELFMODIFY_SPAN_ds_xfrac+1 - OFFSET R_SPAN24_STARTMARKER_], AX
     
@@ -1105,12 +1111,12 @@ SELFMODIFY_SPAN_viewx_full_1:
     ; HDI = xstep (XXXXXXxx xxxxxxxx)
     
 SELFMODIFY_SPAN_quality_data:
-    MOV CX, 0xFF06
+    MOV CX, 0FF06h
     
     ; DI = xstep (XXXXXXxx xxxxxxxx)
     ; HDI = ystep (YYYYYYyy yyyyyyyy)
 SELFMODIFY_SPAN_step_values:
-    MOV EDI, 0xFFFFFFFF
+    MOV EDI, 0FFFFFFFFh
     
     
 ENDIF
@@ -1124,7 +1130,7 @@ ENDIF
     ; forwards anymore? Register pressure feels kinda low
     
 SELFMODIFY_SPAN_write_ahead_start_pixel:
-    MOV DI, 0x1000
+    MOV DI, 01000h
     
     
     
@@ -1134,7 +1140,7 @@ IF COMPISA LE COMPILE_286
     ; SS = colormap segment
     ; DS = source segment
     ; ES = dest segment
-    ; AH = 0x3F
+    ; AH = 03Fh
     ; CX = yfrac 00YYYYYY yyyyyyyy
     ; DX = xfrac XXXXXXxx xxxxxx00
     ; SP = xstep * 4 (plane iter)
@@ -1168,7 +1174,7 @@ ENDM
     MOVSB ES:[DI], SS:[SI]
 
 SELFMODIFY_SPAN_plane_iter_addr:
-    MOV BX, 0x1000
+    MOV BX, 01000h
     MOV AL, CS:[BX]
     DEC AL
     JZ break_plane_loop
@@ -1176,7 +1182,7 @@ SELFMODIFY_SPAN_plane_iter_addr:
 SELFMODIFY_SPAN_di_offset:
     CMP AL, 0
 SELFMODIFY_SPAN_reset_di:
-    ADC DI, 0x1000
+    ADC DI, 01000h
 start_plane_loop:
     MOV CS:[BX], AL ; write back to plane_iter
 SELFMODIFY_SPAN_extra_pixel_cmp:
@@ -1190,7 +1196,7 @@ SELFMODIFY_SPAN_extra_pixel_cmp:
     SBB SI, SI
     AND SI, BYTES_PER_PIXEL ; Can't overflow past 80 because of earlier math
 SELFMODIFY_SPAN_pixel_jump_target:
-    ADD SI, 0x1000
+    ADD SI, 01000h
     JMP SI
 
 ELSE
@@ -1251,7 +1257,7 @@ ENDM
     SHLD ESI, ESP, 16 ; SI = HSP
     XOR DI, DI
 SELFMODIFY_SPAN_di_offset:
-    CMP CH, 0xFF
+    CMP CH, 0FFh
     ADC DI, SI ; DI = HSP + carry
     
     ; SC_DATA = plane_mask[i]
@@ -1261,11 +1267,11 @@ start_plane_loop: ; LOOP START
     OUT DX, AL
     MOV EDX, EBX ; EDX does not need to be set on entry
 SELFMODIFY_SPAN_extra_pixel_cmp:
-    CMP CH, 0xFF
+    CMP CH, 0FFh
     SBB SI, SI
     AND SI, BYTES_PER_PIXEL ; Can't overflow past 80 because of earlier math
 SELFMODIFY_SPAN_pixel_jump_target:
-    ADD SI, 0x1000
+    ADD SI, 01000h
     JMP SI
     
 ENDIF
@@ -1278,7 +1284,7 @@ IF COMPISA LE COMPILE_286
     MOV AX, FIXED_DS_SEGMENT
     MOV SS, AX
 SELFMODIFY_SPAN_write_ahead_sp:
-    MOV SP, 0x1000
+    MOV SP, 01000h
     STI
 ENDIF
 

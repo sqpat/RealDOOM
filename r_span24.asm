@@ -977,6 +977,10 @@ ENDIF
 
 ENDP
 
+local_visplaneoffset = 0
+local_visplanesegment = 2
+draw_planes_frame_size = 4
+
 ; TODO THIS
 
 ; Documentation macro for correcting stack offsets.
@@ -1124,6 +1128,15 @@ mov   ax, ((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolorm
 jmp   done_with_span_fixedcolormap_selfmodify
 
 ALIGN_MACRO	
+
+check_next_visplane_page:
+; do next visplane page
+sub   bp, VISPLANE_BYTES_PER_PAGE
+; di = sp
+add   word ptr ss:[di], 0400h  ; si not pushed yet
+jmp   loop_visplane_page_check
+
+ALIGN_MACRO	
 do_sky_flat_draw:
 
 ; di is the correct ptr already
@@ -1192,7 +1205,6 @@ xchg  ax, cx
 mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN24_STARTMARKER_], al
 
 
-mov  di, ax  ; HACK back up cx
 
 
 
@@ -1228,8 +1240,8 @@ ELSE
 ENDIF
     MOV WORD PTR DS:[_planezlight], CX
     
-    ;MOV CX, 0FF01h
-    ;MOV AH, 0BAh ; MOV DX, imm
+    MOV CX, 0FF01h
+    MOV AH, 0BAh ; MOV DX, imm
 
 
     ; Register state (all not listed are junk/scratch):
@@ -1246,216 +1258,209 @@ ENDIF
     ; DI = SP    
 
 
-mov   cx, di ; HACK: retrieve cx
+    CMP AL, CH
+    JNE flat_loaded
+    MOV BP, SI
+    MOV DI, BX
+    MOV SI, _allocatedflatsperpage + NUM_FLAT_CACHE_PAGES
+    MOV BX, -(NUM_FLAT_CACHE_PAGES)
+loop_find_flat: ; LOOP DEPTH: 2
+public loop_find_flat
+    MOV AX, DS:[BX + SI]
+    CMP AL, 4
+    JB found_page_with_empty_spaceA
+    INC BX
+    CMP AH, 4
+    JB found_page_with_empty_spaceB
+    INC BX
+    JNZ loop_find_flat
+    ; LOOP DEPTH: 1
+    
+    ; TODO rare code.  jump out and bring the l2 mru here.
+    evict_flat:
+    public evict_flat
+    MOV AX, DS:[_flatcache_l2_head] ; AL = head, AH = tail
+    ; evictedpage = flatcache_l2_tail
+    MOV BL, AH
+    ; // all the other flats in this are cleared.
+    ; allocatedflatsperpage[evictedpage] = 1
+    MOV BYTE PTR DS:[BX + SI - NUM_FLAT_CACHE_PAGES], CL
+    MOV CL, AL
+    MOV AL, AH
+    MOV SI, OFFSET _flatcache_nodes
+    FAST_SHL1 BL
+    ; flatcache_l2_tail = flatcache_nodes[evictedpage].next
+    MOV AH, BYTE PTR DS:[BX + SI + 1]
+    ; flatcache_l2_head = evictedpage
+    MOV WORD PTR DS:[_flatcache_l2_head], AX
+    ; flatcache_nodes[evictedpage].prev = flatcache_l2_head
+    ; flatcache_nodes[evictedpage].next = -1
+    MOV WORD PTR DS:[BX + SI], CX
+    FAST_SHL1 BL
+    ; flatcache_nodes[flatcache_l2_tail].prev = -1
+    XCHG BL, AH
+    FAST_SHL1 BL
+    MOV BYTE PTR DS:[BX + SI], CH
+    ; flatcache_nodes[flatcache_l2_head].next = evictedpage
+    MOV BL, CL
+    FAST_SHL1 BL
+    MOV BYTE PTR DS:[BX + SI + 1], AL
+    
+    SHIFT_MACRO SHL AH 2
+    XOR SI, SI
+    MOV BX, -1
+    MOV DS, DX ; NOTE: Can be removed if following flat loop isn't slower with ES:
+    MOV DL, 0FCh
+    MOV CX, MAX_FLATS
+;   for (i = 0; i < MAX_FLATS; i++) {
+;       if ((flatindex[i] >> 2) == evictedpage) {
+;           flatindex[i] = 0xFF;
+;       }
+;  	}
+ALIGN_MACRO
+check_next_flat: ; LOOP DEPTH: 2
+    LODSB
+    AND AL, DL
+    CMP AL, AH
+    JE erase_flat
+    LOOP check_next_flat
+    MOV AL, AH
+    JMP done_with_evict_flatcache_ems_page
+erase_flat:
+    MOV BYTE PTR DS:[BX + SI], BL
 
-; al has right value.
 
+    LOOP check_next_flat
+    MOV AL, AH
+    JMP done_with_evict_flatcache_ems_page
 
-; going to use di to hold flatunloaded
-xor   di, di
-cmp   al, 0ffh
-jne   flat_loaded
-mov   bx, di
-loop_find_flat:
-cmp   byte ptr ds:[bx + _allocatedflatsperpage], 4   ; if (allocatedflatsperpage[j]<4){
-jl    found_page_with_empty_space
-inc   bl
-cmp   bl, NUM_FLAT_CACHE_PAGES
-jge   found_flat_page_to_evict
-jmp   loop_find_flat
-ALIGN_MACRO	
+    jmp_to_flatcachemruL2:
+    jmp flatcachemruL2
 
-check_next_visplane_page:
-; do next visplane page
-sub   bp, VISPLANE_BYTES_PER_PAGE
-; di = sp
-add   word ptr ss:[di], 0400h  ; si not pushed yet
-jmp   loop_visplane_page_check
-ALIGN_MACRO	
-
-
-
-found_page_with_empty_space:
-
-mov   al, bl ; bl is usedflatindex
-SHIFT_MACRO shl al 2
-
-
-mov   ah, byte ptr ds:[bx + _allocatedflatsperpage]
-add   al, ah
-inc   byte ptr ds:[bx + _allocatedflatsperpage]
+    ; ==================== HOLE HOLE HOLE ====================
+    
+found_page_with_empty_spaceB: ; LOOP DEPTH: 1
+    MOV AL, AH
+found_page_with_empty_spaceA:
+    ADD CL, AL
+    MOV BYTE PTR DS:[BX + SI], CL
+    ADD BL, NUM_FLAT_CACHE_PAGES
+    SHIFT_MACRO SHL BL 2
+    OR AL, BL
 found_flat:
-; al is usedflatindex
-mov   di, FLATTRANSLATION_SEGMENT
-mov   es, di
-mov   bl, cl
-xor   bh, bh
-
-mov   bl, byte ptr es:[bx]
-mov   di, FLATINDEX_SEGMENT
-mov   es, di
-
-; di already nonzero
-;mov   di, 1 ; update flat unloaded
-
-mov   byte ptr es:[bx], al	; flatindex[flattranslation[piclight.bytes.picnum]] = usedflatindex;
-
-; check l2 cache next
-flat_loaded:
-; ah is already set above..
-mov   ah, al
-and   ah, 3
-mov   byte ptr cs:[SELFMODIFY_get_usedflatindex+1], al     ; store usedflatindex only once, along with AND 3 of it
-mov   byte ptr cs:[SELFMODIFY_get_usedflatindex_and_3_1+1], ah
-mov   byte ptr cs:[SELFMODIFY_get_usedflatindex_and_3_2+1], ah
-
-
-; al is guaranteed usedflatindex...
-; consider cwd mov dl, al
-xor    ah, ah
-mov    dx, ax
-
-SHIFT_MACRO sar dl 2
-
-; dl = flatcacheL2pagenumber
-cmp   dl, byte ptr ds:[_currentflatpage+0]
-je    in_flat_page_0
-
-; check if L2 page is in L1 cache
-
-cmp   dl, byte ptr ds:[_currentflatpage+1]
-jne   not_in_flat_page_1
-mov   cl, 1
-jmp   SHORT update_l1_cache
-ALIGN_MACRO	
-found_flat_page_to_evict:
-
-
-;call  R_EvictFlatCacheEMSPage_   ; al stores result..
-jmp    do_evict_flatcache_ems_page
-ALIGN_MACRO	
 done_with_evict_flatcache_ems_page:
-SHIFT_MACRO shl al 2
+    STOSB
+    MOV AH, 0E9h
+    MOV SI, BP
+flat_loaded:
+    ; Register state (all not listed are junk/scratch):
+    ; SS = FIXED_DS_SEGMENT
+    ; AL = usedflatindex
+    ; AH = self modify instruction constant
+    ; SI = &_visplaneheaders[i].visplaneheader_maxx
+    MOV BYTE PTR CS:[SELFMODIFY_SPAN_flat_unloaded - OFFSET R_SPAN24_STARTMARKER_], AH
+    
+    MOV AH, AL
+    AND AH, 3
+    
 
-jmp   found_flat
-ALIGN_MACRO	
-
-not_in_flat_page_1:
-cmp   dl, byte ptr ds:[_currentflatpage+2]
-jne   not_in_flat_page_2
-mov   cl, 2
-jmp SHORT  update_l1_cache
-ALIGN_MACRO	
-not_in_flat_page_2:
-cmp   dl, byte ptr ds:[_currentflatpage+3]
-jne   not_in_flat_page_3
-mov   cl, 3
-jmp SHORT  update_l1_cache
-ALIGN_MACRO	
-not_in_flat_page_3:
-; L2 page not in L1 cache. need to EMS remap
-
-; doing word writes/reads instead of byte writes/reads when possible
-mov   ch, byte ptr ds:[_lastflatcacheindicesused]
-mov   ax, word ptr ds:[_lastflatcacheindicesused+1]
-mov   cl, byte ptr ds:[_lastflatcacheindicesused+3]
-
-mov   word ptr ds:[_lastflatcacheindicesused], cx
-mov   word ptr ds:[_lastflatcacheindicesused+2], ax
-
-mov   ax, dx
-
-mov   bl, cl
-xor   bh, bh   ; ugly... can i do cx above
-mov   byte ptr ds:[bx + _currentflatpage], al
-add   ax, FIRST_FLAT_CACHE_LOGICAL_PAGE
-
-;call  Z_QuickMapFlatPage_
-;	pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
-push  cx
-push  si
-shl   bx, 1
-SHIFT_PAGESWAP_ARGS bx
-; _EPR here
-IFDEF COMP_CH
-    add  ax, EMS_MEMORY_PAGE_OFFSET
-ELSE
-ENDIF
-mov   word ptr ds:[_pageswapargs + (pageswapargs_flatcache_offset * 2) + bx], ax
-Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
-
-pop   si
-pop   cx
-
-
-jmp  SHORT l1_cache_finished_updating
-ALIGN_MACRO	
-in_flat_page_0:
-mov   cl, 0
-
-update_l1_cache:
-mov   ch, byte ptr ds:[_lastflatcacheindicesused]
-cmp   ch, cl
-je    l1_cache_finished_updating
-mov   ah, byte ptr ds:[_lastflatcacheindicesused+1]
-cmp   ah, cl
-je    in_flat_page_1
-mov   al, byte ptr ds:[_lastflatcacheindicesused+2]
-cmp   al, cl
-je    in_flat_page_2
-mov   byte ptr ds:[_lastflatcacheindicesused+3], al
+    SHIFT_MACRO SHR AL 2
+    
+    MOV CX, SS
+    MOV DS, CX ; NOTE: Can be removed if previous flat loop isn't slower with ES:
+    MOV ES, CX
+    
+    MOV CX, 4
+    MOV DI, _currentflatpage
+    REPNE SCASB ; This should be fast since it takes advantage of CL afterwards
+    ; TODO: Branch has a range issue on 286.
+    ; Check if target code can fit in a nearby gap
+    ; or just put a trampoline JMP in there.
+    JNE update_l1_cache_from_l2
+    XOR CL, 3 ; Convert 3-0 to 0-3
+    ; Correct DI to consistently point to _currentflatpage+1
+    ; MOV DI, _lastflatcacheindicesused would remove offsets though...
+    SUB DI, CX
+    
+    MOV DX, WORD PTR DS:[DI + 3]
+    CMP DL, CL
+    JE in_flat_page_0
+    MOV CH, DL
+    CMP DH, CL
+    JE in_flat_page_1
+    MOV BX, WORD PTR DS:[DI + 5]
+    CMP BL, CL
+    JE in_flat_page_2
+    MOV BH, BL
 in_flat_page_2:
-mov   byte ptr ds:[_lastflatcacheindicesused+2], ah
+    MOV BL, DH
+    MOV WORD PTR DS:[DI + 5], BX
 in_flat_page_1:
-mov   word ptr ds:[_lastflatcacheindicesused], cx
+    MOV WORD PTR DS:[DI + 3], CX
+in_flat_page_0:
+    XOR BH, BH
+
 l1_cache_finished_updating:
-SELFMODIFY_get_usedflatindex:
-mov   al, 010h
-SHIFT_MACRO sar al 2
-
-;cbw  
+public l1_cache_finished_updating
 
 
-cmp       al, byte ptr ds:[_flatcache_l2_head]
-jne       jump_to_flatcachemruL2
+    ; Register state (all not listed are junk/scratch):
+    ; ES = DS = SS = FIXED_DS_SEGMENT
+    ; AL = usedflatindex >> 2
+    ; AH = usedflatindex & 3
+    ; CL = flatpageindex
+    ; BH = 0 !!! wrong
+    ; SI = &_visplaneheaders[i].visplaneheader_maxx
+    
+    ; NOTE: Could pull _flatcache_l2_head constant out of flatcachemruL2
+    CMP AL, BYTE PTR DS:[_flatcache_l2_head]
+    ; TODO: Branch has a range issue on 286.
+    ; Check if target code can fit in a nearby gap
+    ; or just put a trampoline JMP in there.
+    JNE jmp_to_flatcachemruL2
 done_with_mruL2:
+public done_with_mruL2
+    ; Register state (all not listed are junk/scratch):
+    ; DS = SS = FIXED_DS_SEGMENT
+    ; AH = usedflatindex & 3
+    ; CL = flatpageindex
+    ; BH = 0 !!! wrong. usually FF.
+    ; SI = &_visplaneheaders[i].visplaneheader_maxx
 
-
-cmp   di, 0 ; di used to hold flatunlodaed
-jnz   flat_is_unloaded
+    SHIFT_MACRO SHL CL 2
+    ADD CL, (FLAT_CACHE_BASE_SEGMENT SHR 8)
+    MOV CH, CL
+    MOV CL, BH
+SELFMODIFY_SPAN_flat_unloaded:
+public SELFMODIFY_SPAN_flat_unloaded
+    MOV DX, OFFSET  flat_is_unloaded - (OFFSET SELFMODIFY_SPAN_flat_unloaded + 3)
+    ADD CH, AH
 flat_not_unloaded:
-; calculate ds_source_segment
-
-
-;! todo use a single 16 element lookup instead of two four element ones.
-; cl is flatcacheL1pagenumber 
-
-; calculate flat page.
-; 7000h + 400h * l1 pagenumber + 100h * (usedflatindex &3)
-mov   al, cl
-SHIFT_MACRO sal   al 2
-SELFMODIFY_get_usedflatindex_and_3_1:
-add   al, 010h
-add   al, 070h
-
-mov   byte ptr cs:[_ds_source_offset_span+3], al            ; low byte always zero!
-
-; planeheight = labs(plheader->height - viewz.w);
-
+    MOV BYTE PTR CS:[_ds_source_offset_span+3], CH
+    
+    ; Register state (all not listed are junk/scratch):
+    ; DS = SS = FIXED_DS_SEGMENT
+    ; SI = &_visplaneheaders[i].visplaneheader_maxx
+    
+    
 mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_height - VISPLANEHEADER_T.visplaneheader_maxx]
 
 SELFMODIFY_SPAN_viewz_13_3_1:
+public SELFMODIFY_SPAN_viewz_13_3_1
 sub   ax, 01000h
 ; ABS
 cwd
 xor   ax, dx
 sub   ax, dx   
 
+pop   bp
+    
+
 mov   word ptr cs:[SELFMODIFY_SPAN_plane_height+1], ax
 mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx - VISPLANEHEADER_T.visplaneheader_maxx]
 mov   di, ax
 mov   bx, sp
-mov   es, word ptr ss:[bx+4]
+mov   es, word ptr ss:[bx+2] ; bp has been popped..
 mov   bx, bp
 
 
@@ -1468,56 +1473,69 @@ mov   word ptr cs:[SELFMODIFY_SPAN_comparestop+2 - OFFSET R_SPAN24_STARTMARKER_]
 
 cmp   si, ax
 jle   start_single_plane_draw_loop
-pop   bp
 jmp   do_next_drawplanes_loop
-ALIGN_MACRO	
-
-jump_to_flatcachemruL2:
-jmp continue_flatcachemru
-ALIGN_MACRO	
-
-; flat is unloaded. load it in
-flat_is_unloaded:
-
-; flat cache page is 7000h + 400h * cl
-
-push  cx
-mov   ch, cl
-xor   cl, cl
-xor   bh, bh    ; for later
-
-sal   cx, 1
-sal   cx, 1   ; cx = 400h * cl 
-
-add   cx, FLAT_CACHE_BASE_SEGMENT
-
-mov   ax, FLATTRANSLATION_SEGMENT
-mov   es, ax
-
-SELFMODIFY_SPAN_lookuppicnum:
-mov   al, byte ptr es:[00]    ; uses picnum from way above.
-
-xor   ah, ah
-add   ax, word ptr ds:[_firstflat]
-SELFMODIFY_get_usedflatindex_and_3_2:
-mov   bl, 010h     ; usedflatindex AND 3
-
-add   bx, bx
-mov   bx, word ptr ds:[bx + _MULT_4096]
-
-call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
-
-;call  W_CacheLumpNumDirect_
-pop   cx
-jmp   flat_not_unloaded
-ALIGN_MACRO	
 
 
+ALIGN_MACRO
+update_l1_cache_from_l2:
+public update_l1_cache_from_l2
+    ; di points to _lastflatcacheindicesused
 
+    ; NOTE: _lastflatcacheindicesused is right after _currentflatpage
+    ; so DI will point to it if this branch is taken
+    MOV  BP, AX
+    ; ES = DS = SS = FIXED_DS_SEGMENT
+IF COMPISA GE COMPILE_386
+    MOV EBX, DS:[DI]
+    ROL EBX, 8
+    MOV DS:[DI], EBX
+ELSE
+    MOV BH, DS:[DI]         ; 03
+    MOV CX, DS:[DI + 1]     ; 0200
+    MOV BL, DS:[DI + 3]     ; 0301
+    MOV DS:[DI], BX
+    MOV DS:[DI + 2], CX
+ENDIF
+
+    CBW
+    MOV BH, AH ; AH should be 0
+    MOV DS:[BX + DI - 4], AL   ; 0x10
+    MOV CL, BL                 ; 0x01
+IF PAGE_SWAP_ARG_MULT EQ 1
+    FAST_SHL1 BL
+ELSE
+    SHIFT_MACRO SHL BL 2
+ENDIF
+
+IFDEF COMP_CH
+    ADD AX, FIRST_FLAT_CACHE_LOGICAL_PAGE + EMS_MEMORY_PAGE_OFFSET
+ELSE
+    ADD AX, FIRST_FLAT_CACHE_LOGICAL_PAGE
+ENDIF
+    MOV DS:[BX + _pageswapargs + (pageswapargs_flatcache_offset * 2)], AX
+    MOV BL, CL
+    MOV DI, SI
+
+    
+    
+    Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
+    
+    MOV SI, DI
+    MOV CL, BL
+    XCHG AX, BP
+    JMP l1_cache_finished_updating
+    ; ==================== HOLE HOLE HOLE ====================
+
+
+
+ALIGN_MACRO
 start_single_plane_draw_loop:
-; loop setup
+push   bp
 
-single_plane_draw_loop:
+; loop setup
+single_plane_draw_loop: ; LOOP DEPTH: 2
+public single_plane_draw_loop
+
 ; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
 mov   bx, sp
 mov   es, word ptr ss:[bx+4]
@@ -1703,191 +1721,101 @@ ALIGN_MACRO
 
 
 
+    
+    ; ==================== HOLE HOLE HOLE ====================
+
+ALIGN_MACRO
+flatcachemruL2:
+public flatcachemruL2
+
+; force bx to 0!
+    xor bx, bx
+    ; bh was already 0?
+
+    MOV BP, SI
+    MOV ES, CX
+    MOV SI, OFFSET _flatcache_nodes
+    
+    ; prev = nodelist[index].prev
+    ; next = nodelist[index].next
+    MOV BL, AL
+    FAST_SHL1 BL
+    MOV DX, DS:[BX + SI]
+    
+    MOV DI, _flatcache_l2_head
+    
+    MOV CX, DS:[DI] ; CL = head, CH = tail
+    ; flatcache_l2_head = index
+    MOV DS:[DI], AL ; NOTE: Can't STOSB, CL in ES
+    
+    ; if (index == flatcache_l2_tail) {
+    ;    flatcache_l2_tail = next
+    ; } else {
+    ;     nodelist[prev].next = next
+    ; }
+    CMP AL, CH
+    ; nodelist[index].prev = flatcache_l2_head
+    ; nodelist[index].next = -1
+    MOV CH, 0FFh
+    MOV DS:[BX + SI], CX
+    JE index_is_tail
+    MOV BL, DL
+    FAST_SHL1 BL
+    LEA DI, [BX + SI]
+index_is_tail:
+    MOV DS:[DI + 1], DH
+    
+    ; nodelist[next].prev = prev
+    MOV BL, DH
+    FAST_SHL1 BL
+    MOV DS:[BX + SI], DL
+    
+    ; nodelist[flatcache_l2_head].next = index
+    MOV BL, CL
+    FAST_SHL1 BL
+    MOV DS:[BX + SI + 1], AL
+    MOV CX, ES
+    MOV SI, BP
+    JMP done_with_mruL2
+    
+    ; ==================== HOLE HOLE HOLE ====================
+
+
+ALIGN_MACRO
+flat_is_unloaded:
+public  flat_is_unloaded
+    MOV DI, CX
+    
+    
+IF COMPISA LE COMPILE_286
+    xor  BX, BX
+    MOV  BH, AH
+    SHIFT_MACRO SHL BH 4
+ELSE
+    MOV BL, AH
+    SHL BX, 12
+ENDIF
+    XCHG AX, BP
+    
+    MOV DX, FLATTRANSLATION_SEGMENT
+    MOV ES, DX
+    
+SELFMODIFY_SPAN_lookuppicnum:
+public SELFMODIFY_SPAN_lookuppicnum
+    mov   al, byte ptr es:[00]    ; uses picnum from way above.
+    XOR AH, AH ; NOTE: Can this be CBW?
+    ADD AX, DS:[_firstflat]
+    
+    CALL DWORD PTR DS:[_W_CacheLumpNumDirect_addr]
+    
+    LEA CX, [BP + DI]
+    JMP flat_not_unloaded
+    
 ENDP
 
 
 
-;PROC R_MarkL2FlatCacheMRU24_ NEAR
 
-
-;	if (index == flatcache_l2_head) {
-;		return;
-;	}
-
-continue_flatcachemru:
-push      si
-
-
-
-
-;	cache_node_t far* nodelist  = flatcache_nodes;
-
-mov       dl, al
-mov       bx, OFFSET _flatcache_nodes
-
-
-;	prev = nodelist[index].prev;
-;	next = nodelist[index].next;
-
-
-cbw      
-
-add       ax, ax
-mov       si, ax
-mov       ax, word ptr ds:[si + bx]
-
-mov       dh, al ; back up
-
-;	if (index == flatcache_l2_tail) {
-;		flatcache_l2_tail = next;	
-;	} else {
-;		nodelist[prev].next = next;
-;	}
-
-cmp       dl, byte ptr ds:[_flatcache_l2_tail]
-jne       index_not_tail
-
-mov       byte ptr ds:[_flatcache_l2_tail], ah
-jmp       flat_tail_check_done
-ALIGN_MACRO	
-
-index_not_tail:
-
-mov       si, ax
-and       si, 000FFh      ; blegh
-sal       si, 1
-mov       byte ptr ds:[si + bx + 1], ah
-
-flat_tail_check_done:
-
-;	// guaranteed to have a next. if we didnt have one, it'd be head but we already returned from that case.
-;	nodelist[next].prev = prev;
-
-mov       al, ah
-cbw      
-
-mov       si, ax
-sal       si, 1
-
-mov       byte ptr ds:[si + bx], dh
-mov       al, dl
-
-mov       si, ax
-sal       si, 1
-
-;	nodelist[index].prev = flatcache_l2_head;
-;	nodelist[index].next = -1;
-
-mov       al, byte ptr ds:[_flatcache_l2_head]
-mov       byte ptr ds:[si + bx], al
-mov       byte ptr ds:[si + bx + 1], 0FFh
-
-mov       si, ax
-sal       si, 1
-
-;	nodelist[flatcache_l2_head].next = index;
-
-mov       byte ptr ds:[si + bx + 1], dl
-
-;	flatcache_l2_head = index;
-mov       byte ptr ds:[_flatcache_l2_head], dl
-exit_flatcachemru:
-pop       si
-jmp       done_with_mruL2
-
-ENDP
-
-
-;PROC R_EvictFlatCacheEMSPage24_ NEAR
-
-ALIGN_MACRO	
-do_evict_flatcache_ems_page:
-
-push      bx
-push      dx
-push      si
-mov       al, byte ptr ds:[_flatcache_l2_tail]
-mov       dh, al
-cbw      
-
-;	evictedpage = flatcache_l2_tail;
-mov       bx, OFFSET _flatcache_nodes
-mov       si, ax        ; si gets evictedpage.
-
-;	// all the other flats in this are cleared.
-;	allocatedflatsperpage[evictedpage] = 1;
-mov       byte ptr ds:[si + _allocatedflatsperpage], 1
-sal       si, 1  ; now word lookup.
-
-;	flatcache_l2_tail = flatcache_nodes[evictedpage].next;	// tail is nextmost
-
-mov       dl, byte ptr ds:[si + bx + 1]         ; dl has flatcache_l2_tail
-mov       byte ptr ds:[_flatcache_l2_tail], dl
-
-;	flatcache_nodes[evictedpage].next = -1;
-mov       byte ptr ds:[si + bx + 1], 0FFh
-
-;	flatcache_nodes[evictedpage].prev = flatcache_l2_head;
-
-mov       al, byte ptr ds:[_flatcache_l2_head]
-mov       byte ptr ds:[si + bx + 0], al
-
-;	flatcache_nodes[flatcache_l2_head].next = evictedpage;
-mov       si, ax
-sal       si, 1
-mov       byte ptr ds:[si + bx + 1], dh
-
-;	flatcache_nodes[flatcache_l2_tail].prev = -1;
-
-mov       al, dl
-mov       si, ax
-sal       si, 1
-mov       byte ptr ds:[si + bx], 0FFh
-
-
-;	flatcache_l2_head = evictedpage;
-
-
-mov       byte ptr ds:[_flatcache_l2_head], dh
-
-
-mov       bx, FLATINDEX_SEGMENT
-mov       ds, bx
-mov       ah, dh
-xor       si, si
-mov       bx, -1
-mov       dx, MAX_FLATS
-
-
-;   for (i = 0; i < MAX_FLATS; i++){
-;	   if ((flatindex[i] >> 2) == evictedpage){
-;         flatindex[i] = 0xFF;
-;   	}
-;  	}
-check_next_flat:
-lodsb       ; si is always one in front because of lodsb...
-
-SHIFT_MACRO shr       al 2
-cmp       al, ah
-je        erase_flat
-continue_erasing_flats:
-cmp       si, dx
-jb        check_next_flat
-mov       al, ah
-mov       bx, ss
-mov       ds, bx
-pop       si
-pop       dx
-pop       bx
-jmp       done_with_evict_flatcache_ems_page
-ALIGN_MACRO	
-;ret   
-
-erase_flat:
-mov       byte ptr ds:[si+bx], bl   ; bx is -1. this both writes FF and subtracts the 1 from si
-jmp       continue_erasing_flats
-
-ENDP
 
 
 ;
