@@ -138,8 +138,11 @@ go_generate_values:
 jmp   generate_distance_steps
 
 ;
-; R_MapPlane24_
-; void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 )
+; R_MapPlanes24_
+; void __far R_MapPlanes ( byte y, int16_t x1, int16_t x2 )
+
+local_loop_count = 2
+map_planes_args_size = 2
 
 
 ;cachedheight   9000:0000
@@ -163,22 +166,19 @@ jmp   do_drawspan
 
 
 ALIGN_MACRO	
-PROC    R_MapPlane24_ NEAR
-PUBLIC  R_MapPlane24_
-
-push es
-PUSHA_NO_AX_MACRO
-
-; ax is x1
-; di is ds_y
-
-mov  bp, SPANSTART_SEGMENT
-
-shl   ax, 1
+PROC    R_MapPlanes24_ NEAR
+PUBLIC  R_MapPlanes24_
 
 
-mov  si, di ; dc_y
-xchg ax, di ; dc_x * 2
+; NORMAL STACK (negatives are pushed temps)
+; SP - 2 = y << 1
+; SP + 0 = Return addr
+; SP + 2 = loop_count
+
+; si is ds_y
+FAST_SHL1 SI ; Initial << 1
+
+map_planes_loop:
 ; si is dc_y word lookup.
 mov   ds, bp
 
@@ -221,7 +221,7 @@ ENDIF
 
 
     IF COMPISA LE COMPILE_286
-        LES AX, DWORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+        LES di, DWORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
         mov dx, es
     distance_steps_ready:
     ELSE
@@ -233,7 +233,21 @@ ENDIF
 distance_steps_ready:
 public distance_steps_ready
 
+; dx:di is distance
 
+
+
+    ; TODO: Test if backwards indexing is even necessary,
+SELFMODIFY_SPAN_map_planes_dir_flag:
+    CLD
+    LODSW ; grab x1
+    CLD
+    xchg ax, di  ; grab distance, x1 into di
+    shl  di, 1 ; word lookup
+    
+
+    PUSH SI     ; next SI
+    mov  si, bx ; restore unlodsw si
 
 
 ; dx:ax is distance
@@ -790,11 +804,23 @@ ENSUREALIGN_400:
 
 sti								; reenable interrupts
 
-; todo popa/pusha is not working for some reason
+    POP SI ; Retrieve SI for next iter
+    
+    MOV BP, SP
+    DEC BYTE PTR SS:[BP + local_loop_count]
+    MOV BP, SPANSTART_SEGMENT
 
+    JZ  break_map_planes
+    JMP map_planes_loop
+    
+    ; ==================== HOLE HOLE HOLE ====================
 
-POPA_NO_AX_MACRO
-pop es
+ALIGN_MACRO
+break_map_planes:
+    ; LOOP DEPTH: 2
+    RET map_planes_args_size
+ENDP
+
 
 
 ret  
@@ -805,8 +831,7 @@ ret
 ALIGN_MACRO	
 
 generate_distance_steps:
-    push  di  ; dc_x * 2
-
+    
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
     ; BP = SPANSTART_SEGMENT
@@ -937,10 +962,10 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     mov ax, ax
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
     ; restore distance once more
-    xchg ax, di
+   ; di has distance
     MOV  DX, ES
     
-    pop   di              ; x1 << 1  from push ax at func start..
+
 
     
 
@@ -968,7 +993,7 @@ SELFMODIFY_SPAN_basexscale_full_1: ; todo implement
     mov ax, ax
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
 ENDIF
-
+    mov bx, si ; backup before lodsw.
     JMP distance_steps_ready
     
 
@@ -1155,6 +1180,7 @@ call  dword ptr ds:[_R_DrawSkyPlane_addr]
 ALIGN_MACRO	
 
 do_next_drawplanes_loop:	
+public do_next_drawplanes_loop
 
 pop   si  ; READ VISPLANE_HEADER
 
@@ -1325,8 +1351,13 @@ ENDIF
     XCHG AX, BP
     JMP l1_cache_finished_updating
 
+
     ; ==================== HOLE HOLE HOLE ====================
-    
+
+ALIGN_MACRO    
+jmp_to_flatcachemruL2:
+    jmp flatcachemruL2
+ALIGN_MACRO    
 found_page_with_empty_spaceB: ; LOOP DEPTH: 1
     MOV AL, AH
 found_page_with_empty_spaceA:
@@ -1405,7 +1436,7 @@ public l1_cache_finished_updating
     ; TODO: Branch has a range issue on 286.
     ; Check if target code can fit in a nearby gap
     ; or just put a trampoline JMP in there.
-    JNE flatcachemruL2
+    JNE jmp_to_flatcachemruL2
 done_with_mruL2:
 public done_with_mruL2
     ; Register state (all not listed are junk/scratch):
@@ -1435,33 +1466,255 @@ mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_height - VISPLANEHEA
 
 SELFMODIFY_SPAN_viewz_13_3_1:
 public SELFMODIFY_SPAN_viewz_13_3_1
-sub   ax, 01000h
-; ABS
-cwd
-xor   ax, dx
-sub   ax, dx   
-
-pop   bp
+    SUB AX, 01000h
+    CWD ; ABS
+    XOR AX, DX
+    SUB AX, DX
+    MOV CS:[SELFMODIFY_SPAN_plane_height+1 - OFFSET R_SPAN24_STARTMARKER_], AX
     
+    MOV DI, SP
 
-mov   word ptr cs:[SELFMODIFY_SPAN_plane_height+1], ax
-mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx - VISPLANEHEADER_T.visplaneheader_maxx]
-mov   di, ax
-mov   bx, sp
-mov   es, word ptr ss:[bx+2] ; bp has been popped..
-mov   bx, bp
+    ; NOTE: SP relative indexing now needs +2 (except current DI)
+    pop   bp
+    push  bp   ; unsure if necessary.
+    MOV BX, WORD PTR DS:[SI] ; Already pointing to visplaneheader_maxx
+    MOV si, WORD PTR DS:[SI + (VISPLANEHEADER_T.visplaneheader_minx - VISPLANEHEADER_T.visplaneheader_maxx)]
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_loop_stop+1 - OFFSET R_SPAN24_STARTMARKER_], BX ; stop = maxx (not +1 because of increment change)
+    xchg si, bp  ; visplane to si
+    mov ds, WORD PTR DS:[DI + 4]
+    
+    MOV DX, 000FFh
+    
+    ; NOTE: Handling of x2 is a bit of a hack, this section needs work
+    
+    ; Register state (all not listed are junk/scratch):
+    ; SS = FIXED_DS_SEGMENT
+    ; DS = visplanesegment
+    ; DL = 0FFh (initial t1 value)
+    ; DH = 0
+    ; BX = _visplaneheaders[i].visplaneheader_maxx
+    ; BP = _visplaneheaders[i].visplaneheader_minx
+    ; SI = &visplanes[i]
+    
+    MOV BYTE PTR DS:[BX + SI + VISPLANE_T.vp_top + 1], DL ; visplanes[i].vp_top[maxx + 1] = 0FFh
+
+    LEA AX, [SI + VISPLANE_T.vp_top]
+    NOT AX ; -(&visplanes[i].vp_top[0 + 1])
+    MOV CS:[SELFMODIFY_SPAN_loop_calc_x+2 - OFFSET R_SPAN24_STARTMARKER_], AX
+
+    LEA SI, [BP + SI + VISPLANE_T.vp_top]
+    MOV BYTE PTR DS:[SI - 1], DL ; visplanes[i].vp_top[minx - 1] = 0FFh
+    
+    
+    XCHG AX, BP
+    MOV BP, SPANSTART_SEGMENT
+    
+    ; NOTE: There was originally a com`parison here, but it's likely impossible to fail
+    ; because the same condition was tested for at the very start of drawplanes_loop
+    
+    ; NOTE: t1 was just written, don't re-read
+    MOV BX, WORD PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) - 1] ; b1/b2
+
+ALIGN_MACRO
+single_plane_draw_loop: ; LOOP DEPTH: 2
+
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+
+    LODSB ; t2 = visplanes[i].vp_top[x++]
+    
+    ; NOTE: Saves 5 bytes of prefixes
+    MOV DI, CS
+    MOV DS, DI
+    
+    ; Register state (all not listed are junk/scratch):
+    ; SS = FIXED_DS_SEGMENT
+    ; DS = CS
+    ; AL = t2
+    ; DX = t1
+    ; BL = b1
+    ; BH = b2
+    ; BP = SPANSTART_SEGMENT
+    ; SI = &visplanes[i].vp_top[x + 1]
+    
+    PUSH SI
+    
+    MOV DS:[SELFMODIFY_SPAN_t2_loop_index+1 - OFFSET R_SPAN24_STARTMARKER_], AL
+    MOV DS:[SELFMODIFY_SPAN_b2_loop_index+1 - OFFSET R_SPAN24_STARTMARKER_], BH
+    
+    ; NOTE: Should test if any of these conditions are impossible,
+    ; like if t1 is always larger than min(t2, b1 + 1) or such
+    
+    MOV SI, DX
+    
+    ; CL = b1 + 1
+    ; CH = b2 + 1
+    LEA CX, [BX + 00101h] ; INC both BL and BH, values won't carry
+    
+    
+    ; AL = t1_bound = min(t2, b1 + 1)
+    ; AL = t1_bound = min(AL, CL)
+
+    MOV AH, AL   ; backup t2
+    SUB AL, CL
+    SBB DH, DH
+    AND AL, DH
+    ADD AL, CL
+    
+    ; DL = t1_after = max(t1, t1_bound)
+    ; DL = t1_after = max(DL, AL)
+    SUB DL, AL
+    CMC
+    SBB DH, DH
+    AND DL, DH
+    ADD DL, AL
+    
+    ; AL = t2_bound = min(t1_after, b2 + 1)
+    ; AL = t2_bound = min(CL, CH)
+    MOV AL, CH
+    SUB AL, DL
+    SBB DH, DH
+    AND AL, DH
+    ADD AL, DL
+    
+    ; CH = b1_bound = max(t1_after, b2 + 1)
+    ; CH = b1_bound = max(DL, CH)   
+    ; NOTE: only works because of how t2_bound was calculated
+    XOR CH, AL
+    XOR CH, DL  ; todo i dont understand
+    
+    ; CH = b1_after = min(b1, b1_bound - 1)
+    ; CH = b1_after = min(BL, CH - 1) ???
+    SUB CH, CL
+    SBB CL, CL
+    AND CH, CL
+    ADD CH, BL
+    
+    ; AL = t2_count = max(t2 - t2_bound, 0)
+    ; AL = t2_count = max(AH - AL, 0)
+    SUB AL, AH
+    CMC
+    SBB CL, CL
+    AND AL, CL
+    MOV DS:[SELFMODIFY_SPAN_t2_loop_count+1 - OFFSET R_SPAN24_STARTMARKER_], AL
+    ; AL = t2_after = t2 + t2_count
+    ADD AL, AH
+    
+    ; AL = b2_bound = max(max(t2_after - 1, 0), b1_after)
+    ; AL = b2_bound = max(max(??, 0), CH)
+    XOR DH, DH ; NOTE: DH needs to be 0 later anyway
+    CMP DH, AL
+    SBB AL, CH
+    CMC
+    SBB CL, CL
+    AND AL, CL
+    ADD AL, CH
+    
+    ; AL = b2_count = max(b2 - b2_bound, 0)
+    SUB BH, AL
+    CMC
+    SBB AL, AL
+    AND AL, BH
+    MOV BYTE PTR DS:[SELFMODIFY_SPAN_b2_loop_count+1 - OFFSET R_SPAN24_STARTMARKER_], AL
+    
+    MOV BH, CH
+    
+    ; Register state (all not listed are junk/scratch):
+    ; SS = FIXED_DS_SEGMENT
+    ; DS = CS
+    ; DX = t1_after (will always be >= t1)
+    ; BL = b1
+    ; BH = b1_after (will always be <= b1)
+    ; BP = SPANSTART_SEGMENT
+    ; SI = t1
+    
+    ; FIRST LOOP
+    SUB DX, SI
+    JZ skip_first_mapplane_loop
+    PUSH BX
+    MOV BYTE PTR DS:[SELFMODIFY_SPAN_map_planes_dir_flag - OFFSET R_SPAN24_STARTMARKER_], 03Eh ; Useless DS prefix
+    PUSH DX ; Count argument
+    CALL R_MapPlanes24_
+    XOR DX, DX
+    POP BX
+skip_first_mapplane_loop:
+    ; DX = 0
+    XCHG DL, BH
+    
+    ; Register state (all not listed are junk/scratch):
+    ; SS = FIXED_DS_SEGMENT
+    ; DX = b1_after
+    ; BX = b1
+    ; BP = SPANSTART_SEGMENT
+    
+    ; SECOND LOOP
+    MOV SI, BX
+    SUB BX, DX
+    JZ skip_second_mapplane_loop
+    ; NOTE: Does this really *need* to go backwards? Test this, could simplify
+    MOV BYTE PTR CS:[SELFMODIFY_SPAN_map_planes_dir_flag - OFFSET R_SPAN24_STARTMARKER_], 0FDh ; STD
+    PUSH BX ; Count argument
+    CALL R_MapPlanes24_
+skip_second_mapplane_loop:
+    MOV ES, BP
+    
+    POP SI
+SELFMODIFY_SPAN_loop_calc_x:
+    LEA AX, [SI - 01000h] ; Calculate X from current pointer
+    
+    ; NOTE: Only the low byte is written for
+    ; these values so using 01000h would break
+SELFMODIFY_SPAN_t2_loop_count:
+    MOV CX, 00000h
+SELFMODIFY_SPAN_t2_loop_index:
+    MOV DI, 00000h
+    MOV DX, DI ; Recover t2 to use as t1 next iter
+    FAST_SHL1 DI
+    REP STOSW
+    ; CX = 0
+SELFMODIFY_SPAN_b2_loop_count:
+    MOV CL, 000h
+SELFMODIFY_SPAN_b2_loop_index:
+    MOV DI, 00000h
+    MOV BX, DI ; Recover b2 to use as b1 next iter
+    FAST_SHL1 DI
+    STD
+    REP STOSW
+    CLD
+    ; CX = 0
+    
+    ; Register state (all not listed are junk/scratch):
+    ; SS = FIXED_DS_SEGMENT
+    ; AX = X
+    ; DX = t1
+    ; BX = b1
+    ; BP = SPANSTART_SEGMENT
+    ; SI = &visplanes[i].vp_top[x] (for next iter)
+    
+SELFMODIFY_SPAN_loop_stop:
+    CMP AX, 01000h
+    JA end_draw_loop_iteration
+    
+    INC AX
+    
+    MOV DI, SP
+    MOV DS, WORD PTR SS:[DI + local_visplanesegment + 2]
+    MOV BH, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top)] ; Get new b2
+    ; NOTE: New t2 is read at the start of the loop
+    JMP single_plane_draw_loop
+    
+    ; ==================== HOLE HOLE HOLE ====================
+
+ALIGN_MACRO
+end_draw_loop_iteration: ; LOOP DEPTH: 1
+    POP BP ; Read visplane offset into a register for use
+    MOV AX, SS
+    MOV DS, AX ; Finally restore DS = SS
+
+    JMP do_next_drawplanes_loop
+
+    ; ==================== HOLE HOLE HOLE ====================
 
 
-mov   byte ptr es:[bx + di + 3], 0ffh
-mov   si, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx - VISPLANEHEADER_T.visplaneheader_maxx]
-mov   byte ptr es:[bx + si + 1], 0ffh
-inc   ax
-
-mov   word ptr cs:[SELFMODIFY_SPAN_comparestop+2 - OFFSET R_SPAN24_STARTMARKER_], ax ; set count value to be compared against in loop.
-
-cmp   si, ax
-jle   start_single_plane_draw_loop
-jmp   do_next_drawplanes_loop
 
 ALIGN_MACRO
 
@@ -1519,205 +1772,7 @@ index_is_tail:
     JMP done_with_mruL2
 
 
-    ; ==================== HOLE HOLE HOLE ====================
 
-
-
-ALIGN_MACRO
-start_single_plane_draw_loop:
-push   bp
-
-; loop setup
-single_plane_draw_loop: ; LOOP DEPTH: 2
-public single_plane_draw_loop
-
-; si is x, bx is plheader pointer. so adding si gets us plheader->top[x] etc.
-mov   bx, sp
-mov   es, word ptr ss:[bx+4]
-mov   bx, bp
-
-
-;			t1 = pl->top[x - 1];
-;			b1 = pl->bottom[x - 1];
-;			t2 = pl->top[x];
-;			b2 = pl->bottom[x];
-
-
-
-mov   dx, word ptr es:[bx + si + VISPLANE_T.vp_bottom - 1]	; b1&b2
-mov   cx, word ptr es:[bx + si + VISPLANE_T.vp_top - 1]		; t1&t2
-
-
-mov   ax, SPANSTART_SEGMENT
-mov   es, ax
-
-; t1/t2 ch/cl
-; b1/b2 dh/dl
-dec   si	; x - 1  constant
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_x2+1], si
-inc   si  ; add one back from the previous saved x-1 state
-
-;    while (t1 < t2 && t1 <= b1)
-
-cmp   cl, ch
-jae   done_with_first_mapplane_loop
-; set up the di parameter to be spanstart lookup index
-mov   al, cl
-xor   ah, ah
-mov   di, ax
-add   di, ax
-
-
-loop_first_mapplane:
-cmp   cl, dl
-ja    done_with_first_mapplane_loop
-
-mov   ax, word ptr es:[di]
-
-inc   cl
-
-call  R_MapPlane24_
-
-cmp   cl, ch
-jae   done_with_first_mapplane_loop
-inc   di
-inc   di
-
-jmp   loop_first_mapplane
-ALIGN_MACRO	
-
-end_single_plane_draw_loop_iteration:
-
-;  todo: di not really in use at all in this loop. could be made to hold something useful
-inc   si
-SELFMODIFY_SPAN_comparestop:
-cmp   si, 1000h
-jle   single_plane_draw_loop
-
-pop   bp
-jmp   do_next_drawplanes_loop
-ALIGN_MACRO	
-
-done_with_first_mapplane_loop:
-
-
-
-cmp   dl, dh
-jbe   done_with_second_mapplane_loop
-; set up the di parameter to be spanstart lookup index
-mov   al, dl
-xor   ah, ah
-mov   di, ax
-add   di, ax
-
-loop_second_mapplane:
-cmp   cl, dl
-ja   done_with_second_mapplane_loop
-
-mov   ax, word ptr es:[di]
-
-dec   dl
-
-call  R_MapPlane24_
-
-cmp   dl, dh
-jbe   done_with_second_mapplane_loop
-
-dec   di
-dec   di
-jmp   loop_second_mapplane
-ALIGN_MACRO	
-
-done_with_second_mapplane_loop:
-
-; update spanstarts
-
-
-
-; b1 = dl
-; b2 = dh
-; t1 = cl
-; t2 = ch
-
-;			while (t2 < t1 && t2 <= b2) {
-;				spanstart[t2] = x;
-
-mov   ax, SPANSTART_SEGMENT
-mov   es, ax
-
-mov   bx, cx
-
-sub   cl, ch     ; t2 < t1?
-jbe   second_spanstart_update_loop
-mov   ax, dx
-sub   ah, ch     ; t2 <= b2?
-jb    second_spanstart_update_loop
-
-inc   ah		; add one for the >= 
-cmp   ah, cl
-ja    dont_swap_cx_params_1  ; todo jae and inc inside
-mov   cl, ah
-dont_swap_cx_params_1:
-
-
-mov   al, ch  ; get t2 word lookup...
-xor   ah, ah
-add   ax, ax
-mov   di, ax  ; di = offset
-
-xor   ch, ch  ; cx loop count is set
-mov   ax, bx
-add   bh, cl  ; add the t2 increment
-
-mov   ax, si  ;  ax = x
-rep   stosw
-
-
-
-second_spanstart_update_loop:
-
-
-;			while (b2 > b1 && b2 >= t2) {
-;				spanstart[b2] = x;
-; b1 = dl
-; b2 = dh
-; t1 = bl
-; t2 = bh
-
-mov   ax, dx
-sub   ah, al    ; b2 - b1
-jbe   end_single_plane_draw_loop_iteration
-mov   cl, dh	; store b2 copy for spanstart addr calculation
-sub   dh, bh    ; b2 - t2
-jb    end_single_plane_draw_loop_iteration
-
-; add one for the >= case 
-inc   dh
-; ah and ch store the two values... take the smallest one to get loop count
-cmp   ah, dh
-ja    dont_swap_cx_params_2
-mov   dh, ah
-dont_swap_cx_params_2:
-
-
-xor   ch, ch
-mov   di, cx  ; cl held copied b2 from above
-add   di, di  ; di = offset
-
-mov   cl, dh  ; count
-
-
-mov   ax, si  ;  ax = x
-std   
-rep   stosw
-cld
-jmp   end_single_plane_draw_loop_iteration
-ALIGN_MACRO	
-
-
-
-    
-    ; ==================== HOLE HOLE HOLE ====================
 
 
     

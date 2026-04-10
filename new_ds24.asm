@@ -337,6 +337,7 @@ found_page_with_empty_spaceB: ; LOOP DEPTH: 1
 found_page_with_empty_spaceA:
     ADD CL, AL
     MOV DS:[BX + SI], CL
+    add bx, NUM_FLAT_CACHE_PAGES
     SHIFT_MACRO SHL BL 2
     OR AL, BL
 found_flat:
@@ -429,6 +430,7 @@ flat_not_unloaded:
     ; SI = &_visplaneheaders[i].visplaneheader_maxx
     
     MOV AX, DS:[SI + (VISPLANEHEADER_T.visplaneheader_height - VISPLANEHEADER_T.visplaneheader_maxx)]
+
 SELFMODIFY_SPAN_viewz_13_3_1:
     SUB AX, 01000h
     CWD ; ABS
