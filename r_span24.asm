@@ -1275,67 +1275,55 @@ public loop_find_flat
     INC BX
     JNZ loop_find_flat
     ; LOOP DEPTH: 1
-    
-    ; TODO rare code.  jump out and bring the l2 mru here.
-    evict_flat:
-    public evict_flat
-    MOV AX, DS:[_flatcache_l2_head] ; AL = head, AH = tail
-    ; evictedpage = flatcache_l2_tail
-    MOV BL, AH
-    ; // all the other flats in this are cleared.
-    ; allocatedflatsperpage[evictedpage] = 1
-    MOV BYTE PTR DS:[BX + SI - NUM_FLAT_CACHE_PAGES], CL
-    MOV CL, AL
-    MOV AL, AH
-    MOV SI, OFFSET _flatcache_nodes
-    FAST_SHL1 BL
-    ; flatcache_l2_tail = flatcache_nodes[evictedpage].next
-    MOV AH, BYTE PTR DS:[BX + SI + 1]
-    ; flatcache_l2_head = evictedpage
-    MOV WORD PTR DS:[_flatcache_l2_head], AX
-    ; flatcache_nodes[evictedpage].prev = flatcache_l2_head
-    ; flatcache_nodes[evictedpage].next = -1
-    MOV WORD PTR DS:[BX + SI], CX
-    FAST_SHL1 BL
-    ; flatcache_nodes[flatcache_l2_tail].prev = -1
-    XCHG BL, AH
-    FAST_SHL1 BL
-    MOV BYTE PTR DS:[BX + SI], CH
-    ; flatcache_nodes[flatcache_l2_head].next = evictedpage
-    MOV BL, CL
-    FAST_SHL1 BL
-    MOV BYTE PTR DS:[BX + SI + 1], AL
-    
-    SHIFT_MACRO SHL AH 2
-    XOR SI, SI
-    MOV BX, -1
-    MOV DS, DX ; NOTE: Can be removed if following flat loop isn't slower with ES:
-    MOV DL, 0FCh
-    MOV CX, MAX_FLATS
-;   for (i = 0; i < MAX_FLATS; i++) {
-;       if ((flatindex[i] >> 2) == evictedpage) {
-;           flatindex[i] = 0xFF;
-;       }
-;  	}
+    JMP evict_flat
+
 ALIGN_MACRO
-check_next_flat: ; LOOP DEPTH: 2
-    LODSB
-    AND AL, DL
-    CMP AL, AH
-    JE erase_flat
-    LOOP check_next_flat
-    MOV AL, AH
-    JMP done_with_evict_flatcache_ems_page
-erase_flat:
-    MOV BYTE PTR DS:[BX + SI], BL
+update_l1_cache_from_l2:
+public update_l1_cache_from_l2
+    ; di points to _lastflatcacheindicesused
+
+    ; NOTE: _lastflatcacheindicesused is right after _currentflatpage
+    ; so DI will point to it if this branch is taken
+    MOV  BP, AX
+    ; ES = DS = SS = FIXED_DS_SEGMENT
+IF COMPISA GE COMPILE_386
+    MOV EBX, DS:[DI]
+    ROL EBX, 8
+    MOV DS:[DI], EBX
+ELSE
+    MOV BH, DS:[DI]         ; 03
+    MOV CX, DS:[DI + 1]     ; 0200
+    MOV BL, DS:[DI + 3]     ; 0301
+    MOV DS:[DI], BX
+    MOV DS:[DI + 2], CX
+ENDIF
+
+    CBW
+    MOV BH, AH ; AH should be 0
+    MOV DS:[BX + DI - 4], AL   ; 0x10
+    MOV CL, BL                 ; 0x01
+IF PAGE_SWAP_ARG_MULT EQ 1
+    FAST_SHL1 BL
+ELSE
+    SHIFT_MACRO SHL BL 2
+ENDIF
+
+IFDEF COMP_CH
+    ADD AX, FIRST_FLAT_CACHE_LOGICAL_PAGE + EMS_MEMORY_PAGE_OFFSET
+ELSE
+    ADD AX, FIRST_FLAT_CACHE_LOGICAL_PAGE
+ENDIF
+    MOV DS:[BX + _pageswapargs + (pageswapargs_flatcache_offset * 2)], AX
+    MOV BL, CL
+    MOV DI, SI
 
 
-    LOOP check_next_flat
-    MOV AL, AH
-    JMP done_with_evict_flatcache_ems_page
-
-    jmp_to_flatcachemruL2:
-    jmp flatcachemruL2
+    Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
+    
+    MOV SI, DI
+    MOV CL, BL
+    XCHG AX, BP
+    JMP l1_cache_finished_updating
 
     ; ==================== HOLE HOLE HOLE ====================
     
@@ -1417,7 +1405,7 @@ public l1_cache_finished_updating
     ; TODO: Branch has a range issue on 286.
     ; Check if target code can fit in a nearby gap
     ; or just put a trampoline JMP in there.
-    JNE jmp_to_flatcachemruL2
+    JNE flatcachemruL2
 done_with_mruL2:
 public done_with_mruL2
     ; Register state (all not listed are junk/scratch):
@@ -1475,55 +1463,62 @@ cmp   si, ax
 jle   start_single_plane_draw_loop
 jmp   do_next_drawplanes_loop
 
-
 ALIGN_MACRO
-update_l1_cache_from_l2:
-public update_l1_cache_from_l2
-    ; di points to _lastflatcacheindicesused
 
-    ; NOTE: _lastflatcacheindicesused is right after _currentflatpage
-    ; so DI will point to it if this branch is taken
-    MOV  BP, AX
-    ; ES = DS = SS = FIXED_DS_SEGMENT
-IF COMPISA GE COMPILE_386
-    MOV EBX, DS:[DI]
-    ROL EBX, 8
-    MOV DS:[DI], EBX
-ELSE
-    MOV BH, DS:[DI]         ; 03
-    MOV CX, DS:[DI + 1]     ; 0200
-    MOV BL, DS:[DI + 3]     ; 0301
-    MOV DS:[DI], BX
-    MOV DS:[DI + 2], CX
-ENDIF
+flatcachemruL2:
+public flatcachemruL2
 
-    CBW
-    MOV BH, AH ; AH should be 0
-    MOV DS:[BX + DI - 4], AL   ; 0x10
-    MOV CL, BL                 ; 0x01
-IF PAGE_SWAP_ARG_MULT EQ 1
+; force bx to 0!
+    xor bx, bx
+    ; bh was already 0?
+
+    MOV BP, SI
+    MOV ES, CX
+    MOV SI, OFFSET _flatcache_nodes
+    
+    ; prev = nodelist[index].prev
+    ; next = nodelist[index].next
+    MOV BL, AL
     FAST_SHL1 BL
-ELSE
-    SHIFT_MACRO SHL BL 2
-ENDIF
-
-IFDEF COMP_CH
-    ADD AX, FIRST_FLAT_CACHE_LOGICAL_PAGE + EMS_MEMORY_PAGE_OFFSET
-ELSE
-    ADD AX, FIRST_FLAT_CACHE_LOGICAL_PAGE
-ENDIF
-    MOV DS:[BX + _pageswapargs + (pageswapargs_flatcache_offset * 2)], AX
+    MOV DX, DS:[BX + SI]
+    
+    MOV DI, _flatcache_l2_head
+    
+    MOV CX, DS:[DI] ; CL = head, CH = tail
+    ; flatcache_l2_head = index
+    MOV DS:[DI], AL ; NOTE: Can't STOSB, CL in ES
+    
+    ; if (index == flatcache_l2_tail) {
+    ;    flatcache_l2_tail = next
+    ; } else {
+    ;     nodelist[prev].next = next
+    ; }
+    CMP AL, CH
+    ; nodelist[index].prev = flatcache_l2_head
+    ; nodelist[index].next = -1
+    MOV CH, 0FFh
+    MOV DS:[BX + SI], CX
+    JE index_is_tail
+    MOV BL, DL
+    FAST_SHL1 BL
+    LEA DI, [BX + SI]
+index_is_tail:
+    MOV DS:[DI + 1], DH
+    
+    ; nodelist[next].prev = prev
+    MOV BL, DH
+    FAST_SHL1 BL
+    MOV DS:[BX + SI], DL
+    
+    ; nodelist[flatcache_l2_head].next = index
     MOV BL, CL
-    MOV DI, SI
+    FAST_SHL1 BL
+    MOV DS:[BX + SI + 1], AL
+    MOV CX, ES
+    MOV SI, BP
+    JMP done_with_mruL2
 
-    
-    
-    Z_QUICKMAPAI4 pageswapargs_flatcache_offset_size INDEXED_PAGE_7000_OFFSET
-    
-    MOV SI, DI
-    MOV CL, BL
-    XCHG AX, BP
-    JMP l1_cache_finished_updating
+
     ; ==================== HOLE HOLE HOLE ====================
 
 
@@ -1724,59 +1719,7 @@ ALIGN_MACRO
     
     ; ==================== HOLE HOLE HOLE ====================
 
-ALIGN_MACRO
-flatcachemruL2:
-public flatcachemruL2
 
-; force bx to 0!
-    xor bx, bx
-    ; bh was already 0?
-
-    MOV BP, SI
-    MOV ES, CX
-    MOV SI, OFFSET _flatcache_nodes
-    
-    ; prev = nodelist[index].prev
-    ; next = nodelist[index].next
-    MOV BL, AL
-    FAST_SHL1 BL
-    MOV DX, DS:[BX + SI]
-    
-    MOV DI, _flatcache_l2_head
-    
-    MOV CX, DS:[DI] ; CL = head, CH = tail
-    ; flatcache_l2_head = index
-    MOV DS:[DI], AL ; NOTE: Can't STOSB, CL in ES
-    
-    ; if (index == flatcache_l2_tail) {
-    ;    flatcache_l2_tail = next
-    ; } else {
-    ;     nodelist[prev].next = next
-    ; }
-    CMP AL, CH
-    ; nodelist[index].prev = flatcache_l2_head
-    ; nodelist[index].next = -1
-    MOV CH, 0FFh
-    MOV DS:[BX + SI], CX
-    JE index_is_tail
-    MOV BL, DL
-    FAST_SHL1 BL
-    LEA DI, [BX + SI]
-index_is_tail:
-    MOV DS:[DI + 1], DH
-    
-    ; nodelist[next].prev = prev
-    MOV BL, DH
-    FAST_SHL1 BL
-    MOV DS:[BX + SI], DL
-    
-    ; nodelist[flatcache_l2_head].next = index
-    MOV BL, CL
-    FAST_SHL1 BL
-    MOV DS:[BX + SI + 1], AL
-    MOV CX, ES
-    MOV SI, BP
-    JMP done_with_mruL2
     
     ; ==================== HOLE HOLE HOLE ====================
 
@@ -1811,6 +1754,64 @@ public SELFMODIFY_SPAN_lookuppicnum
     LEA CX, [BP + DI]
     JMP flat_not_unloaded
     
+
+evict_flat:
+    public evict_flat
+    MOV AX, DS:[_flatcache_l2_head] ; AL = head, AH = tail
+    ; evictedpage = flatcache_l2_tail
+    MOV BL, AH
+    ; // all the other flats in this are cleared.
+    ; allocatedflatsperpage[evictedpage] = 1
+    MOV BYTE PTR DS:[BX + SI - NUM_FLAT_CACHE_PAGES], CL
+    MOV CL, AL
+    MOV AL, AH
+    MOV SI, OFFSET _flatcache_nodes
+    FAST_SHL1 BL
+    ; flatcache_l2_tail = flatcache_nodes[evictedpage].next
+    MOV AH, BYTE PTR DS:[BX + SI + 1]
+    ; flatcache_l2_head = evictedpage
+    MOV WORD PTR DS:[_flatcache_l2_head], AX
+    ; flatcache_nodes[evictedpage].prev = flatcache_l2_head
+    ; flatcache_nodes[evictedpage].next = -1
+    MOV WORD PTR DS:[BX + SI], CX
+    FAST_SHL1 BL
+    ; flatcache_nodes[flatcache_l2_tail].prev = -1
+    XCHG BL, AH
+    FAST_SHL1 BL
+    MOV BYTE PTR DS:[BX + SI], CH
+    ; flatcache_nodes[flatcache_l2_head].next = evictedpage
+    MOV BL, CL
+    FAST_SHL1 BL
+    MOV BYTE PTR DS:[BX + SI + 1], AL
+    
+    SHIFT_MACRO SHL AH 2
+    XOR SI, SI
+    MOV BX, -1
+    MOV DS, DX ; NOTE: Can be removed if following flat loop isn't slower with ES:
+    MOV DL, 0FCh
+    MOV CX, MAX_FLATS
+;   for (i = 0; i < MAX_FLATS; i++) {
+;       if ((flatindex[i] >> 2) == evictedpage) {
+;           flatindex[i] = 0xFF;
+;       }
+;  	}
+ALIGN_MACRO
+check_next_flat: ; LOOP DEPTH: 2
+    LODSB
+    AND AL, DL
+    CMP AL, AH
+    JE erase_flat
+    LOOP check_next_flat
+    MOV AL, AH
+    JMP done_with_evict_flatcache_ems_page
+erase_flat:
+    MOV BYTE PTR DS:[BX + SI], BL
+
+
+    LOOP check_next_flat
+    MOV AL, AH
+    JMP done_with_evict_flatcache_ems_page
+
 ENDP
 
 

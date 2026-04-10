@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/09 12:19:32
+Created on:       26/04/09 12:38:11
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -505,7 +505,7 @@ Module: r_colfl.obj(r_colfl.ASM)
 1997:0334      MARKER_SM_COLFUNC_jump_offsetFL_
 1997:0000      R_COLUMNFL_STARTMARKER_
 Module: r_span24.obj(r_span24.ASM)
-19f0:0b2d*     evict_flat
+19f0:0d2c*     evict_flat
 19f0:0032*     _spanfunc_jump_target
 19f0:02e8*     MARKER_SM_SPAN24_AFTER_JUMP_1
 19f0:0b1e*     loop_find_flat
@@ -516,25 +516,25 @@ Module: r_span24.obj(r_span24.ASM)
 19f0:0a8b*     exit_drawplanes
 19f0:0000      R_SPAN24_STARTMARKER_
 19f0:0020*     _spanfunc_inner_loop_count
-19f0:0d1e*     flatcachemruL2
-19f0:0c26*     update_l1_cache_from_l2
+19f0:0c14*     flatcachemruL2
+19f0:0b30*     update_l1_cache_from_l2
 19f0:00e0*     R_MapPlane24_
-19f0:0d5a*     flat_is_unloaded
-19f0:0c65*     single_plane_draw_loop
+19f0:0d0a*     flat_is_unloaded
+19f0:0c51*     single_plane_draw_loop
 19f0:0964*     ENSUREALIGN_400
 19f0:02c8*     ENSUREALIGN_402
 19f0:02b5*     ENSUREALIGN_401
-19f0:0bf3*     SELFMODIFY_SPAN_viewz_13_3_1
-19f0:0d69*     SELFMODIFY_SPAN_lookuppicnum
-19f0:0bd5*     l1_cache_finished_updating
+19f0:0be1*     SELFMODIFY_SPAN_viewz_13_3_1
+19f0:0d19*     SELFMODIFY_SPAN_lookuppicnum
+19f0:0bc3*     l1_cache_finished_updating
 19f0:0a18      R_DrawPlanes24_
-19f0:0be6*     SELFMODIFY_SPAN_flat_unloaded
+19f0:0bd4*     SELFMODIFY_SPAN_flat_unloaded
 19f0:0010*     _spanfunc_xfrac
 19f0:0000*     _spanfunc_yfrac
 19f0:0121*     distance_steps_ready
 19f0:0edc      R_SPAN24_ENDMARKER_
 19f0:0ac2*     drawplanes_loop
-19f0:0bdb*     done_with_mruL2
+19f0:0bc9*     done_with_mruL2
 Module: r_span16.obj(r_span16.ASM)
 1ade:0e6f      R_WriteBackViewConstantsSpan16_
 1ade:0124*     R_DrawSpan16_
@@ -1631,4 +1631,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003dde0 (253408.)
 Entry point address: 2fa2:7cbe
-Link time: 00:00.59
+Link time: 00:00.60
