@@ -1758,30 +1758,81 @@ SELFMODIFY_SPAN_loop_stop:
     jl  end_draw_loop_iteration
     
 
-    ; old b2 = new b1.
-    ; old t2 = new t1
-    mov dl, bh  ; unmodified t2
-    mov bl, dh  ; old b2
-    xor dh, dh  ; word t1
-
+    
     
     MOV DI, SP
     MOV DS, WORD PTR SS:[DI + local_visplanesegment + 2]
 
     xchg ax, di  ; x value in di.
     inc  cx
-    ;inline this loop after one iter, because first iter always uses t1 = 0xFF and would never pass an equality check anyway.
+
+    ;run this loop after one iter, because first iter always uses t1 = 0xFF and would never pass an equality check anyway.
+
     ALIGN_MACRO
     loop_check_next_pixel:
     public loop_check_next_pixel
-    inc  di      ; x++
-    MOV  BH, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2
-    
+
+    ; right now,
+    ; BH = t2 -> t1
+    ; dh = b2 -> b1
+    ; bl gets b2
+    ; al gets t2
+
+    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
     lodsb
-    cmp  al, dl ; i think tops vary more due to map nature being more "look up" than "look down"
+    cmp  al, bh
     jne  check_mapplanes
-    cmp  bl, bh 
+    cmp  bl, dh 
     jne  check_mapplanes
+    dec  cx
+    jz   end_draw_loop_iteration
+    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    lodsb
+    cmp  al, bh
+    jne  check_mapplanes_add_1
+    cmp  bl, dh 
+    jne  check_mapplanes_add_1
+    dec  cx
+    jz   end_draw_loop_iteration
+    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    lodsb
+    cmp  al, bh
+    jne  check_mapplanes_add_2
+    cmp  bl, dh 
+    jne  check_mapplanes_add_2
+    dec  cx
+    jz   end_draw_loop_iteration
+    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    lodsb
+    cmp  al, bh
+    jne  check_mapplanes_add_3
+    cmp  bl, dh 
+    jne  check_mapplanes_add_3
+    dec  cx
+    jz   end_draw_loop_iteration
+    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    lodsb
+    cmp  al, bh
+    jne  check_mapplanes_add_4
+    cmp  bl, dh 
+    jne  check_mapplanes_add_4
+    dec  cx
+    jz   end_draw_loop_iteration
+    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    lodsb
+    cmp  al, bh
+    jne  check_mapplanes_add_5
+    cmp  bl, dh 
+    jne  check_mapplanes_add_5
+    dec  cx
+    jz   end_draw_loop_iteration
+    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    lodsb
+    cmp  al, bh
+    jne  check_mapplanes_add_6
+    cmp  bl, dh 
+    jne  check_mapplanes_add_6
+    add di, 7
     loop loop_check_next_pixel  ; unroll a bit?
     
 ALIGN_MACRO
@@ -1793,9 +1844,26 @@ end_draw_loop_iteration: ; LOOP DEPTH: 1
     JMP do_next_drawplanes_loop
 ALIGN_MACRO
 
+    check_mapplanes_add_2:
+    inc  di
+    check_mapplanes_add_1:
+    inc  di
+
     check_mapplanes:
     ; do t1/t2/b1/b2 work
-    dec di ; todo why does this need to be here?
+
+
+    ; BH = t1 (go to dl)
+    ; dh = b1 (go to bl)
+    ; bl = b2 (go to bh)
+    ; al = t2 (fine)
+
+    mov dl, bh
+    mov bh, bl
+    mov bl, dh  ; old b2
+    xor dh, dh  ; word t1
+
+
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], DI ; X value.
 
     ; DL = t1 DH = 0
@@ -1803,8 +1871,42 @@ ALIGN_MACRO
     ; BL = b1 BH = b2
 
     JMP single_plane_draw_loop
-    
+    check_mapplanes_add_3:
+    add di, 3
+    mov dl, bh
+    mov bh, bl
+    mov bl, dh  ; old b2
+    xor dh, dh  ; word t1
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
+    JMP single_plane_draw_loop
 
+    check_mapplanes_add_4:
+    add di, 4
+    mov dl, bh
+    mov bh, bl
+    mov bl, dh  ; old b2
+    xor dh, dh  ; word t1
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
+    JMP single_plane_draw_loop
+    
+    check_mapplanes_add_5:
+    add di, 5
+    mov dl, bh
+    mov bh, bl
+    mov bl, dh  ; old b2
+    xor dh, dh  ; word t1
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
+    JMP single_plane_draw_loop
+    
+    check_mapplanes_add_6:
+    add di, 6
+    mov dl, bh
+    mov bh, bl
+    mov bl, dh  ; old b2
+    xor dh, dh  ; word t1
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
+    JMP single_plane_draw_loop
+    
     ; ==================== HOLE HOLE HOLE ====================
 
 
