@@ -1518,6 +1518,7 @@ public SELFMODIFY_SPAN_viewz_13_3_1
 
 ALIGN_MACRO
     single_plane_draw_loop:
+    public single_plane_draw_loop
     
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
@@ -1528,11 +1529,10 @@ ALIGN_MACRO
     ; BP = SPANSTART_SEGMENT
     ; SI = &visplanes[i].vp_top[x + 1]
     
-    PUSH SI ; todo only push/pop around mapplanes.
+    PUSH SI ; todo bench only push/pop around mapplanes.
     
     
     
-    MOV SI, DX ; si = t1 ; todo use this as t1_after instead of push pop of dx?
 
    ; while (t1 < t2 && t1<=b1)
     
@@ -1541,9 +1541,10 @@ ALIGN_MACRO
 
     cmp dl, bl  ; t1 <= b1) 
     ja  skip_first_mapplane_loop  
+    MOV SI, DX ; si = t1 ; used as t1_after 
     
     push ax
-    push bx  ; todo reduce?
+    push bx
 
     ; now lets calculate iter amount ( min(t2, b1+1)  - t1 )
 
@@ -1599,32 +1600,6 @@ skip_first_mapplane_loop:
 
     ; b1_end = b1.
 
-COMMENT @
-
-    while (b1 > b2 && b1>=t1) {
-	    R_MapPlane (b1,spanstart[b1],x-1);
-	    b1--;
-    }
-
-    b1  b2   t1   count  final b1 use    desired start 
-    10   7   5      3     7       b2           8
-    10   6   5      4     6       b2           7
-    10   5   5      5     5       b2           6  <--- calc this desired start value
-    10   4   5      6     4       either       5   = max(t1, b2+1)
-    10   3   5      6     4       t1           5
-
-
-
-    b1_start = max(b2, t1-1)
-    b1_end = b1
-
-    b1 = b1_start
-    while (b1 < b1_end)    {
-      R_MapPlane (b1,spanstart[b1],x-1);
-      b1++;
-    }
-    b1 = b1_start
-@    
 
     ; todo improve register juggle.
     ; dh is known zero.
@@ -1689,12 +1664,6 @@ skip_second_mapplane_loop:
     ; ax = x (to write)
 
 
-; b2 = 0
-; b1 = 0
-; t2 = 0
-; t1 = ff
-
-
 ;    while (t2 < t1 && t2<=b2)
 
 
@@ -1704,18 +1673,6 @@ skip_second_mapplane_loop:
     ja   skip_t2_loop
 
     ; todo feels inefficient below
-COMMENT @
-; count = (min (t1, b2-1) - t2)
-; from t2 = 8
-t1  b2   count  t2
-10   12   2     10  t1
-11   12   3     11  t1
-12   12   4     12  t1
-13   12   5     13  either
-14   12   5     13  b2
-@
-
-;; ?? b2 is 0. so -1 is ff. 
 
     ; di needs t2..
     xchg ch, dh   ; zero high
@@ -1759,19 +1716,6 @@ skip_t2_loop:
     jbe  skip_b2_loop
     cmp  dh, dl
     jb   skip_b2_loop
-
-
-    COMMENT @
-; start = max(b1+1, t2)
-; from b2 = 15
-b1   t2   count  b2  (overshoot by 1)   start
-10   12   4     11   t2                 12
-11   12   4     11   either             12
-12   12   3     12   b1                 13
-13   12   2     13   b1                 14
-14   12   1     14   b1
-
-@
 
     ; lets iter forward, not backward.
 
@@ -1851,7 +1795,7 @@ ALIGN_MACRO
 
     check_mapplanes:
     ; do t1/t2/b1/b2 work
-
+    dec di ; todo why does this need to be here?
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], DI ; X value.
 
     ; DL = t1 DH = 0
