@@ -237,17 +237,15 @@ public distance_steps_ready
 
 
 
-    ; TODO: Test if backwards indexing is even necessary,
-SELFMODIFY_SPAN_map_planes_dir_flag:
-    CLD
+
     LODSW ; grab x1
-    CLD
+
     xchg ax, di  ; grab distance, x1 into di
     shl  di, 1 ; word lookup
     
 
     PUSH SI     ; next SI
-    mov  si, bx ; restore unlodsw si
+    mov  si, bx ; restore unlodsw si   ;todo get rid of this just offset si by 2...
 
 
 ; dx:ax is distance
@@ -817,13 +815,14 @@ sti								; reenable interrupts
 
 ALIGN_MACRO
 break_map_planes:
+public break_map_planes
     ; LOOP DEPTH: 2
     RET map_planes_args_size
 ENDP
 
 
 
-ret  
+
 
 
 
@@ -1509,14 +1508,11 @@ public SELFMODIFY_SPAN_viewz_13_3_1
     XCHG AX, BP
     MOV BP, SPANSTART_SEGMENT
     
-    ; NOTE: There was originally a com`parison here, but it's likely impossible to fail
-    ; because the same condition was tested for at the very start of drawplanes_loop
-    
-    ; NOTE: t1 was just written, don't re-read
     MOV BX, WORD PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) - 1] ; b1/b2
 
 ALIGN_MACRO
 single_plane_draw_loop: ; LOOP DEPTH: 2
+public  single_plane_draw_loop
 
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], AX
 
@@ -1530,7 +1526,7 @@ single_plane_draw_loop: ; LOOP DEPTH: 2
     ; SS = FIXED_DS_SEGMENT
     ; DS = CS
     ; AL = t2
-    ; DX = t1
+    ; DX = t1 (dh = 0)
     ; BL = b1
     ; BH = b2
     ; BP = SPANSTART_SEGMENT
@@ -1538,163 +1534,297 @@ single_plane_draw_loop: ; LOOP DEPTH: 2
     
     PUSH SI
     
-    MOV DS:[SELFMODIFY_SPAN_t2_loop_index+1 - OFFSET R_SPAN24_STARTMARKER_], AL
-    MOV DS:[SELFMODIFY_SPAN_b2_loop_index+1 - OFFSET R_SPAN24_STARTMARKER_], BH
-    
-    ; NOTE: Should test if any of these conditions are impossible,
-    ; like if t1 is always larger than min(t2, b1 + 1) or such
-    
-    MOV SI, DX
-    
-    ; CL = b1 + 1
-    ; CH = b2 + 1
-    LEA CX, [BX + 00101h] ; INC both BL and BH, values won't carry
     
     
-    ; AL = t1_bound = min(t2, b1 + 1)
-    ; AL = t1_bound = min(AL, CL)
+    MOV SI, DX ; si = t1 ; todo use this as t1_after instead of push pop of dx?
 
-    MOV AH, AL   ; backup t2
-    SUB AL, CL
-    SBB DH, DH
-    AND AL, DH
-    ADD AL, CL
+   ; while (t1 < t2 && t1<=b1)
     
-    ; DL = t1_after = max(t1, t1_bound)
-    ; DL = t1_after = max(DL, AL)
-    SUB DL, AL
-    CMC
-    SBB DH, DH
-    AND DL, DH
-    ADD DL, AL
+    cmp dl, al  ; (t1 < t2
+    jae skip_first_mapplane_loop
+
+    cmp dl, bl  ; t1 <= b1) 
+    ja  skip_first_mapplane_loop  
     
-    ; AL = t2_bound = min(t1_after, b2 + 1)
-    ; AL = t2_bound = min(CL, CH)
-    MOV AL, CH
-    SUB AL, DL
-    SBB DH, DH
-    AND AL, DH
-    ADD AL, DL
+    push ax
+    push bx  ; todo reduce?
+
+    ; now lets calculate iter amount ( min(t2, b1+1)  - t1 )
+
+    ; todo bench min/max algo vs branch
+    mov dl, al          ; default ... TODO is ah 0? if so do math in AX.
+    cmp dl, bl      
+    jbe use_t1_as_max
+    mov dl, bl
+    inc dx  ; b1+1
+    use_t1_as_max:
     
-    ; CH = b1_bound = max(t1_after, b2 + 1)
-    ; CH = b1_bound = max(DL, CH)   
-    ; NOTE: only works because of how t2_bound was calculated
-    XOR CH, AL
-    XOR CH, DL  ; todo i dont understand
-    
-    ; CH = b1_after = min(b1, b1_bound - 1)
-    ; CH = b1_after = min(BL, CH - 1) ???
-    SUB CH, CL
-    SBB CL, CL
-    AND CH, CL
-    ADD CH, BL
-    
-    ; AL = t2_count = max(t2 - t2_bound, 0)
-    ; AL = t2_count = max(AH - AL, 0)
-    SUB AL, AH
-    CMC
-    SBB CL, CL
-    AND AL, CL
-    MOV DS:[SELFMODIFY_SPAN_t2_loop_count+1 - OFFSET R_SPAN24_STARTMARKER_], AL
-    ; AL = t2_after = t2 + t2_count
-    ADD AL, AH
-    
-    ; AL = b2_bound = max(max(t2_after - 1, 0), b1_after)
-    ; AL = b2_bound = max(max(??, 0), CH)
-    XOR DH, DH ; NOTE: DH needs to be 0 later anyway
-    CMP DH, AL
-    SBB AL, CH
-    CMC
-    SBB CL, CL
-    AND AL, CL
-    ADD AL, CH
-    
-    ; AL = b2_count = max(b2 - b2_bound, 0)
-    SUB BH, AL
-    CMC
-    SBB AL, AL
-    AND AL, BH
-    MOV BYTE PTR DS:[SELFMODIFY_SPAN_b2_loop_count+1 - OFFSET R_SPAN24_STARTMARKER_], AL
-    
-    MOV BH, CH
-    
+    ; dx = t1 after. instead of push pop we will recover from si
+
+
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
     ; DS = CS
     ; DX = t1_after (will always be >= t1)
-    ; BL = b1
-    ; BH = b1_after (will always be <= b1)
     ; BP = SPANSTART_SEGMENT
     ; SI = t1
     
     ; FIRST LOOP
     SUB DX, SI
-    JZ skip_first_mapplane_loop
-    PUSH BX
-    MOV BYTE PTR DS:[SELFMODIFY_SPAN_map_planes_dir_flag - OFFSET R_SPAN24_STARTMARKER_], 03Eh ; Useless DS prefix
+
     PUSH DX ; Count argument
     CALL R_MapPlanes24_
-    XOR DX, DX
-    POP BX
+
+
+    mov dx, si ; si is t1 after? use that instead of push/pop dx?
+    shr dx, 1  ; 
+    pop bx  ; old values
+    pop ax  ; old values
+
 skip_first_mapplane_loop:
-    ; DX = 0
-    XCHG DL, BH
+
+    ; AL = t2
+    ; DX = t1_after (bh = 0)
+    ; BL = b1
+    ; BH = b2 (goes into ah)
+    ; BP/SS/CS = same
+
+;    while (b1 > b2 && b1>=t1)
+
+    mov ah, bh   ; PUT B2 IN AH
+
+    cmp bl, bh
+    jbe skip_second_mapplane_loop
+
+    cmp bl, dl
+    jb  skip_second_mapplane_loop
+
+    push ax
+    push dx
+
+    ; b1_end = b1.
+
+COMMENT @
+
+    while (b1 > b2 && b1>=t1) {
+	    R_MapPlane (b1,spanstart[b1],x-1);
+	    b1--;
+    }
+
+    b1  b2   t1   count  final b1 use    desired start (di)
+    10   7   5      3     7       b2           8
+    10   6   5      4     6       b2           7
+    10   5   5      5     5       b2           6  <--- calc this desired start value
+    10   4   5      6     4       either       5   = max(t1, b2+1)
+    10   3   5      6     4       t1           5
+
+
+
+    b1_start = max(b2, t1-1)
+    b1_end = b1
+
+    b1 = b1_start
+    while (b1 < b1_end)    {
+      R_MapPlane (b1,spanstart[b1],x-1);
+      b1++;
+    }
+    b1 = b1_start
+@    
+
+    ; todo improve register juggle.
+    ; dh is known zero.
+
+    xchg  bl, dl  ; DX = b1_end, bl = t1
+    mov   ax, dx  ; AX = b1_end, ah = 0
+
+
+    ; todo bench min/max algo vs branch
+    mov   dl, bl  ; DX = t1
+    cmp   dl, bh    
+    ja    use_t1_as_max_plane_2   ; b1_start = b2
+    mov   dl, bh
+    inc   dx      ; b1_start = b2+1
+    use_t1_as_max_plane_2:
+
+    mov   si, dx  ; desired start.. 
+
+
+    dec   dx  ; because of swapping order, adjust for an overshoot by 1. 
+    push  dx  ; recover this into b1 after call
+    sub   ax, dx  ; count = b1_end - b1_start
+
+
     
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
-    ; DX = b1_after
-    ; BX = b1
+    ; AX = count
     ; BP = SPANSTART_SEGMENT
     
     ; SECOND LOOP
-    MOV SI, BX
-    SUB BX, DX
-    JZ skip_second_mapplane_loop
-    ; NOTE: Does this really *need* to go backwards? Test this, could simplify
-    MOV BYTE PTR CS:[SELFMODIFY_SPAN_map_planes_dir_flag - OFFSET R_SPAN24_STARTMARKER_], 0FDh ; STD
-    PUSH BX ; Count argument
+    
+    PUSH AX ; Count argument
     CALL R_MapPlanes24_
+
+    pop bx ; b1_start
+    pop dx ; old values
+    pop ax ; old values
+
 skip_second_mapplane_loop:
+
+    ; bl = b1_after (bh = garbage)
+    ; dx = t1_after (dh = 0)
+    ; al = t2
+    ; ah = b2
+
     MOV ES, BP
     
     POP SI
-SELFMODIFY_SPAN_loop_calc_x:
+    xchg  ax, dx       ; dx = t2 lo, b2 hi
+    xchg  ax, cx       ; cx = t1 lo, 0  hi
+    
+    SELFMODIFY_SPAN_loop_calc_x:
     LEA AX, [SI - 01000h] ; Calculate X from current pointer
+
+
+    mov  bh, dl  ; t2 copy unmodified
+    ; cx = t1_after (ch = 0)
+    ;    = b1_after
+    ; bh = t2 unmodified
+    ; dl = t2
+    ; dh = b2
+    ; ax = x (to write)
+
+
+; b2 = 0
+; b1 = 0
+; t2 = 0
+; t1 = ff
+
+
+;    while (t2 < t1 && t2<=b2)
+
+
+    cmp  dl, cl
+    jae  skip_t2_loop
+    cmp  dl, dh
+    ja   skip_t2_loop
+
+    ; todo feels inefficient below
+COMMENT @
+; count = (min (t1, b2-1) - t2)
+; from t2 = 8
+t1  b2   count  t2
+10   12   2     10  t1
+11   12   3     11  t1
+12   12   4     12  t1
+13   12   5     13  either
+14   12   5     13  b2
+@
+
+;; ?? b2 is 0. so -1 is ff. 
+
+    ; di needs t2..
+    xchg ch, dh   ; zero high
+    mov  di, dx   ; t2 with zero high
+    xchg ch, dh   ; cx = t1, dx restored.
+
+    cmp cl, dh
+    jbe use_t1_for_count
+    mov cl, dh
+    inc cx
+    use_t1_for_count:
+
+    ; cx = endpoint
     
-    ; NOTE: Only the low byte is written for
-    ; these values so using 01000h would break
-SELFMODIFY_SPAN_t2_loop_count:
-    MOV CX, 00000h
-SELFMODIFY_SPAN_t2_loop_index:
-    MOV DI, 00000h
-    MOV DX, DI ; Recover t2 to use as t1 next iter
+    mov dl, cl ;  UPDATE T2 locally for next loop. bh continues unmodified for next loop iter.
+
+    sub cx, di ; cx = count 
+
+    
     FAST_SHL1 DI
     REP STOSW
     ; CX = 0
-SELFMODIFY_SPAN_b2_loop_count:
-    MOV CL, 000h
-SELFMODIFY_SPAN_b2_loop_index:
-    MOV DI, 00000h
-    MOV BX, DI ; Recover b2 to use as b1 next iter
-    FAST_SHL1 DI
-    STD
-    REP STOSW
-    CLD
-    ; CX = 0
+    ; todo di has t2_after << 1. efficient to fetch that here?
+
+
+skip_t2_loop:
+
+
+    ; ch = 0
+    ; cl = garbage
+    ; bl = b1_after
+    ; bh = t2 unmodified
+    ; dl = t2
+    ; dh = b2
+    ; ax = x (to write)
+
+    ; while (b2 > b1 && b2>=t2)
+
+    cmp  dh, bl
+    jbe  skip_b2_loop
+    cmp  dh, dl
+    jb   skip_b2_loop
+
+
+    COMMENT @
+; start = max(b1+1, t2)
+; from b2 = 15
+b1   t2   count  b2  (overshoot by 1)   start
+10   12   4     11   t2                 12
+11   12   4     11   either             12
+12   12   3     12   b1                 13
+13   12   2     13   b1                 14
+14   12   1     14   b1
+
+@
+
+    ; lets iter forward, not backward.
+
+    ; di = start = max(b1+1, t2)
+    ; count = b2 - start
+
+    mov  cl, dl ; t2
+    cmp  cl, bl
+    ja   use_b2_as_start
+    mov  cl, bl
+    inc  cx
+    use_b2_as_start:
     
+    mov  di, cx  ; di is dest.
+    mov  cl, dh
+    sub  cx, di  ; cx = count
+    inc  cx ; write an extra to inlcude the ending spot.
+
+
+    FAST_SHL1 DI
+    REP STOSW
+
+    ; CX = 0
+    skip_b2_loop:
+
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
     ; AX = X
-    ; DX = t1
-    ; BX = b1
     ; BP = SPANSTART_SEGMENT
+    ; ch = 0
+    ; bh = t2 unmodified
+    ; dh = b2
+    ; ax = x
     ; SI = &visplanes[i].vp_top[x] (for next iter)
-    
+
 SELFMODIFY_SPAN_loop_stop:
     CMP AX, 01000h
     JA end_draw_loop_iteration
+    ; todo loop here?
     
     INC AX
+
+    ; old b2 = new b1.
+    ; old t2 = new t1
+    mov dl, bh  ; unmodified t2
+    mov bl, dh  ; old b2
+    xor dh, dh  ; word t1
+
     
     MOV DI, SP
     MOV DS, WORD PTR SS:[DI + local_visplanesegment + 2]
