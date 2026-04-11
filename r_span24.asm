@@ -1506,7 +1506,7 @@ public SELFMODIFY_SPAN_viewz_13_3_1
     
     
     XCHG AX, BP
-    MOV BP, SPANSTART_SEGMENT
+
     
     MOV BX, WORD PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) - 1] ; b1/b2
 
@@ -1532,6 +1532,7 @@ ALIGN_MACRO
     PUSH SI ; todo bench only push/pop around mapplanes.
     
     
+    MOV BP, SPANSTART_SEGMENT
     
 
    ; while (t1 < t2 && t1<=b1)
@@ -1622,8 +1623,6 @@ skip_first_mapplane_loop:
     dec   dx  ; because of swapping order, adjust for an overshoot by 1. 
     push  dx  ; recover this into b1 after call
     sub   ax, dx  ; count = b1_end - b1_start
-
-
     
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
@@ -1767,7 +1766,7 @@ SELFMODIFY_SPAN_loop_stop:
     inc  cx
 
     ;run this loop after one iter, because first iter always uses t1 = 0xFF and would never pass an equality check anyway.
-
+    mov bp, (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top)
     ALIGN_MACRO
     loop_check_next_pixel:
     public loop_check_next_pixel
@@ -1778,7 +1777,13 @@ SELFMODIFY_SPAN_loop_stop:
     ; bl gets b2
     ; al gets t2
 
-    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+; test scasb?
+; heuristic for a different test? big x2 - x1 means a more likely long iteration.
+; heurisitc for floor plane assuming b1=b2 is more likely? (screen bottom)
+; heuristic for a ceiling plane assumping t1=t2 is more likely? (screen top)
+; inline behind single_plane_draw_loop
+
+    MOV  BL, BYTE PTR DS:[SI + BP] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes
@@ -1786,7 +1791,7 @@ SELFMODIFY_SPAN_loop_stop:
     jne  check_mapplanes
     dec  cx
     jz   end_draw_loop_iteration
-    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_1
@@ -1794,7 +1799,7 @@ SELFMODIFY_SPAN_loop_stop:
     jne  check_mapplanes_add_1
     dec  cx
     jz   end_draw_loop_iteration
-    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_2
@@ -1802,7 +1807,7 @@ SELFMODIFY_SPAN_loop_stop:
     jne  check_mapplanes_add_2
     dec  cx
     jz   end_draw_loop_iteration
-    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_3
@@ -1810,7 +1815,7 @@ SELFMODIFY_SPAN_loop_stop:
     jne  check_mapplanes_add_3
     dec  cx
     jz   end_draw_loop_iteration
-    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_4
@@ -1818,7 +1823,7 @@ SELFMODIFY_SPAN_loop_stop:
     jne  check_mapplanes_add_4
     dec  cx
     jz   end_draw_loop_iteration
-    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_5
@@ -1826,7 +1831,7 @@ SELFMODIFY_SPAN_loop_stop:
     jne  check_mapplanes_add_5
     dec  cx
     jz   end_draw_loop_iteration
-    MOV  BL, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2    
+    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_6
