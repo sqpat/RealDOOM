@@ -1510,21 +1510,17 @@ public SELFMODIFY_SPAN_viewz_13_3_1
     
     MOV BX, WORD PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) - 1] ; b1/b2
 
-ALIGN_MACRO
-single_plane_draw_loop: ; LOOP DEPTH: 2
-public  single_plane_draw_loop
 
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], AX
 
     LODSB ; t2 = visplanes[i].vp_top[x++]
     
-    ; NOTE: Saves 5 bytes of prefixes
-    MOV DI, CS
-    MOV DS, DI
+
+ALIGN_MACRO
+    single_plane_draw_loop:
     
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
-    ; DS = CS
     ; AL = t2
     ; DX = t1 (dh = 0)
     ; BL = b1
@@ -1532,7 +1528,7 @@ public  single_plane_draw_loop
     ; BP = SPANSTART_SEGMENT
     ; SI = &visplanes[i].vp_top[x + 1]
     
-    PUSH SI
+    PUSH SI ; todo only push/pop around mapplanes.
     
     
     
@@ -1564,7 +1560,6 @@ public  single_plane_draw_loop
 
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
-    ; DS = CS
     ; DX = t1_after (will always be >= t1)
     ; BP = SPANSTART_SEGMENT
     ; SI = t1
@@ -1611,7 +1606,7 @@ COMMENT @
 	    b1--;
     }
 
-    b1  b2   t1   count  final b1 use    desired start (di)
+    b1  b2   t1   count  final b1 use    desired start 
     10   7   5      3     7       b2           8
     10   6   5      4     6       b2           7
     10   5   5      5     5       b2           6  <--- calc this desired start value
@@ -1676,7 +1671,6 @@ skip_second_mapplane_loop:
     ; al = t2
     ; ah = b2
 
-    MOV ES, BP
     
     POP SI
     xchg  ax, dx       ; dx = t2 lo, b2 hi
@@ -1733,6 +1727,7 @@ t1  b2   count  t2
     mov cl, dh
     inc cx
     use_t1_for_count:
+    MOV ES, BP  ; for stosw
 
     ; cx = endpoint
     
@@ -1789,6 +1784,7 @@ b1   t2   count  b2  (overshoot by 1)   start
     mov  cl, bl
     inc  cx
     use_b2_as_start:
+    MOV ES, BP  ; for stosw
     
     mov  di, cx  ; di is dest.
     mov  cl, dh
@@ -1813,11 +1809,10 @@ b1   t2   count  b2  (overshoot by 1)   start
     ; SI = &visplanes[i].vp_top[x] (for next iter)
 
 SELFMODIFY_SPAN_loop_stop:
-    CMP AX, 01000h
-    JA end_draw_loop_iteration
-    ; todo loop here?
+    MOV CX, 01000h
+    sub cx, ax  ; loop count... 
+    jl  end_draw_loop_iteration
     
-    INC AX
 
     ; old b2 = new b1.
     ; old t2 = new t1
@@ -1828,12 +1823,23 @@ SELFMODIFY_SPAN_loop_stop:
     
     MOV DI, SP
     MOV DS, WORD PTR SS:[DI + local_visplanesegment + 2]
-    MOV BH, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top)] ; Get new b2
-    ; NOTE: New t2 is read at the start of the loop
-    JMP single_plane_draw_loop
-    
-    ; ==================== HOLE HOLE HOLE ====================
 
+    xchg ax, di  ; x value in di.
+    inc  cx
+    ;inline this loop after one iter, because first iter always uses t1 = 0xFF and would never pass an equality check anyway.
+    ALIGN_MACRO
+    loop_check_next_pixel:
+    public loop_check_next_pixel
+    inc  di      ; x++
+    MOV  BH, BYTE PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) ] ; Get new b2
+    
+    lodsb
+    cmp  al, dl ; i think tops vary more due to map nature being more "look up" than "look down"
+    jne  check_mapplanes
+    cmp  bl, bh 
+    jne  check_mapplanes
+    loop loop_check_next_pixel  ; unroll a bit?
+    
 ALIGN_MACRO
 end_draw_loop_iteration: ; LOOP DEPTH: 1
     POP BP ; Read visplane offset into a register for use
@@ -1841,6 +1847,19 @@ end_draw_loop_iteration: ; LOOP DEPTH: 1
     MOV DS, AX ; Finally restore DS = SS
 
     JMP do_next_drawplanes_loop
+ALIGN_MACRO
+
+    check_mapplanes:
+    ; do t1/t2/b1/b2 work
+
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], DI ; X value.
+
+    ; DL = t1 DH = 0
+    ; AL = t2
+    ; BL = b1 BH = b2
+
+    JMP single_plane_draw_loop
+    
 
     ; ==================== HOLE HOLE HOLE ====================
 
