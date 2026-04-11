@@ -1474,46 +1474,68 @@ public SELFMODIFY_SPAN_viewz_13_3_1
     MOV DI, SP
 
     ; NOTE: SP relative indexing now needs +2 (except current DI)
+    
+    ; TODO get rid of this push/pop somehow
     pop   bp
     push  bp   ; unsure if necessary.
-    MOV BX, WORD PTR DS:[SI] ; Already pointing to visplaneheader_maxx
-    MOV si, WORD PTR DS:[SI + (VISPLANEHEADER_T.visplaneheader_minx - VISPLANEHEADER_T.visplaneheader_maxx)]
-    MOV WORD PTR CS:[SELFMODIFY_SPAN_loop_stop+1 - OFFSET R_SPAN24_STARTMARKER_], BX ; stop = maxx (not +1 because of increment change)
-    xchg si, bp  ; visplane to si
-    mov ds, WORD PTR DS:[DI + 4]
+
+
+    MOV  BX, WORD PTR DS:[SI] ; Already pointing to visplaneheader_maxx
+    MOV  SI, WORD PTR DS:[SI + (VISPLANEHEADER_T.visplaneheader_minx - VISPLANEHEADER_T.visplaneheader_maxx)]
+    MOV  WORD PTR CS:[SELFMODIFY_SPAN_loop_stop+1 - OFFSET R_SPAN24_STARTMARKER_], BX ; stop = maxx (not +1 because of increment change)
+    xchg SI, bp  ; visplane to si
+    mov  DS, WORD PTR DS:[DI + 4]
     
-    MOV DX, 000FFh
+    MOV  CX, 000FFh
     
     ; NOTE: Handling of x2 is a bit of a hack, this section needs work
     
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
     ; DS = visplanesegment
-    ; DL = 0FFh (initial t1 value)
-    ; DH = 0
+    ; CL = 0FFh (initial t1 value)
+    ; CH = 0
     ; BX = _visplaneheaders[i].visplaneheader_maxx
     ; BP = _visplaneheaders[i].visplaneheader_minx
     ; SI = &visplanes[i]
     
-    MOV BYTE PTR DS:[BX + SI + VISPLANE_T.vp_top + 1], DL ; visplanes[i].vp_top[maxx + 1] = 0FFh
+    MOV  BYTE PTR DS:[BX + SI + VISPLANE_T.vp_top + 1], CL ; visplanes[i].vp_top[maxx + 1] = 0FFh
 
-    LEA AX, [SI + VISPLANE_T.vp_top]
-    NOT AX ; -(&visplanes[i].vp_top[0 + 1])
-    MOV CS:[SELFMODIFY_SPAN_loop_calc_x+2 - OFFSET R_SPAN24_STARTMARKER_], AX
+    LEA  AX, [SI + VISPLANE_T.vp_top]
+    NOT  AX ; -(&visplanes[i].vp_top[0 + 1])
+    MOV  CS:[SELFMODIFY_SPAN_loop_calc_x+2 - OFFSET R_SPAN24_STARTMARKER_], AX
 
-    LEA SI, [BP + SI + VISPLANE_T.vp_top]
-    MOV BYTE PTR DS:[SI - 1], DL ; visplanes[i].vp_top[minx - 1] = 0FFh
+
+    LEA  SI, [BP + SI + VISPLANE_T.vp_top]               ; include lodsb math of si + 1
+    MOV  BYTE PTR DS:[SI - 1], CL ; visplanes[i].vp_top[minx - 1] = 0FFh
     
-    
-    XCHG AX, BP
 
     
-    MOV BX, WORD PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) - 1] ; b1/b2
+    MOV BX, WORD PTR DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top - 1)] ; b1/b2
 
 
-    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], BP
 
-    LODSB ; t2 = visplanes[i].vp_top[x++]
+
+    ; register juggle to match mid loop state. TODO cleanup.
+    
+    ; desired state:
+    ; cx = t1_after (ch = 0) so 0x00FF
+    ; bl = b1
+    ; bh = t2 copy
+    ; dl = t2
+    ; dh = b2
+    ; ax = garbage
+
+    lodsb
+    xchg ax, dx  ; dl gets t2.
+    mov  dh, bh  ; b2 in dh. dx is set.
+    mov  bh, dl  ; t2 copy in bh
+    
+    MOV  BP, SPANSTART_SEGMENT
+
+
+    jmp   plane_draw_loop_first_iter_entry
     
 
 ALIGN_MACRO
@@ -1647,16 +1669,23 @@ skip_second_mapplane_loop:
 
     
     POP SI
+    ; todo reduce juggle.
+
+    
     xchg  ax, dx       ; dx = t2 lo, b2 hi
     xchg  ax, cx       ; cx = t1 lo, 0  hi
     
+; first loop has t1 = 0FFh and cannot match the above checks.
+; jump in with desired values
+plane_draw_loop_first_iter_entry:
+
     SELFMODIFY_SPAN_loop_calc_x:
     LEA AX, [SI - 01000h] ; Calculate X from current pointer
 
 
     mov  bh, dl  ; t2 copy unmodified
     ; cx = t1_after (ch = 0)
-    ;    = b1_after
+    ; bl = b1_after
     ; bh = t2 unmodified
     ; dl = t2
     ; dh = b2
@@ -1777,11 +1806,20 @@ SELFMODIFY_SPAN_loop_stop:
     ; bl gets b2
     ; al gets t2
 
-; test scasb?
+; NOT FASTER:
+;   elaborate repe scasb checks
+;   inline behind single_plane_draw_loop
+
 ; heuristic for a different test? big x2 - x1 means a more likely long iteration.
+  ; does first run of the plane always map only?
 ; heurisitc for floor plane assuming b1=b2 is more likely? (screen bottom)
 ; heuristic for a ceiling plane assumping t1=t2 is more likely? (screen top)
-; inline behind single_plane_draw_loop
+; IDEAS  TO TEST:
+; 0 improve general register usage and push/pop fewer?
+; 1. write ahead jmp vs mov cx for the rep stosw blocks based on entry into the other blocks
+; 2  mark top dirty, or mark bottom dirty. Nondirty means this visplane is screen width along bottom or top of screen.
+    ; would allow a specialized loop with fixed values for top or bottom.
+; 3. first iter skip mapplanes check (impossible because t1 = FF)
 
     MOV  BL, BYTE PTR DS:[SI + BP] ; Get new b2    
     lodsb
