@@ -1557,8 +1557,10 @@ ALIGN_MACRO
     MOV BP, SPANSTART_SEGMENT
     
 
-   ; while (t1 < t2 && t1<=b1)
-    
+
+
+    ; these two are branch tested, leave as is
+
     cmp dl, al  ; (t1 < t2
     jae skip_first_mapplane_loop
 
@@ -1573,7 +1575,7 @@ ALIGN_MACRO
 
     ; todo bench min/max algo vs branch
     mov dl, al          ; default ... TODO is ah 0? if so do math in AX.
-    cmp dl, bl      
+    cmp dl, bl        ; todo branch test
     jbe use_t1_as_max
     mov dl, bl
     inc dx  ; b1+1
@@ -1612,7 +1614,9 @@ skip_first_mapplane_loop:
 
     mov ah, bh   ; PUT B2 IN AH
 
-    cmp bl, bh
+    ; these two are branch tested, leave as is
+
+    cmp bl, bh  ; todo branch test
     jbe skip_second_mapplane_loop
 
     cmp bl, dl
@@ -1694,6 +1698,8 @@ plane_draw_loop_first_iter_entry:
 
 ;    while (t2 < t1 && t2<=b2)
 
+    ; these two are branch tested, leave as is
+
 
     cmp  dl, cl
     jae  skip_t2_loop
@@ -1739,6 +1745,8 @@ skip_t2_loop:
     ; ax = x (to write)
 
     ; while (b2 > b1 && b2>=t2)
+
+    ; these two are branch tested, leave as is
 
     cmp  dh, bl
     jbe  skip_b2_loop
@@ -1799,15 +1807,17 @@ SELFMODIFY_SPAN_loop_stop:
     ; this is not a real 'loop'. the last iteration will always stop at final t2 = FF.
     ; so this cannot end the drawspan loop. only the above CMP AX check can do so.
 
+
+    mov dl, bh
+    mov bh, bl
+    mov bl, dh  ; old b2
+    xor dh, dh  ; word t1
+
+
     ALIGN_MACRO
     loop_check_next_pixel:
     public loop_check_next_pixel
 
-    ; right now,
-    ; BH = t2 -> t1
-    ; dh = b2 -> b1
-    ; bl gets b2
-    ; al gets t2
 
 ; NOT FASTER:
 ;   elaborate repe scasb checks
@@ -1822,62 +1832,62 @@ SELFMODIFY_SPAN_loop_stop:
 ; 1. write ahead jmp vs mov cx for the rep stosw blocks based on entry into the other blocks
 ; 2  mark top dirty, or mark bottom dirty. Nondirty means this visplane is screen width along bottom or top of screen.
     ; would allow a specialized loop with fixed values for top or bottom.
-; 3. first iter skip mapplanes check (impossible because t1 = FF)
+; x first iter skip mapplanes check (impossible because t1 = FF)
 
-    MOV  BL, BYTE PTR DS:[SI + BP] ; Get new b2    
+    MOV  BH, BYTE PTR DS:[SI + BP] ; Get new b2 
     lodsb
-    cmp  al, bh
+    cmp  al, dl
     jne  check_mapplanes
-    cmp  bl, dh 
+    cmp  bl, bh 
     jne  check_mapplanes
     
-    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
+    MOV  BH, BYTE PTR DS:[SI + BP] ; Get new b2 
     lodsb
-    cmp  al, bh
+    cmp  al, dl
     jne  check_mapplanes_add_1
-    cmp  bl, dh 
+    cmp  bl, bh 
     jne  check_mapplanes_add_1
     
-    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
+    MOV  BH, BYTE PTR DS:[SI + BP] ; Get new b2 
     lodsb
-    cmp  al, bh
+    cmp  al, dl
     jne  check_mapplanes_add_2
-    cmp  bl, dh 
+    cmp  bl, bh 
     jne  check_mapplanes_add_2
     
-    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
+    MOV  BH, BYTE PTR DS:[SI + BP] ; Get new b2 
     lodsb
-    cmp  al, bh
+    cmp  al, dl
     jne  check_mapplanes_add_3
-    cmp  bl, dh 
+    cmp  bl, bh 
     jne  check_mapplanes_add_3
     
-    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
+    MOV  BH, BYTE PTR DS:[SI + BP] ; Get new b2 
     lodsb
-    cmp  al, bh
+    cmp  al, dl
     jne  check_mapplanes_add_4
-    cmp  bl, dh 
+    cmp  bl, bh 
     jne  check_mapplanes_add_4
     
-    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
+    MOV  BH, BYTE PTR DS:[SI + BP] ; Get new b2 
     lodsb
-    cmp  al, bh
+    cmp  al, dl
     jne  check_mapplanes_add_5
-    cmp  bl, dh 
+    cmp  bl, bh 
     jne  check_mapplanes_add_5
     
-    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
+    MOV  BH, BYTE PTR DS:[SI + BP] ; Get new b2 
     lodsb
-    cmp  al, bh
+    cmp  al, dl
     jne  check_mapplanes_add_6
-    cmp  bl, dh 
+    cmp  bl, bh 
     jne  check_mapplanes_add_6
 
-    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
+    MOV  BH, BYTE PTR DS:[SI + BP] ; Get new b2 
     lodsb
-    cmp  al, bh
+    cmp  al, dl
     jne  check_mapplanes_add_7
-    cmp  bl, dh 
+    cmp  bl, bh 
     jne  check_mapplanes_add_7
 
 
@@ -1907,10 +1917,6 @@ ALIGN_MACRO
     ; bl = b2 (go to bh)
     ; al = t2 (fine)
 
-    mov dl, bh
-    mov bh, bl
-    mov bl, dh  ; old b2
-    xor dh, dh  ; word t1
 
 
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], DI ; X value.
@@ -1922,46 +1928,26 @@ ALIGN_MACRO
     JMP single_plane_draw_loop
     check_mapplanes_add_3:
     add di, 3
-    mov dl, bh
-    mov bh, bl
-    mov bl, dh  ; old b2
-    xor dh, dh  ; word t1
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
     JMP single_plane_draw_loop
 
     check_mapplanes_add_4:
     add di, 4
-    mov dl, bh
-    mov bh, bl
-    mov bl, dh  ; old b2
-    xor dh, dh  ; word t1
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
     JMP single_plane_draw_loop
     
     check_mapplanes_add_5:
     add di, 5
-    mov dl, bh
-    mov bh, bl
-    mov bl, dh  ; old b2
-    xor dh, dh  ; word t1
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
     JMP single_plane_draw_loop
     
     check_mapplanes_add_6:
     add di, 6
-    mov dl, bh
-    mov bh, bl
-    mov bl, dh  ; old b2
-    xor dh, dh  ; word t1
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
     JMP single_plane_draw_loop
     
     check_mapplanes_add_7:
     add di, 7
-    mov dl, bh
-    mov bh, bl
-    mov bl, dh  ; old b2
-    xor dh, dh  ; word t1
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
     JMP single_plane_draw_loop
     
