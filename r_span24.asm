@@ -1781,9 +1781,8 @@ skip_t2_loop:
     ; SI = &visplanes[i].vp_top[x] (for next iter)
 
 SELFMODIFY_SPAN_loop_stop:
-    MOV CX, 01000h
-    sub cx, ax  ; loop count... 
-    jl  end_draw_loop_iteration
+    cmp AX, 01000h
+    ja  end_draw_loop_iteration
     
 
     
@@ -1792,10 +1791,14 @@ SELFMODIFY_SPAN_loop_stop:
     MOV DS, WORD PTR SS:[DI + local_visplanesegment + 2]
 
     xchg ax, di  ; x value in di.
-    inc  cx
+
 
     ;run this loop after one iter, because first iter always uses t1 = 0xFF and would never pass an equality check anyway.
     mov bp, (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top)
+
+    ; this is not a real 'loop'. the last iteration will always stop at final t2 = FF.
+    ; so this cannot end the drawspan loop. only the above CMP AX check can do so.
+
     ALIGN_MACRO
     loop_check_next_pixel:
     public loop_check_next_pixel
@@ -1827,56 +1830,59 @@ SELFMODIFY_SPAN_loop_stop:
     jne  check_mapplanes
     cmp  bl, dh 
     jne  check_mapplanes
-    dec  cx
-    jz   end_draw_loop_iteration
+    
     MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_1
     cmp  bl, dh 
     jne  check_mapplanes_add_1
-    dec  cx
-    jz   end_draw_loop_iteration
+    
     MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_2
     cmp  bl, dh 
     jne  check_mapplanes_add_2
-    dec  cx
-    jz   end_draw_loop_iteration
+    
     MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_3
     cmp  bl, dh 
     jne  check_mapplanes_add_3
-    dec  cx
-    jz   end_draw_loop_iteration
+    
     MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_4
     cmp  bl, dh 
     jne  check_mapplanes_add_4
-    dec  cx
-    jz   end_draw_loop_iteration
+    
     MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_5
     cmp  bl, dh 
     jne  check_mapplanes_add_5
-    dec  cx
-    jz   end_draw_loop_iteration
+    
     MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
     lodsb
     cmp  al, bh
     jne  check_mapplanes_add_6
     cmp  bl, dh 
     jne  check_mapplanes_add_6
-    add di, 7
-    loop loop_check_next_pixel  ; unroll a bit?
+
+    MOV  BL, BYTE PTR DS:[SI + BP ] ; Get new b2    
+    lodsb
+    cmp  al, bh
+    jne  check_mapplanes_add_7
+    cmp  bl, dh 
+    jne  check_mapplanes_add_7
+
+
+    add  di, 8
+    jmp loop_check_next_pixel  
     
 ALIGN_MACRO
 end_draw_loop_iteration: ; LOOP DEPTH: 1
@@ -1943,6 +1949,15 @@ ALIGN_MACRO
     
     check_mapplanes_add_6:
     add di, 6
+    mov dl, bh
+    mov bh, bl
+    mov bl, dh  ; old b2
+    xor dh, dh  ; word t1
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], di ; X value.
+    JMP single_plane_draw_loop
+    
+    check_mapplanes_add_7:
+    add di, 7
     mov dl, bh
     mov bh, bl
     mov bl, dh  ; old b2
