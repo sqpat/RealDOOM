@@ -185,7 +185,7 @@ mov   ds, bp
 
 SELFMODIFY_SPAN_plane_height:
 mov   ax, 01000h
-ENSUREALIGN_406:
+ENSUREALIGN_406:  ; todo odd
 
 ; CACHEDHEIGHT LOOKUP
 
@@ -703,8 +703,6 @@ mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_START
 ; main loop start (i = 0, 1, 2, 3)
 
 
-ALIGN_MACRO
-span_i_loop_repeat:
 
 mov   si, word ptr ds:[_spanfunc_inner_loop_count + bx] ; 
 
@@ -719,7 +717,6 @@ mov   cx, word ptr ds:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
 lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 ; ah gets 3F
 jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
-; MAKE SURE THIS IS WORD ALIGNED OR ALL WILL BREAK
 
 ALIGN_MACRO
 MARKER_SM_SPAN24_AFTER_JUMP_1:
@@ -792,7 +789,6 @@ span_i_loop_done:
 
 mov   ax, FIXED_DS_SEGMENT
 mov   ss, ax
-mov   ds, ax
 
 
 ; restore sp, bp
@@ -811,16 +807,17 @@ sti								; reenable interrupts
     DEC BYTE PTR SS:[BP + local_loop_count]
     MOV BP, SPANSTART_SEGMENT
 
-    JZ  break_map_planes
-    JMP map_planes_loop
+    JNZ do_map_planes_loop
     
-    ; ==================== HOLE HOLE HOLE ====================
 
-ALIGN_MACRO
-break_map_planes:
-public break_map_planes
     ; LOOP DEPTH: 2
     RET map_planes_args_size
+    ; ==================== HOLE HOLE HOLE ====================
+
+ALIGN_MACRO	
+do_map_planes_loop:
+    JMP map_planes_loop
+
 ENDP
 
 
