@@ -185,6 +185,7 @@ mov   ds, bp
 
 SELFMODIFY_SPAN_plane_height:
 mov   ax, 01000h
+ENSUREALIGN_406:
 
 ; CACHEDHEIGHT LOOKUP
 
@@ -686,7 +687,8 @@ mov   ss, ax  ; pass in ax?
 mov   ax, cs
 mov   ds, ax
 
-mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
+; seg toggle for ENSUREALIGN_402
+mov   word ptr cs:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
 
 SELFMODIFY_SPAN_ds_xstep:
 mov     sp,  01000h
@@ -694,6 +696,7 @@ ENSUREALIGN_402:
 
 xor   bx, bx						; zero out bx as loopcount
 mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
+
 
 
 
@@ -927,12 +930,13 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     MOV AX, BX
     MUL CX
     XCHG AX, BX
-    CWD
+    XOR DX, DX  ; cwd toggle for ENSUREALIGN_405
     AND DX, BP
     SUB BX, DX
     MUL BP
     _selfmodify_restore_dx_1:
     ADD AX, 01000h
+    ENSUREALIGN_405:
     ADC BX, DX
     XCHG AX, CX
     CWD
@@ -1685,7 +1689,7 @@ plane_draw_loop_first_iter_entry:
 
     SELFMODIFY_SPAN_loop_calc_x:
     LEA AX, [SI - 01000h] ; Calculate X from current pointer
-
+    ENSUREALIGN_404:
 
     mov  bh, dl  ; t2 copy unmodified
     ; cx = t1_after (ch = 0)
@@ -1790,6 +1794,8 @@ skip_t2_loop:
 
 SELFMODIFY_SPAN_loop_stop:
     cmp AX, 01000h
+ENSUREALIGN_403:
+
     ja  end_draw_loop_iteration
     
 
@@ -2329,6 +2335,9 @@ ENDS
 public ENSUREALIGN_400
 public ENSUREALIGN_401
 public ENSUREALIGN_402
-;public ENSUREALIGN_403
+public ENSUREALIGN_403
+public ENSUREALIGN_404
+public ENSUREALIGN_405
+public ENSUREALIGN_406
 
 END
