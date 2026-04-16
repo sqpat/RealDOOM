@@ -1487,28 +1487,26 @@ public SELFMODIFY_SPAN_viewz_13_3_1
     xchg SI, bp  ; visplane to si
     mov  DS, WORD PTR DS:[DI + 4]
     
-    MOV  CX, 000FFh
+
     
     ; NOTE: Handling of x2 is a bit of a hack, this section needs work
     
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
     ; DS = visplanesegment
-    ; CL = 0FFh (initial t1 value)
-    ; CH = 0
     ; BX = _visplaneheaders[i].visplaneheader_maxx
     ; BP = _visplaneheaders[i].visplaneheader_minx
     ; SI = &visplanes[i]
     
     MOV  BYTE PTR DS:[BX + SI + VISPLANE_T.vp_top + 1], CL ; visplanes[i].vp_top[maxx + 1] = 0FFh
 
-    LEA  AX, [SI + VISPLANE_T.vp_top]
-    NOT  AX ; -(&visplanes[i].vp_top[0 + 1])
-    MOV  CS:[SELFMODIFY_SPAN_loop_calc_x+2 - OFFSET R_SPAN24_STARTMARKER_], AX
+    LEA  CX, [SI + VISPLANE_T.vp_top]
+    NOT  CX ; -(&visplanes[i].vp_top[0 + 1])
+    MOV  CS:[SELFMODIFY_SPAN_loop_calc_x+2 - OFFSET R_SPAN24_STARTMARKER_], CX
 
 
     LEA  SI, [BP + SI + VISPLANE_T.vp_top]               ; include lodsb math of si + 1
-    MOV  BYTE PTR DS:[SI - 1], CL ; visplanes[i].vp_top[minx - 1] = 0FFh
+    ;MOV  BYTE PTR DS:[SI - 1], CL ; visplanes[i].vp_top[minx - 1] = 0FFh  ; dont need to actually write this.
     
 
     
@@ -1517,26 +1515,104 @@ public SELFMODIFY_SPAN_viewz_13_3_1
 
     MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_x2+1 - OFFSET R_SPAN24_STARTMARKER_], BP
 
+    ; hardcoded first iter... 
+    ; ax is still the number that would be subtracted from SI to get x after first lodsb.
 
-    ; register juggle to match mid loop state. TODO cleanup.
-    
-    ; desired state:
-    ; cx = t1_after (ch = 0) so 0x00FF
-    ; bl = b1
-    ; bh = t2 copy
-    ; dl = t2
-    ; dh = b2
-    ; ax = garbage
+   lodsb        ; first t2 (t1 is FF)
+   xchg ax, cx 
+   add  ax, si  ; ax is set to x
 
-    lodsb
-    xchg ax, dx  ; dl gets t2.
-    mov  dh, bh  ; b2 in dh. dx is set.
-    mov  bh, dl  ; t2 copy in bh
+   ; cl has t2
+   ; bx has b1/b2.
+
+
+    xor  ch, ch   
+    mov  di, cx   ; t2 with zero high
+    mov  dx, cx   ; t2 low
+
+    xchg bh, cl   ; t2 copy in bh
+
+    mov  dh, cl  ; b2 copy
+
     
     MOV  BP, SPANSTART_SEGMENT
 
 
+    ; t1-t2 is NOT t2 (t1 is FF)
+
+    
+    ; len is (b2 - t2) + 1 (because t1 is 0FFh. it surely wont be the limiting condition)
+    inc  cx     ; +1
+    sub  cl, bh ; b2 - t2 + 1
+    jb   skip_first_spanstart_t2  ; no iter
+
+    MOV ES, BP  ; for stosw
+
+    ; cx = count
+    
+    add dl, cl ;  UPDATE T2 locally for next loop. bh continues unmodified for next loop iter.
+
+
+    
+    FAST_SHL1 DI
+    REP STOSW
+    ; CX = 0
+    ; todo di has t2_after << 1. efficient to fetch that here?
+
+
+    skip_first_spanstart_t2:
+
+    ; register juggle to match mid loop state. TODO cleanup.
+    
+    ; state:
+
+    ; ch = 0
+    ; cl = garbage
+    ; bl = b1_after
+    ; bh = t2 unmodified
+    ; dl = t2
+    ; dh = b2
+    ; ax = x (to write)
+
+    ; while (b2 > b1 && b2>=t2)
+
+    cmp  dh, bl
+    jbe  skip_b2_loop_firstiter
+    cmp  dh, dl
+    jb   skip_b2_loop_firstiter
+
+    ; lets iter forward, not backward.
+
+    ; di = start = max(b1+1, t2)
+    ; count = b2 - start
+
+    mov  cl, dl ; t2
+    cmp  cl, bl
+    ja   use_b2_as_start_firstiter
+    mov  cl, bl
+    inc  cx
+    use_b2_as_start_firstiter:
+    MOV ES, BP  ; for stosw
+    
+    mov  di, cx  ; di is dest.
+    mov  cl, dh
+    sub  cx, di  ; cx = count
+    inc  cx ; write an extra to inlcude the ending spot.
+
+
+    FAST_SHL1 DI
+    REP STOSW
+
+    ; CX = 0
+    skip_b2_loop_firstiter:
+
+    ; hardcoded first iter done.
+
+
+
     jmp   plane_draw_loop_first_iter_entry
+
+    ; todo bench inlining loop here
     
 
 ALIGN_MACRO
@@ -1682,7 +1758,6 @@ skip_second_mapplane_loop:
     
 ; first loop has t1 = 0FFh and cannot match the above checks.
 ; jump in with desired values
-plane_draw_loop_first_iter_entry:
 
     SELFMODIFY_SPAN_loop_calc_x:
     LEA AX, [SI - 01000h] ; Calculate X from current pointer
@@ -1778,6 +1853,7 @@ skip_t2_loop:
 
     ; CX = 0
     skip_b2_loop:
+plane_draw_loop_first_iter_entry:
 
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
