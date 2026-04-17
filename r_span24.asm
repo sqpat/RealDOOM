@@ -1498,7 +1498,7 @@ public SELFMODIFY_SPAN_viewz_13_3_1
     ; BP = _visplaneheaders[i].visplaneheader_minx
     ; SI = &visplanes[i]
     
-    MOV  BYTE PTR DS:[BX + SI + VISPLANE_T.vp_top + 1], CL ; visplanes[i].vp_top[maxx + 1] = 0FFh
+    MOV  BYTE PTR DS:[BX + SI + VISPLANE_T.vp_top + 1], 0FFh ; visplanes[i].vp_top[maxx + 1] = 0FFh
 
     LEA  CX, [SI + VISPLANE_T.vp_top]
     NOT  CX ; -(&visplanes[i].vp_top[0 + 1])
