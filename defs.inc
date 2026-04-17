@@ -1087,13 +1087,12 @@ IFDEF COMP_CH
 		
 
 		Z_QUICKMAPAI1 MACRO pageswapindex, page
-			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
 			mov  	dx, SCAT_PAGE_SELECT_REGISTER
 			mov     al, page OR EMS_AUTOINCREMENT_FLAG
 			cli
 			out  	dx, al
 			mov  	dx, SCAT_PAGE_SET_REGISTER 
-			lodsw
+			mov     ax, word ptr ds:[&pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs]
 			out 	dx, ax
 			sti
 		ENDM
@@ -1225,11 +1224,10 @@ IFDEF COMP_CH
 		SCAMP_PAGE_SET_REGISTER = 0EAh
 
 		Z_QUICKMAPAI1 MACRO pageswapindex, page
-			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
 			mov     al, page OR EMS_AUTOINCREMENT_FLAG
 			cli
 			out     SCAMP_PAGE_SELECT_REGISTER, al
-			lodsw
+			mov     ax, word ptr ds:[&pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs]
 			out 	SCAMP_PAGE_SET_REGISTER, ax
 			sti
 		ENDM
@@ -1349,12 +1347,11 @@ IFDEF COMP_CH
 		HT18_PAGE_SET_REGISTER = 01ECh
 
 		Z_QUICKMAPAI1 MACRO pageswapindex, page
-			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
 			mov  	dx, HT18_PAGE_SELECT_REGISTER
 			mov     al, page OR EMS_AUTOINCREMENT_FLAG
 			out  	dx, al
 			mov  	dx, HT18_PAGE_SET_REGISTER
-			lodsw
+			mov     ax, word ptr ds:[&pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs]
 			out 	dx, ax
 		ENDM
 
