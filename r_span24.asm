@@ -2157,7 +2157,7 @@ evict_flat:
     FAST_SHL1 BL
     MOV BYTE PTR DS:[BX + SI + 1], AL
     
-    SHIFT_MACRO SHL AH 2
+
     XOR SI, SI
     MOV BX, -1
     MOV DS, DX ; NOTE: Can be removed if following flat loop isn't slower with ES:
