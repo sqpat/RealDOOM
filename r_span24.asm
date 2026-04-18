@@ -199,16 +199,20 @@ ELSE
 ENDIF
     JNE go_generate_values 
     MOV AX, WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
-    MOV CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
-    
+
+
+    SHIFT_MACRO shr ax 2  ; back to 6.8
+    ; todo reverse this shift, so we just shift 2-n instead of 2, then n back.
+
     SELFMODIFY_SPAN_detailshift_4:
     mov ax, ax
     mov ax, ax
 
+    ; todo this can just be done later when cachedystep is read?
     mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
     MOV AX, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
-    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+
     SELFMODIFY_SPAN_detailshift_3:
     mov ax, ax
     mov ax, ax
@@ -237,7 +241,7 @@ ENDIF
 
 public distance_steps_ready
 
-; dx:di is distance. or EDI for 386.
+; dx:di is distance. or todo EDI for 386.
 
 
 
@@ -422,6 +426,13 @@ neg   dx
 neg   ax
 sbb   dx, 0
 
+; shift 2, for equal 6.10 alignment with ystep
+shl ax, 1
+rcl dx, 1
+shl ax, 1
+rcl dx, 1
+
+
 mov   al, ah
 mov   ah, dl
 
@@ -435,10 +446,11 @@ mov   ES, CX
 
 MOV   DX, WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
 
-; AX has yfrac
-; DX has ystep
+; AX has yfrac (6.10)
+; DX has ystep (6.10)
 ; BP has xfrac
 
+; these will be stosw'd unshifted.
 
 mov   bx, di  ; x1 word lookup   ; backup...
 
@@ -727,6 +739,8 @@ FAST_SHL1 si
 mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
 mov   dx, word ptr ds:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
 mov   cx, word ptr ds:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
+; 6.10 to 6.8
+SHIFT_MACRO sar cx 2 
 lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 ; ah gets 3F
 jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
@@ -793,6 +807,9 @@ FAST_SHL1 si
 mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
 mov   dx, word ptr ds:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
 mov   cx, word ptr ds:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
+; 6.10 to 6.8
+SHIFT_MACRO sar cx 2 
+
 lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 ; ah gets 3F
 jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
@@ -957,18 +974,21 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     ADD AX, CX
     ADC DX, BX
 
-    
-    ; Convert to 6.8   TODO fix precision issue
-    ;SHL AX, 1
-    ;RCL DX, 1
-    ;SHL AX, 1
-    ;RCL DX, 1
+    mov bl, ah
+    mov bh, dl   ; 6.8 version
+
+    ; Convert to 6.10
+    SHL AX, 1
+    RCL DX, 1
+    SHL AX, 1
+    RCL DX, 1
     MOV AL, AH
     MOV AH, DL
     
     MOV WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
     
-    ; todo do this write later?
+
+    xchg ax, bx  ; 6.8 
 
     SELFMODIFY_SPAN_detailshift_2:
     mov ax, ax
@@ -993,7 +1013,8 @@ SELFMODIFY_SPAN_baseyscale_full_1:
     IMUL  EDI
     SHRD  EAX, EDX, 22 ; Convert to 6.10
     MOV   WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
-    SELFMODIFY_SPAN_detailshift_1:
+    shr   eax, 2       ; Convert to 6.8
+    SELFMODIFY_SPAN_detailshift_2:  ; todo shr eax 2-4
     mov   ax, ax
     mov   ax, ax
     MOV   WORD PTR CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
@@ -1002,7 +1023,7 @@ SELFMODIFY_SPAN_basexscale_full_1:
     IMUL  EDI
     SHRD  EAX, EDX, 22 ; Convert to 6.10
     MOV   WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
-    SELFMODIFY_SPAN_detailshift_2:
+    SELFMODIFY_SPAN_detailshift_1:
     mov   ax, ax
     mov   ax, ax
     MOV   WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
@@ -1019,7 +1040,7 @@ local_visplaneoffset = 0
 local_visplanesegment = 2
 draw_planes_frame_size = 4
 
-; TODO THIS
+
 
 ; Documentation macro for correcting stack offsets.
 ; Positive argument is number of PUSH compared to normal frame.
@@ -1050,7 +1071,7 @@ PUBLIC R_DrawPlanes24_
 
 
 
- ; TODO THIS
+
 ; NORMAL STACK (negatives are pushed temps)
 ; SP - 2 = &_visplaneheaders[i]
 ; SP + 0 = visplaneoffset
