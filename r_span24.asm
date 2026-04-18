@@ -837,7 +837,7 @@ generate_distance_steps:
     ; SI = y << 1
 
 IF (COMPISA EQ COMPILE_8086) OR (COMPISA GE COMPILE_386)
-    MOV DS:[SI], AX ; Handled by XCHG for 186/286
+    MOV DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)], AX ; Handled by XCHG for 186/286
 ENDIF
 
 IF COMPISA LE COMPILE_286
