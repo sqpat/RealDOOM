@@ -295,7 +295,7 @@ IF COMPISA GE COMPILE_386
 
 
     PROC   FixedMulTrigSine_MapLocal_ NEAR
-    PUBLIC FixedMulTrigSine_MapLocal_
+PUBLIC FixedMulTrigSine_MapLocal_
     SHIFT_MACRO sal dx 2
     ENDP
 
@@ -304,16 +304,21 @@ IF COMPISA GE COMPILE_386
     ; pass in the index already shifted to be a dword lookup..
 
     mov   ax, FINESINE_SEGMENT
-    mov   es, ax                ; put segment in es
+    mov   es, ax
 
-    mov   ax, dx
-    shl   ax, 1
-    cwde                        ; eax high gets sign
-    shr   dx, 1                 ; dword to word lookup
-    movsx edx, dx               ; clear high bits
-    mov   ax, word ptr es:[edx]  ; ax gets low word
-    shl   ecx, 16
+    shl   ecx, 16 ; ecx gets 32 bit arg
     mov   cx, bx
+
+    mov   bx, dx ; lookup in bx..
+    shr   bx, 1
+
+    movzx eax, word ptr es:[bx]
+    test  bh, 020h
+    je    skip_invert_sin
+    NEG   ECX
+    skip_invert_sin:
+
+
     imul  ecx
     shr   eax, 16
 
@@ -394,19 +399,27 @@ IF COMPISA GE COMPILE_386
     mov   ax, FINECOSINE_SEGMENT
     mov   es, ax                ; put segment in es
 
-    lea   eax, [edx*2 + 04000h]
-    cwde                        ; eax high gets sign
-    shr   dx, 1                 ; dword to word lookup
-    movsx edx, dx               ; clear high bits
-    mov   ax, word ptr es:[edx]  ; ax gets low word
-    shl   ecx, 16
+  
+    shl   ecx, 16 ; ecx gets 32 bit arg
     mov   cx, bx
+
+    mov   bx, dx ; lookup in bx..
+    shr   bx, 1
+
+    movzx eax, word ptr es:[bx]
+    test  bh, 030h
+    jpe   skip_invert_cos
+    NEG   ECX
+    skip_invert_cos:
+
+
+  ; 020h bit on in bx = do negative?
+
     imul  ecx
     shr   eax, 16
 
 
     ret
-
 
 
     ENDP

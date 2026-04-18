@@ -261,20 +261,22 @@ IF COMPISA GE COMPILE_386
     PUBLIC FastMulTrig16Cosine_
 
     
-    mov  ax, FINECOSINE_SEGMENT
-    mov  es, ax
+    mov   ax, FINECOSINE_SEGMENT
+    mov   es, ax  ; put segment in ES
+
+    shr   bx, 1      ; word lookup 0-3FFF
+    
+    movzx eax, word ptr es:[bx] ; ax gets cosine lo
+    test  bh, 030h
+    jpe   skip_cos_invert
+    neg   dx
+    skip_cos_invert:
+    movsx edx, dx
 
 
-    db  066h, 081h, 0E3h, 0FFh, 0FFh, 0, 0  ;  and ebx, 0x0000FFFF   
-    ;sal   dx, 2
-
-    xchg  dx, ax                            ; get dx in ax for sign extend
-    db 066h, 098h                           ; cwde  (sign extend ax to eax for imul)
-
-    db 026h, 067h, 066h, 0F7h, 02Bh         ; imul dword ptr es:[ebx]
-
-    db  066h, 00Fh, 0A4h, 0C2h, 010h        ; shld edx, eax, 0x10
-
+    mul edx
+    shld edx, eax, 16
+    
     ret
 
 
@@ -353,15 +355,18 @@ IF COMPISA GE COMPILE_386
     mov  es, ax
     
 
-    db  066h, 081h, 0E3h, 0FFh, 0FFh, 0, 0  ;  and ebx, 0x0000FFFF   
-    ;sal   dx, 2
+    shr  bx, 1      ; word lookup 0-3FFF
+    
+    movzx eax, word ptr es:[bx] 
+    test bh, 020h
+    je   skip_sin_invert
+    neg  dx
+    skip_sin_invert:
+    movsx edx, dx
 
-    xchg  dx, ax                            ; get dx in ax for sign extend
-    db 066h, 098h                           ; cwde  (sign extend ax to eax for imul)
 
-    db 026h, 067h, 066h, 0F7h, 02Bh         ; imul dword ptr es:[ebx]
-
-    db  066h, 00Fh, 0A4h, 0C2h, 010h        ; shld edx, eax, 0x10
+    mul edx
+    shld edx, eax, 16
 
     ret
 

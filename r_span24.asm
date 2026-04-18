@@ -161,7 +161,6 @@ SELFMODIFY_SPAN_fixedcolormap_2:
 use_fixed_colormap:
 mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], 00
 jmp   do_drawspan
-; lcall SPANFUNC_FUNCTION_AREA_SEGME    NT:SPANFUNC_PREP_OFFSET
 
 
 
@@ -226,15 +225,19 @@ ENDIF
         mov dx, es
     distance_steps_ready:
     ELSE
-        MOV EDI, DWORD PTR DS:[SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+; todo 386
+        ;MOV EDI, DWORD PTR DS:[SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+        ; todo do the above
     distance_steps_ready:
+        LES di, DWORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+        mov dx, es
+
     ENDIF
 
 
-distance_steps_ready:
 public distance_steps_ready
 
-; dx:di is distance
+; dx:di is distance. or EDI for 386.
 
 
 
@@ -258,11 +261,14 @@ public distance_steps_ready
 mov   bx, di          ; dword lookup if we add them
 
 push  dx   ; store distance high word in case needed for colormap
+
+
 les   bp, dword ptr ds:[bx + di + ((DISTSCALE_SEGMENT - SPANSTART_SEGMENT) * 16)]
 mov   cx, es                                   	; distscale high word
 
 ; inlined R_FixedMulLocal24_
-; todo: 386 version
+; todo 386
+
 ; ARGS
 ; DX:AX = Value1
 ; CX:BP = Value2
@@ -366,6 +372,10 @@ add   ax, 01000h
 SELFMODIFY_SPAN_viewx_hi_1:
 adc   dx, 01000h
 
+;todo 386
+SELFMODIFY_SPAN_viewx_full_1:
+
+
 
 ; shift 2 left for alignment with byte boundary 
 shl ax, 1
@@ -404,6 +414,9 @@ SELFMODIFY_SPAN_viewy_lo_1:
 add   ax, 01000h
 SELFMODIFY_SPAN_viewy_hi_1:
 adc   dx, 01000h
+
+; todo 386
+SELFMODIFY_SPAN_viewy_full_1:
 
 neg   dx
 neg   ax
@@ -966,34 +979,34 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     MOV  DX, ES
     
 
+    mov bx, si ; backup before lodsw.
 
     
 
 ELSE
     MOVZX EDI, AX
-    IMUL EDI, DS:[BX + SI + ((YSLOPE_SEGMENT - SPANSTART_SEGMENT) * 16)]
-    SHR EDI, 3
-    MOV WORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)], EDI
-SELFMODIFY_SPAN_baseyscale_full_1: ; todo implement
-    MOV EAX, 010000000h
-    IMUL EDI
-    SHRD EAX, EDX, 22 ; Convert to 6.10
-    MOV WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
+    IMUL  EDI, DWORD PTR DS:[BX + SI + ((YSLOPE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    SHR   EDI, 3
+    MOV   DWORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)], EDI
+SELFMODIFY_SPAN_baseyscale_full_1: 
+    MOV   EAX, 010000000h
+    IMUL  EDI
+    SHRD  EAX, EDX, 22 ; Convert to 6.10
+    MOV   WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
     SELFMODIFY_SPAN_detailshift_1:
-    mov ax, ax
-    mov ax, ax
-    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
-SELFMODIFY_SPAN_basexscale_full_1: ; todo implement
-    MOV EAX, 010000000h
-    IMUL EDI
-    SHRD EAX, EDX, 22 ; Convert to 6.10
-    MOV WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
+    mov   ax, ax
+    mov   ax, ax
+    MOV   WORD PTR CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+SELFMODIFY_SPAN_basexscale_full_1:
+    MOV   EAX, 010000000h
+    IMUL  EDI
+    SHRD  EAX, EDX, 22 ; Convert to 6.10
+    MOV   WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
     SELFMODIFY_SPAN_detailshift_2:
-    mov ax, ax
-    mov ax, ax
-    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+    mov   ax, ax
+    mov   ax, ax
+    MOV   WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
 ENDIF
-    mov bx, si ; backup before lodsw.
     JMP distance_steps_ready
     
 
@@ -1097,18 +1110,34 @@ IF COMPISA LE COMPILE_286
     MOVSW
 ELSE
 
-    ; todo... actually do this.
+
     MOV DI, SELFMODIFY_SPAN_basexscale_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSD ES:[DI], DS:[SI]
+    MOVS DWORD PTR ES:[DI], DS:[SI]
     
     MOV DI, SELFMODIFY_SPAN_baseyscale_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSD ES:[DI], DS:[SI]
+    MOVS DWORD PTR ES:[DI], DS:[SI]
     
+
+    
+    MOV DI, SELFMODIFY_SPAN_viewx_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    ADD DI, 2 ; SELFMODIFY_SPAN_viewx_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    
+    MOV DI, SELFMODIFY_SPAN_viewy_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+    ADD DI, 2 ; SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_
+    MOVSW
+
+    ; todo 386
+    COMMENT @
     MOV DI, SELFMODIFY_SPAN_viewx_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSD ES:[DI], DS:[SI]
+    MOVS DWORD PTR ES:[DI], DS:[SI]
     
     MOV DI, SELFMODIFY_SPAN_viewy_full_1+3 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSD ES:[DI], DS:[SI]
+    MOVS DWORD PTR ES:[DI], DS:[SI]
+    @
+
 ENDIF
 
 
@@ -1149,7 +1178,7 @@ ALIGN_MACRO
 do_span_fixedcolormap_selfmodify:
 mov   al, byte ptr ds:[_fixedcolormap]
 mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 5 - OFFSET R_SPAN24_STARTMARKER_], al
-mov   ax, ((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) SHL 8) + 0EBh
+mov   ax, (((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) AND 0FFH)SHL 8) + 0EBh
 jmp   done_with_span_fixedcolormap_selfmodify
 
 ALIGN_MACRO	
@@ -2410,7 +2439,8 @@ public ENSUREALIGN_401
 public ENSUREALIGN_402
 public ENSUREALIGN_403
 public ENSUREALIGN_404
-public ENSUREALIGN_405
 public ENSUREALIGN_406
+
+;public ENSUREALIGN_405
 
 END

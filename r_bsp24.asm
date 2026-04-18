@@ -2160,14 +2160,19 @@ ALIGN_MACRO
     mov   ax, FINESINE_SEGMENT
     mov   es, ax                ; put segment in es
 
-    mov   ax, bx
-    shl   ax, 1
-    cwde                        ; eax high gets sign
+
 
     shr   bx, 1                 ; dword to word lookup
-    mov   ax, word ptr es:[bx] ; ax gets low word
+    movzx eax, word ptr es:[bx]
+    test  bh, 020h
+    je    skip_invert_sin
+    NEG   ECX
+    skip_invert_sin:
     imul  ecx
     shr   eax, 16
+
+
+
 
 
     ret
@@ -2190,11 +2195,15 @@ ALIGN_MACRO
     mov   ax, FINECOSINE_SEGMENT
     mov   es, ax                ; put segment in es
 
-    lea   eax, [ebx*2 + 04000h]
-    cwde                        ; eax high gets sign
 
     shr   bx, 1                 ; dword to word lookup
-    mov   ax, word ptr es:[bx] ; ax gets low word
+    movzx eax, word ptr es:[bx]
+    test  bh, 030h
+    jpe   skip_invert_cos
+    NEG   ECX
+    skip_invert_cos:
+
+
     imul  ecx
     shr   eax, 16
 
@@ -5475,6 +5484,11 @@ IF COMPISA GE COMPILE_386
    or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 1 ; floor bit
    mov   byte ptr ds:[SELFMODIFY_skip_markfloordirty_mid], MOV_AL_IMM8_OPCODE  
    jmp   SHORT markfloor_done
+   ALIGN_MACRO
+   use_max_light:
+   ; ugly 
+   mov   bx, MAXLIGHTSCALE - 1
+   jmp   do_light_write
 
 
 
