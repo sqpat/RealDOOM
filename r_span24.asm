@@ -200,7 +200,7 @@ ENDIF
     JNE go_generate_values 
 
 
-; todo: carry xstep/ystep forward into following code via both paths?
+
 
 
 ; CACHED DISTANCE lookup
@@ -208,22 +208,22 @@ ENDIF
 
     IF COMPISA LE COMPILE_286
         LES di, DWORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
-        mov dx, es
     distance_steps_ready:
+        mov dx, es
     ELSE
-; todo 386
-        ;MOV EDI, DWORD PTR DS:[SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
-        ; todo do the above
+
+        MOV EDI, DWORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
     distance_steps_ready:
-        LES di, DWORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
-        mov dx, es
 
     ENDIF
 
 
 public distance_steps_ready
 
-; dx:di is distance. or todo EDI for 386.
+IF COMPISA LE COMPILE_286
+
+
+    ; dx:di is distance. or todo EDI for 386.
 
 
 
@@ -231,198 +231,299 @@ public distance_steps_ready
     LODSW ; grab x1
 
     xchg ax, di  ; grab distance, x1 into di
-    shl  di, 1 ; word lookup
+    FAST_SHL1 di
     
 
     PUSH SI     ; next SI
     mov  si, bx ; restore unlodsw si   ;todo get rid of this just offset si by 2...
 
 
-; dx:ax is distance
-; di is x1 word lookup
-; si is ds_y word lookup
-;     length = R_FixedMulLocal (distance,distscale[x1]);
+    ; dx:ax is distance
+    ; di is x1 word lookup
+    ; si is ds_y word lookup
+    ;     length = R_FixedMulLocal (distance,distscale[x1]);
 
 
-mov   bx, di          ; dword lookup if we add them
+    mov   bx, di          ; dword lookup if we add them
 
-push  dx   ; store distance high word in case needed for colormap
-
-
-les   bp, dword ptr ds:[bx + di + ((DISTSCALE_SEGMENT - SPANSTART_SEGMENT) * 16)]
-mov   cx, es                                   	; distscale high word
-
-; inlined R_FixedMulLocal24_
-; todo 386
-
-; ARGS
-; DX:AX = Value1
-; CX:BP = Value2
-
-; PRESERVE
-; DS
-; SI
-; DI
-    MOV BX, DX
-    PUSH AX
-    MUL  BP
-    MOV  ES, DX
-    MOV  AX, BX
-    MUL  CX
-    XCHG AX, BX
-    CWD
-    AND  DX, BP
-    SUB  BX, DX
-    MUL  BP
-    MOV  BP, ES
-    ADD  AX, BP
-    ADC  BX, DX
-    XCHG AX, CX
-    CWD
-    POP BP
-    AND DX, BP
-    SUB BX, DX
-    MUL BP
-    ADD AX, CX
-    ADC DX, BX
+    push  dx   ; store distance high word in case needed for colormap
 
 
-;	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
-; ds_xfrac = viewx.w + R_FixedMulLocal(finecosine[angle], length );
+    les   bp, dword ptr ds:[bx + di + ((DISTSCALE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    mov   cx, es                                   	; distscale high word
 
-xchg  bx, ax			; store low word of length (product result)in bx
-mov   cx, dx			; store high word of length  (product result) in cx
-
-les   ax, dword ptr cs:[_viewangle_shiftright3_span]
-add   ax, word ptr es:[di]		; ax is unmodded fine angle.. di is a word lookup
-and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
-
-xchg  ax, bx			; fineangle in BX, low word into AX
+    ; inlined R_FixedMulLocal24_
 
 
-mov   bp, ax	        ; store low word 
-    
-;call FixedMulTrigCosineLocal_
-; todo 386
+    ; ARGS
+    ; DX:AX = Value1
+    ; CX:BP = Value2
 
-FAST_SHL1 bx
-
-; sine stuff
-
-    test bh, 020h
-
-    MOV  DX, FINESINE_SEGMENT
-    MOV  DS, DX
-    PUSH WORD PTR DS:[BX]  ; just two bytes, pretty effcient instruction
-
-
-    mov  dx, cx
-    je   skip_invert_sin
-    neg  dx
-    NEG  bp
-    SBB  dx, 0   ; bp:dx is sin
-
-    skip_invert_sin:
-    
-
-
-    test bh, 030h
-    MOV  BX, WORD PTR DS:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
-
-    mov   ds, dx			; BP:DS is sin
-
-
-    jpe  skip_invert_cos
-    NEG  CX
-    NEG  AX
-    SBB  CX, 0
-
-    skip_invert_cos:
-
-    MUL  BX        ; AX * BX
-    MOV  AX, CX    ; CX to AX
-    MOV  CX, DX    ; CX stores high result as low word
-    CWD            ; S1 in DX
-    AND  DX, BX    ; S1 * AX
-    NEG  DX        ; 
-    XCHG DX, BX    ; AX into DX, high word into BX
-    MUL  DX        ; AX*CX
-    ADD  AX, CX    ; add low word
-    ADC  DX, BX    ; add high word
+    ; PRESERVE
+    ; DS
+    ; SI
+    ; DI
+        MOV BX, DX
+        PUSH AX
+        MUL  BP
+        MOV  ES, DX
+        MOV  AX, BX
+        MUL  CX
+        XCHG AX, BX
+        CWD
+        AND  DX, BP
+        SUB  BX, DX
+        MUL  BP
+        MOV  BP, ES
+        ADD  AX, BP
+        ADC  BX, DX
+        XCHG AX, CX
+        CWD
+        POP BP
+        AND DX, BP
+        SUB BX, DX
+        MUL BP
+        ADD AX, CX
+        ADC DX, BX
 
 
-;    ds_yfrac = -viewy.w - R_FixedMulLocal(finesine[angle], length );
+    ;	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
+    ; ds_xfrac = viewx.w + R_FixedMulLocal(finecosine[angle], length );
+
+
+    ; todo this ax bx bp juggle can be improved
+    ; todo this ax bx bp juggle can be improved
+
+    xchg  bx, ax			; store low word of length (product result)in bx
+    mov   cx, dx			; store high word of length  (product result) in cx
+
+    les   ax, dword ptr cs:[_viewangle_shiftright3_span]
+    add   ax, word ptr es:[di]		; ax is unmodded fine angle.. di is a word lookup
+    and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
+
+    xchg  ax, bx			; fineangle in BX, low word into AX
+
+
+    mov   bp, ax	        ; store low word 
+        
+    ;call FixedMulTrigCosineLocal_
+
+
+    FAST_SHL1 bx
+
+    ; sine stuff
+
+        test bh, 020h
+
+        MOV  DX, FINESINE_SEGMENT
+        MOV  DS, DX
+        PUSH WORD PTR DS:[BX]  ; just two bytes, pretty effcient instruction
+
+
+        mov  dx, cx
+        je   skip_invert_sin
+        neg  dx
+        NEG  bp
+        SBB  dx, 0   ; bp:dx is sin
+
+        skip_invert_sin:
+        
+
+
+        test bh, 030h
+        MOV  BX, WORD PTR DS:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
+
+        mov   ds, dx			; BP:DS is sin
+
+
+        jpe  skip_invert_cos
+        NEG  CX
+        NEG  AX
+        SBB  CX, 0
+
+        skip_invert_cos:
+
+        MUL  BX        ; AX * BX
+        MOV  AX, CX    ; CX to AX
+        MOV  CX, DX    ; CX stores high result as low word
+        CWD            ; S1 in DX
+        AND  DX, BX    ; S1 * AX
+        NEG  DX        ; 
+        XCHG DX, BX    ; AX into DX, high word into BX
+        MUL  DX        ; AX*CX
+        ADD  AX, CX    ; add low word
+        ADC  DX, BX    ; add high word
+
+
+    ;    ds_yfrac = -viewy.w - R_FixedMulLocal(finesine[angle], length );
 
 SELFMODIFY_SPAN_viewx_lo_1:
-add   ax, 01000h
+    add   ax, 01000h
 SELFMODIFY_SPAN_viewx_hi_1:
-adc   dx, 01000h
-
-;todo 386
-SELFMODIFY_SPAN_viewx_full_1:
+    adc   dx, 01000h
 
 
 
-; shift 2 left for alignment with byte boundary 
-shl ax, 1
-rcl dx, 1
-shl ax, 1
-rcl dx, 1
-
-mov   al, ah
-mov   ah, dl
-
-xchg  ax, bp   ; bp stores xfrac, ax retrieves low word
-; ds has high word..
 
 
 
-;call FixedMulTrigSineLocal_
-; todo 386
+    ; shift 2 left for alignment with byte boundary 
+    shl ax, 1
+    rcl dx, 1
+    shl ax, 1
+    rcl dx, 1
 
-    POP  BX  ; sine lookup
+    ; shift 8, 6 total for 6.10
+    mov   al, ah
+    mov   ah, dl
 
-    MUL  BX        ; AX * BX
-    MOV  AX, DS    ; CX to AX
-    MOV  CX, DX    ; CX stores high result as low word
-    CWD            ; S1 in DX
-    AND  DX, BX    ; S1 * AX
-    NEG  DX        ; 
-    XCHG DX, BX    ; AX into DX, high word into BX
-    MUL  DX        ; AX*CX
-    ADD  AX, CX    ; add low word
-    ADC  DX, BX    ; add high word
+    xchg  ax, bp   ; bp stores xfrac, ax retrieves low word
+    ; ds has high word..
 
-;    ds_yfrac = -viewy.w - R_FixedMulLocalWrapper(finesine[angle], length );
 
-; add viewy
+
+    ;call FixedMulTrigSineLocal_
+
+
+        POP  BX  ; sine lookup
+
+        MUL  BX        ; AX * BX
+        MOV  AX, DS    ; CX to AX
+        MOV  CX, DX    ; CX stores high result as low word
+        CWD            ; S1 in DX
+        AND  DX, BX    ; S1 * AX
+        NEG  DX        ; 
+        XCHG DX, BX    ; AX into DX, high word into BX
+        MUL  DX        ; AX*CX
+        ADD  AX, CX    ; add low word
+        ADC  DX, BX    ; add high word
+
+    ;    ds_yfrac = -viewy.w - R_FixedMulLocalWrapper(finesine[angle], length );
+
+    ; add viewy
 SELFMODIFY_SPAN_viewy_lo_1:
-add   ax, 01000h
+    add   ax, 01000h
 SELFMODIFY_SPAN_viewy_hi_1:
-adc   dx, 01000h
+    adc   dx, 01000h
 
-; todo 386
+
+
+    neg   dx
+    neg   ax
+    sbb   dx, 0
+
+    ; shift 2, for equal 6.10 alignment with ystep
+    shl ax, 1
+    rcl dx, 1
+    shl ax, 1
+    rcl dx, 1
+
+    mov   CX, SPANSTART_SEGMENT
+    mov   DS, CX
+
+    mov   CX, CS
+    mov   ES, CX
+
+
+    mov   cl, ah
+    mov   ch, dl ; yfrac 6.10 into cx for now
+
+
+ELSE
+
+    ; edi is distance
+    LODSW ; grab x1
+
+    xchg eax, edi         ; eax =  distance, x1 into di
+    FAST_SHL1 di          ; word lookup
+
+    PUSH SI     ; next SI
+    mov  si, bx ; restore unlodsw si   ;todo get rid of this just offset si by 2...
+
+    ; todo suck less in 386 branch.
+    push WORD PTR DS:[2 + BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)] ; push high word of distance in case needed for colormaps
+
+
+    ; eax is distance
+    ; di is x1 word lookup
+    ; si is ds_y word lookup
+    ;     length = R_FixedMulLocal (distance,distscale[x1]);
+
+    mov   bx, di          ; dword lookup if we add them
+
+    ; length = FixedMul (distance,distscale[x1]);
+
+    mul   dword ptr ds:[bx + di + ((DISTSCALE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    SHRD  EAX, EDX, 16
+
+
+    xchg  eax, ebp              ; ebp holds this for 2 muls
+
+;    angle = (viewangle + xtoviewangle[x1])>>ANGLETOFINESHIFT;
+
+    les   bx, dword ptr cs:[_viewangle_shiftright3_span]
+    add   bx, word ptr es:[di]		; ax is unmodded fine angle.. di is a word lookup
+    and   bh, 01Fh
+    FAST_SHL1 bx
+
+
+    MOV   DX, FINESINE_SEGMENT
+    MOV   ES, DX
+
+    ; fixedmultrig sine
+    movzx eax, word ptr es:[bx]
+    mov   ecx, ebp  ; temp copy for neg
+    test  bh, 020h
+    je    skip_invert_sin
+    NEG   ecx
+    skip_invert_sin:
+    imul  ecx
+
+    SHRD EAX, EDX, 16
 SELFMODIFY_SPAN_viewy_full_1:
-
-neg   dx
-neg   ax
-sbb   dx, 0
-
-; shift 2, for equal 6.10 alignment with ystep
-shl ax, 1
-rcl dx, 1
-shl ax, 1
-rcl dx, 1
-
-mov   CX, SPANSTART_SEGMENT
-mov   DS, CX
-
-mov   CX, CS
-mov   ES, CX
+    ADD EAX, 010000000h
+    NEG EAX
+    SHR EAX, 6 ; Convert to 6.10
 
 
-mov   cl, ah
-mov   ch, dl ; yfrac 6.10 into cx for now
+
+    xchg ax, cx   ; store viewx in cx
+
+    ; fixedmultrig cosine
+    movzx eax, WORD PTR ES:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
+    test  bh, 030h
+    jpe   skip_invert_cos
+    NEG   ebp
+    skip_invert_cos:
+
+    imul ebp
+    SHRD EAX, EDX, 16
+
+SELFMODIFY_SPAN_viewx_full_1:
+    ADD EAX, 010000000h
+    SHR EAX, 6 ; Convert to 6.10
+
+
+    mov   bp, cs
+    mov   ES, bp
+
+    ; ax has xfrac
+    ; cx has yfrac
+    xchg ax, bp
+
+
+
+    ; todo fixedcolormap.
+
+
+ENDIF
+
+
+; cx is yfrac
+; bp is xfrac
+
+
+
 
 start_writes:
 public start_writes
@@ -641,6 +742,7 @@ SELFMODIFY_SPAN_detailshift2minus_3:
 
 
 ; todo do this stuff earlier to avoid the push pop?
+
 pop   ax  ; for stack consistency across branches, this pop is done here. holds distance high word?
 
 
@@ -992,8 +1094,7 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
 
 
     ; restore distance once more
-   ; di has distance
-    MOV  DX, ES
+   ; di has distance lo
     
 
     mov bx, si ; backup before lodsw.
@@ -1129,25 +1230,12 @@ ELSE
     MOVS DWORD PTR ES:[DI], DS:[SI]
     
 
-    
-    MOV DI, SELFMODIFY_SPAN_viewx_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    ADD DI, 2 ; SELFMODIFY_SPAN_viewx_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    
-    MOV DI, SELFMODIFY_SPAN_viewy_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    ADD DI, 2 ; SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-
-    ; todo 386
-    COMMENT @
     MOV DI, SELFMODIFY_SPAN_viewx_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
     MOVS DWORD PTR ES:[DI], DS:[SI]
     
-    MOV DI, SELFMODIFY_SPAN_viewy_full_1+3 - OFFSET R_SPAN24_STARTMARKER_
+    MOV DI, SELFMODIFY_SPAN_viewy_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
     MOVS DWORD PTR ES:[DI], DS:[SI]
-    @
+
 
 ENDIF
 
