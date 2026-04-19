@@ -198,27 +198,9 @@ ELSE
     CMP AX, DX
 ENDIF
     JNE go_generate_values 
-    MOV AX, WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
 
 
-    SHIFT_MACRO shr ax 2  ; back to 6.8
-    ; todo reverse this shift, so we just shift 2-n instead of 2, then n back.
-
-    SELFMODIFY_SPAN_detailshift_4:
-    mov ax, ax
-    mov ax, ax
-
-    ; todo this can just be done later when cachedystep is read?
-    mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
-
-    MOV AX, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
-
-    SELFMODIFY_SPAN_detailshift_3:
-    mov ax, ax
-    mov ax, ax
-
-
-    mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+; todo: carry xstep/ystep forward into following code via both paths?
 
 
 ; CACHED DISTANCE lookup
@@ -432,19 +414,37 @@ rcl dx, 1
 shl ax, 1
 rcl dx, 1
 
-
-mov   al, ah
-mov   ah, dl
-
-start_writes:
-public start_writes
 mov   CX, SPANSTART_SEGMENT
 mov   DS, CX
 
 mov   CX, CS
 mov   ES, CX
 
-MOV   DX, WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+
+mov   cl, ah
+mov   ch, dl ; yfrac 6.10 into cx for now
+
+start_writes:
+public start_writes
+
+
+MOV   AX, WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+mov   dx, ax ; backup
+
+
+; this is reversed, supposed to be  shift right 2 then shift left n, so instead we shift right 2 - n
+SELFMODIFY_SPAN_detailshift_2:
+mov ax, ax
+mov ax, ax
+
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+xchg  ax, cx  ; get yfrac into ax
+
+
+
+
 
 ; AX has yfrac (6.10)
 ; DX has ystep (6.10)
@@ -486,8 +486,16 @@ stosw
 SELFMODIFY_SPAN_set_yfrac_lookup_TARGET:
 and   di, cx
 
-xchg  ax, bp  ; now the x vars
 MOV   DX, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+mov   ax, dx
+
+SELFMODIFY_SPAN_detailshift_1:
+mov   ax, ax
+mov   ax, ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+xchg  ax, bp  ; retrieve xfrac from bp..
+
 add   di, 010h  ; _spanfunc_xfrac
 
 
@@ -930,12 +938,8 @@ SELFMODIFY_SPAN_basexscale_hi_1:
     MOV AH, DL
     
     MOV WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
+    ; todo carry forward..
 
-    SELFMODIFY_SPAN_detailshift_1:
-    mov ax, ax
-    mov ax, ax
-
-    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
 
 
     MOV AX, DI
@@ -974,8 +978,6 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     ADD AX, CX
     ADC DX, BX
 
-    mov bl, ah
-    mov bh, dl   ; 6.8 version
 
     ; Convert to 6.10
     SHL AX, 1
@@ -988,12 +990,7 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     MOV WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
     
 
-    xchg ax, bx  ; 6.8 
 
-    SELFMODIFY_SPAN_detailshift_2:
-    mov ax, ax
-    mov ax, ax
-    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
     ; restore distance once more
    ; di has distance
     MOV  DX, ES
@@ -1013,20 +1010,13 @@ SELFMODIFY_SPAN_baseyscale_full_1:
     IMUL  EDI
     SHRD  EAX, EDX, 22 ; Convert to 6.10
     MOV   WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
-    shr   eax, 2       ; Convert to 6.8
-    SELFMODIFY_SPAN_detailshift_2:  ; todo shr eax 2-4
-    mov   ax, ax
-    mov   ax, ax
-    MOV   WORD PTR CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+
 SELFMODIFY_SPAN_basexscale_full_1:
     MOV   EAX, 010000000h
     IMUL  EDI
     SHRD  EAX, EDX, 22 ; Convert to 6.10
     MOV   WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
-    SELFMODIFY_SPAN_detailshift_1:
-    mov   ax, ax
-    mov   ax, ax
-    MOV   WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+
 ENDIF
     JMP distance_steps_ready
     
@@ -2304,12 +2294,7 @@ mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2 - OFFSET R_S
 mov      ax, 0E0D1h  ; sal ax, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN24_STARTMARKER_], ax
+
 
 
 mov ax, 0EBD1h  ; shr   bx, 1
@@ -2327,7 +2312,9 @@ mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_low - OFFSET R_SPAN24_STA
 mov      word ptr ds:[SELFMODIFY_SPAN_set_loopcount_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
 mov      word ptr ds:[SELFMODIFY_SPAN_set_loopcount_low - OFFSET R_SPAN24_STARTMARKER_], ax 
 
-
+mov      ax, 0C089h  ; nop
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 
 jmp     done_with_detailshift
@@ -2345,17 +2332,14 @@ mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2 - OFFSET R_S
 
 
 
-; sal   ax, 1 ; 0E0D1h
-; rcl   dx, 1 ; 0D2D1h
 
 
-mov      ax, 0E0D1h
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-mov      ax, 0D2D1h
+
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0 - OFFSET R_SPAN24_STARTMARKER_], 0E0D1h ; shl ax, 1
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN24_STARTMARKER_], 0E8D1h ; shr ax, 1
+
+
 
 
 
@@ -2367,8 +2351,6 @@ mov      ax, 0E0D1h
 mov   ax, 0c089h  ; nop
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2 - OFFSET R_SPAN24_STARTMARKER_], ax
@@ -2398,18 +2380,16 @@ mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 15
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN24_STARTMARKER_], 0
 mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2 - OFFSET R_SPAN24_STARTMARKER_], 0
 
+mov      ax, 0E8D1h  ; shr ax, 1
+
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 mov      ax, 0c089h  ; nop
 
 
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 
 mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ((SELFMODIFY_SPAN_set_xfrac_lookup_TARGET - SELFMODIFY_SPAN_set_xfrac_lookup_potato_AFTER) SHL 8) + 0EBh
