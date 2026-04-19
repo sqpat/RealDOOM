@@ -765,7 +765,7 @@ SHIFT_MACRO sar ax 4
 
 cmp   al, MAXLIGHTZ
 jb    index_set
-mov   al, MAXLIGHTZ - 1
+mov   ax, MAXLIGHTZ - 1  ; al/ax toggle for ENSUREALIGN_401
 index_set:
 
 ;		ds_colormap_segment = colormaps_segment;
