@@ -59,6 +59,8 @@ dw 0, 0, 0, 0
 _spanfunc_destview_offset: ; todo fill this out
 dw 0, 0, 0, 0
 
+_planezlight:
+dw 0, ZLIGHT_SEGMENT
 
 
 public _spanfunc_inner_loop_count
@@ -154,13 +156,6 @@ map_planes_args_size = 2
 ; 	rather than changing ES a ton we will just modify offsets by segment distance
 ;   confirmed to be faster even on 8088 with it's baby prefetch queue - i think on 16 bit busses it is only faster.
 
-ALIGN_MACRO	
-
-SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
-SELFMODIFY_SPAN_fixedcolormap_2:
-use_fixed_colormap:
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], 00
-jmp   do_drawspan
 
 
 
@@ -799,7 +794,7 @@ SELFMODIFY_SPAN_fixedcolormap_1_AFTER:
 ; 		index = distance >> LIGHTZSHIFT;
 
 
-SHIFT_MACRO sar ax 4
+SHIFT_MACRO sar ax 4   ; todo compare to maxlight preshift?
 
 
 ;		if (index >= MAXLIGHTZ) {
@@ -816,7 +811,7 @@ index_set:
 ;		ds_colormap_segment = colormaps_segment;
 ;		ds_colormap_index = planezlight[index];
 
-les    bx, dword ptr ss:[_planezlight]
+les    bx, dword ptr cs:[_planezlight]
 xlat  byte ptr es:[bx]
 ; mov  al, byte ptr cs:[bx + _cs_zlight_offset]
 colormap_ready:
@@ -901,6 +896,15 @@ lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pu
 jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
 
 ALIGN_MACRO
+
+
+SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
+SELFMODIFY_SPAN_fixedcolormap_2:
+use_fixed_colormap:
+mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], 00
+jmp   do_drawspan
+
+
 MARKER_SM_SPAN24_AFTER_JUMP_1:
 PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1
 
@@ -1322,7 +1326,7 @@ ALIGN_MACRO
 do_span_fixedcolormap_selfmodify:
 mov   al, byte ptr ds:[_fixedcolormap]
 mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 5 - OFFSET R_SPAN24_STARTMARKER_], al
-mov   ax, (((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) AND 0FFH)SHL 8) + 0EBh
+mov   ax, (((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) )SHL 8) + 0EBh
 jmp   done_with_span_fixedcolormap_selfmodify
 
 ALIGN_MACRO	
@@ -1437,7 +1441,7 @@ ELSE
     SHR CX, 12  
     SHL CX, 7
 ENDIF
-    MOV WORD PTR DS:[_planezlight], CX
+    MOV WORD PTR CS:[_planezlight], CX
     
     MOV CX, 0FF01h
     MOV AH, 0BAh ; MOV DX, imm

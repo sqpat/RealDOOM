@@ -54,6 +54,7 @@ _spanfunc_destview_offset:
 _spanfunc_prt:
 
 _spanfunc_outp:
+_planezlight = 0
 
 
 ; NOTE: cs:offset stuff for self modifying code must be zero-normalized

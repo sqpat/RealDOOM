@@ -49,6 +49,7 @@ _spanfunc_destview_offset:
 _spanfunc_prt:
 
 _spanfunc_outp:
+_planezlight = 0
 
 ; lcall cs:[00xx] here to call R_DrawSpan with the right CS:IP for colormaps to be at cs:3F00
 _spanfunc_call_table:
