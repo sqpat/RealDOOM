@@ -311,8 +311,8 @@ IF COMPISA LE COMPILE_286
         test bh, 020h
 
         MOV  DX, FINESINE_SEGMENT
-        MOV  DS, DX
-        PUSH WORD PTR DS:[BX]  ; just two bytes, pretty effcient instruction
+        MOV  ES, DX
+        PUSH WORD PTR ES:[BX]  ; just two bytes, pretty effcient instruction
 
 
         mov  dx, cx
@@ -326,9 +326,9 @@ IF COMPISA LE COMPILE_286
 
 
         test bh, 030h
-        MOV  BX, WORD PTR DS:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
+        MOV  BX, WORD PTR ES:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
 
-        mov   ds, dx			; BP:DS is sin
+        mov   ES, dx			; BP:ES is sin
 
 
         jpe  skip_invert_cos
@@ -373,7 +373,7 @@ SELFMODIFY_SPAN_viewx_hi_1:
     mov   ah, dl
 
     xchg  ax, bp   ; bp stores xfrac, ax retrieves low word
-    ; ds has high word..
+    ; ES has high word..
 
 
 
@@ -383,7 +383,7 @@ SELFMODIFY_SPAN_viewx_hi_1:
         POP  BX  ; sine lookup
 
         MUL  BX        ; AX * BX
-        MOV  AX, DS    ; CX to AX
+        MOV  AX, ES    ; CX to AX
         MOV  CX, DX    ; CX stores high result as low word
         CWD            ; S1 in DX
         AND  DX, BX    ; S1 * AX
@@ -409,8 +409,6 @@ SELFMODIFY_SPAN_viewy_hi_1:
 
     ; leave as 6.8.2 
 
-    mov   CX, SPANSTART_SEGMENT
-    mov   DS, CX
 
 
     mov   bh, al ; yfrac lo 0.2 in bh
@@ -547,7 +545,7 @@ public SELFMODIFY_SET_dc_yl_lookuptable
  lodsw   ; ds:[si]  ; ds, si now free.
 
 
-; TODO imrpove ... we want CS in ES and ES in SI
+; TODO improve ... we want CS in ES and ES in SI
 mov si, es
 mov ds, si  ; store future si in ds
 mov si, cs
@@ -819,8 +817,9 @@ colormap_set:
 
 ; ax is colormap.
 
-; todo could the table be prepopulated as word lookup with shl 2 + segdiff or whatever?
-
+; todo could the table be prepopulated as word lookup with shl 2 + segdiff or whatever? where to store?
+;  shr ax only 3... les bx... add bx ,ax, mov word ptr ss, es:[bx] ?
+;  
 SHIFT_MACRO shl ax 2 ; colormap * 16
 ; target ss segment
 add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
@@ -1048,6 +1047,9 @@ IF COMPISA LE COMPILE_286
     
     ; NOW lets shift, avoiding a fixedmul.
     SHIFT32_MACRO_RIGHT DX AX 3
+
+    ;SAR dx, 1
+    ;RCR ax, 1
     
     MOV WORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
     MOV WORD PTR DS:[BX + SI + 2 + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)], DX
