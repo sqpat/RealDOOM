@@ -793,67 +793,38 @@ mov   ax, ax
 SELFMODIFY_SPAN_fixedcolormap_1_AFTER:
 ; 		index = distance >> LIGHTZSHIFT;
 
-
-SHIFT_MACRO sar ax 4   ; todo compare to maxlight preshift?
-
-
 ;		if (index >= MAXLIGHTZ) {
 ;			index = MAXLIGHTZ - 1;
 ;		}
 
+cmp    ax, (MAXLIGHTZ - 1) SHL 4  ; 2032
+jae    clip_colormap_to_max
+SHIFT_MACRO shr ax 4   ; todo compare to maxlight preshift?
 
 
-cmp   al, MAXLIGHTZ
-jb    index_set
-mov   ax, MAXLIGHTZ - 1  ; al/ax toggle for ENSUREALIGN_401
 index_set:
 
 ;		ds_colormap_segment = colormaps_segment;
 ;		ds_colormap_index = planezlight[index];
 
 les    bx, dword ptr cs:[_planezlight]
+
 xlat  byte ptr es:[bx]
+; ah known zero?
 ; mov  al, byte ptr cs:[bx + _cs_zlight_offset]
-colormap_ready:
-
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], al
 
 
 
-; todo move the below up.
-do_drawspan:
+colormap_set:
 
-; inlined drawspanprep...
+; ax is colormap.
 
-SELFMODIFY_SPAN_set_plane_0:
-mov   al, 010h
-mov   dx, SC_DATA						; outp 1 << i
-out   dx, al
+; todo could the table be prepopulated as word lookup with shl 2 + segdiff or whatever?
 
-
-
- 
- 
- spanfunc_arg_setup_complete:
-
- ; use jump table with desired cs:ip for far jump
-
-SELFMODIFY_SPAN_set_colormap_index_jump:
-mov  ax, 00000h      ; colormap * 4
 SHIFT_MACRO shl ax 2 ; colormap * 16
 ; target ss segment
 add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
 ; addr 0000 + first byte (4x colormap.)
-
-
-; inlined DrawSpan
-
-
-
-SELFMODIFY_SPAN_ds_ystep:
-mov     bp, 01000h
-ENSUREALIGN_401:
-
 
 mov   es, word ptr ss:[_destview + 2]	; retrieve destview segment
 
@@ -862,8 +833,38 @@ mov   ss, ax  ; pass in ax?
 mov   ax, cs
 mov   ds, ax
 
+
+; inlined drawspanprep...
+
+SELFMODIFY_SPAN_set_plane_0:
+mov   al, 010h
+mov   dx, SC_DATA						; outp 1 << i
+
+SELFMODIFY_SPAN_ds_ystep:
+mov     bp, 01000h
+ENSUREALIGN_401:
+
+out   dx, al
+
+
+ 
+
+
+ ; use jump table with desired cs:ip for far jump
+
+
+
+
+; inlined DrawSpan
+
+
+
+
+
+
+
 ; seg toggle for ENSUREALIGN_402
-mov   word ptr cs:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
+mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
 
 SELFMODIFY_SPAN_ds_xstep:
 mov     sp,  01000h
@@ -901,8 +902,15 @@ ALIGN_MACRO
 SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
 SELFMODIFY_SPAN_fixedcolormap_2:
 use_fixed_colormap:
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], 00
-jmp   do_drawspan
+mov   ax, 0000h   ; todo could inline the shl 2 i guess
+jmp   colormap_set
+
+ALIGN_MACRO
+clip_colormap_to_max:
+les    bx, dword ptr cs:[_planezlight]
+xor    ax, ax
+mov    al, byte ptr es:[bx+MAXLIGHTZ-1]
+jmp   colormap_set
 
 
 MARKER_SM_SPAN24_AFTER_JUMP_1:
@@ -1325,7 +1333,7 @@ retf
 ALIGN_MACRO	
 do_span_fixedcolormap_selfmodify:
 mov   al, byte ptr ds:[_fixedcolormap]
-mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 5 - OFFSET R_SPAN24_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 1 - OFFSET R_SPAN24_STARTMARKER_], al
 mov   ax, (((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) )SHL 8) + 0EBh
 jmp   done_with_span_fixedcolormap_selfmodify
 
