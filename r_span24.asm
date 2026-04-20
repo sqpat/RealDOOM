@@ -221,8 +221,6 @@ IF COMPISA LE COMPILE_286
     ; dx:di is distance. or todo EDI for 386.
 
 
-
-
     LODSW ; grab x1
 
     xchg ax, di  ; grab distance, x1 into di
@@ -646,11 +644,11 @@ SELFMODIFY_SPAN_set_yfrac_lookup_low:
 and   di, bx
 SELFMODIFY_SPAN_set_yfrac_lookup_low_AFTER:
 add   bh, cl
-add   ax, dx
+adc   ax, dx
 stosw
 and   di, bx
 add   bh, cl
-add   ax, dx
+adc   ax, dx
 stosw
 SELFMODIFY_SPAN_set_yfrac_lookup_TARGET:
 and   di, bx
@@ -771,7 +769,7 @@ SELFMODIFY_SPAN_detailshift2minus_3:
 
 
 
-; todo do this stuff earlier to avoid the push pop?
+; todo avoid the push pop somehow
 
 pop   ax  ; for stack consistency across branches, this pop is done here. holds distance high word?
 
@@ -1044,8 +1042,6 @@ IF COMPISA LE COMPILE_286
 
 SELFMODIFY_SPAN_basexscale_lo_1:
     MOV BP, 01000h
-SELFMODIFY_SPAN_basexscale_hi_1:
-    MOV CX, 01000h
     
     
     ; ds_xstep = cachedxstep[y] = R_FixedMulLocal(distance, basexscale)
@@ -1054,22 +1050,23 @@ SELFMODIFY_SPAN_basexscale_hi_1:
     MOV BX, DX
 
     MUL BP
-    MOV WORD PTR CS:[_selfmodify_restore_dx_2+1], DX
+    MOV CX, DX
     MOV AX, BX
-    MUL CX
+    SELFMODIFY_SPAN_basexscale_hi_1:
+    MOV DX, 01000h
+    MUL DX
     XCHG AX, BX
     CWD
     AND DX, BP
     SUB BX, DX
     MUL BP
-    _selfmodify_restore_dx_2:
-    ADD AX, 01000h
+    ADD CX, AX
     ADC BX, DX
-    XCHG AX, CX
-    CWD
 
-    AND DX, DI
-    SUB BX, DX
+SELFMODIFY_sub_bx_di_or_not_basex:
+    SUB BX, DI
+SELFMODIFY_SPAN_basexscale_hi_2:
+    mov ax, 01000h
     MUL DI
     ADD AX, CX
     ADC DX, BX
@@ -1090,8 +1087,6 @@ SELFMODIFY_SPAN_basexscale_hi_1:
 
 SELFMODIFY_SPAN_baseyscale_lo_1:
     MOV BP, 01000h
-SELFMODIFY_SPAN_baseyscale_hi_1:
-    MOV CX, 01000h
     
     ; ds_ystep = cachedystep[y] = R_FixedMulLocal(distance, baseyscale)
     ;CALL R_FixedMulLocal24_
@@ -1099,23 +1094,23 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     MOV BX, ES
 
     MUL BP
-    MOV WORD PTR CS:[_selfmodify_restore_dx_1+1], DX
+    MOV CX, DX
     MOV AX, BX
-    MUL CX
+SELFMODIFY_SPAN_baseyscale_hi_1:
+    MOV DX, 01000h
+    MUL DX
     XCHG AX, BX
-    XOR DX, DX  ; cwd toggle for ENSUREALIGN_405
+    CWD
     AND DX, BP
     SUB BX, DX
     MUL BP
-    _selfmodify_restore_dx_1:
-    ADD AX, 01000h
-    ENSUREALIGN_405:
-    ADC BX, DX
-    XCHG AX, CX
-    CWD
+    ADD CX, AX
 
-    AND DX, DI
-    SUB BX, DX
+    ADC BX, DX
+SELFMODIFY_sub_bx_di_or_not_basey:
+    SUB BX, DI
+SELFMODIFY_SPAN_baseyscale_hi_2:
+    mov ax, 01000h
     MUL DI
     ADD AX, CX
     ADC DX, BX
@@ -1232,32 +1227,49 @@ mov      byte ptr cs:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_SPAN24_STARTMARK
 
 mov      ds, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
 
-MOV      SI, CS ; 2 byte, 2 cycle
-MOV      ES, SI ; 2 byte, 2 cycle
 
 mov   si, _BASEXSCALE_OFFSET_R_BSP
 
 IF COMPISA LE COMPILE_286
-    MOV DI, SELFMODIFY_SPAN_basexscale_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    INC DI ; SELFMODIFY_SPAN_basexscale_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    
-    MOV DI, SELFMODIFY_SPAN_baseyscale_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    INC DI ; SELFMODIFY_SPAN_baseyscale_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    
-    MOV DI, SELFMODIFY_SPAN_viewx_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    ADD DI, 2 ; SELFMODIFY_SPAN_viewx_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    
-    MOV DI, SELFMODIFY_SPAN_viewy_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
-    ADD DI, 2 ; SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_
-    MOVSW
+    LODSW
+    MOV  word ptr cs:[SELFMODIFY_SPAN_basexscale_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+    LODSW
+    MOV  word ptr cs:[SELFMODIFY_SPAN_basexscale_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+    MOV  word ptr cs:[SELFMODIFY_SPAN_basexscale_hi_2+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+    test ax, ax
+    mov  ax, 0C089h
+    jns  dont_do_sub_bx_di_basex
+    mov  ax, 0FB29h
+    dont_do_sub_bx_di_basex:
+    MOV  word ptr cs:[SELFMODIFY_sub_bx_di_or_not_basex - OFFSET R_SPAN24_STARTMARKER_], ax
+
+    LODSW
+    MOV  word ptr cs:[SELFMODIFY_SPAN_baseyscale_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+    LODSW
+    MOV  word ptr cs:[SELFMODIFY_SPAN_baseyscale_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+    MOV  word ptr cs:[SELFMODIFY_SPAN_baseyscale_hi_2+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+    test ax, ax
+    mov  ax, 0C089h
+    jns  dont_do_sub_bx_di_basey
+    mov  ax, 0FB29h
+    dont_do_sub_bx_di_basey:
+    MOV  word ptr cs:[SELFMODIFY_sub_bx_di_or_not_basey - OFFSET R_SPAN24_STARTMARKER_], ax
+
+    LODSW
+    MOV word ptr cs:[SELFMODIFY_SPAN_viewx_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+    LODSW
+    MOV word ptr cs:[SELFMODIFY_SPAN_viewx_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+
+    LODSW
+    MOV word ptr cs:[SELFMODIFY_SPAN_viewy_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+    LODSW
+    MOV word ptr cs:[SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+
 ELSE
+    MOV      SI, CS ; 2 byte, 2 cycle
+    MOV      ES, SI ; 2 byte, 2 cycle
 
 
     MOV DI, SELFMODIFY_SPAN_basexscale_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
@@ -2573,6 +2585,7 @@ public ENSUREALIGN_403
 public ENSUREALIGN_404
 public ENSUREALIGN_406
 
-;public ENSUREALIGN_405
+
+
 
 END
