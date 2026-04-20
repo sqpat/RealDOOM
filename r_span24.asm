@@ -363,11 +363,8 @@ SELFMODIFY_SPAN_viewx_hi_1:
 
 
     ; shift 2 left for alignment with byte boundary 
-    shl ax, 1
-    rcl dx, 1
-    shl ax, 1
-    rcl dx, 1
-
+    SHIFT32_MACRO_LEFT dx ax 2
+    
     ; shift 8, 6 total for 6.10
     mov   al, ah
     mov   ah, dl
@@ -530,7 +527,7 @@ mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_],
 
 ; last two uses of ds, si
 MOV    ax, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)] 
-mov    es, ax  ; backup
+mov    ds, ax  ; backup
 
 SELFMODIFY_SPAN_detailshift_1:
 mov   ax, ax
@@ -541,16 +538,14 @@ mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], a
 SELFMODIFY_SET_dc_yl_lookuptable:
 public SELFMODIFY_SET_dc_yl_lookuptable
  mov   ax, 01000h
- mov   ds, ax
- lodsw   ; ds:[si]  ; ds, si now free.
+ mov   es, ax
+ lods  word ptr es:[si];    ; es:[si]  ; ds, si now free.
 
 
-; TODO improve ... we want CS in ES and ES in SI
-mov si, es
-mov ds, si  ; store future si in ds
+
 mov si, cs
-mov es, si  ; cs in es
-mov si, ds  ; retrieve si
+mov es, si  ; retrieve si
+mov si, ds
 
 ; si is free
 
@@ -626,10 +621,7 @@ xor   cx, cx
 
 ; 6.10 to 6.8.2
 ; this could be one shift for low, zero for potato... hard to inline that selfmodify cleanly.
-shr  dx, 1
-rcr  cl, 1
-shr  dx, 1
-rcr  cl, 1
+SHIFT32_MACRO_RIGHT dx cl 2
 
 ; AX:BH has yfrac (6.8.2)
 ; DX:CL has ystep (6.8.2)
@@ -838,36 +830,28 @@ mov   ds, ax
 SELFMODIFY_SPAN_set_plane_0:
 mov   al, 010h
 mov   dx, SC_DATA						; outp 1 << i
-
 SELFMODIFY_SPAN_ds_ystep:
 mov     bp, 01000h
 ENSUREALIGN_401:
 
-out   dx, al
 
 
- 
-
-
- ; use jump table with desired cs:ip for far jump
-
-
-
-
-; inlined DrawSpan
-
-
-
-
-
-
-
-; seg toggle for ENSUREALIGN_402
 mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
+
+
+out   dx, al ; move this before/after sp for toggling ensurealign_402
 
 SELFMODIFY_SPAN_ds_xstep:
 mov     sp,  01000h
 ENSUREALIGN_402:
+
+ 
+
+ ; use jump table with desired cs:ip for far jump
+
+
+; inlined DrawSpan
+
 
 xor   bx, bx						; zero out bx as loopcount
 mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
@@ -1091,10 +1075,7 @@ SELFMODIFY_SPAN_basexscale_hi_1:
     ADC DX, BX
     
     ; Convert to 6.10
-    SHL AX, 1
-    RCL DX, 1
-    SHL AX, 1
-    RCL DX, 1
+    SHIFT32_MACRO_LEFT dx ax 2
     MOV AL, AH
     MOV AH, DL
     
@@ -1141,10 +1122,7 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
 
 
     ; Convert to 6.10
-    SHL AX, 1
-    RCL DX, 1
-    SHL AX, 1
-    RCL DX, 1
+    SHIFT32_MACRO_LEFT dx ax 2
     MOV AL, AH
     MOV AH, DL
     
