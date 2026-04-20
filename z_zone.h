@@ -263,15 +263,21 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 #define AMTSIO16 (PAGE_SWAP_ARG_MULT * sizeof(int16_t))
 
-#define EMS_2_MB_BUILD_SETTING                      1
-#define EMS_4_MB_BUILD_SETTING                      2
 
-#define EMS_BUILD_SETTING                           EMS_2_MB_BUILD_SETTING
-// #define EMS_BUILD_SETTING                           EMS_4_MB_BUILD_SETTING
+// 2_MB_PLUS: 256kb plus 2 MB
+// ONLY_2_MB: 2 MB including 256kb
+
+#define EMS_2_MB_PLUS_BUILD_SETTING                      1
+#define EMS_4_MB_BUILD_SETTING                           2
+#define EMS_ONLY_2_MB_BUILD_SETTING                      3
+
+#define EMS_BUILD_SETTING                              EMS_2_MB_PLUS_BUILD_SETTING
+// #define EMS_BUILD_SETTING                              EMS_4_MB_BUILD_SETTING
+// #define EMS_BUILD_SETTING                              EMS_ONLY_2_MB_BUILD_SETTING
 
 
 
-#if EMS_BUILD_SETTING == EMS_2_MB_BUILD_SETTING  
+#if EMS_BUILD_SETTING == EMS_2_MB_PLUS_BUILD_SETTING  
 #define NUM_FLAT_CACHE_PAGES                        6
 #define NUM_SPRITE_CACHE_PAGES                      20
 // dont do more than 63 pages. used as an index in a 4 byte thing. asm assumes one byte index
@@ -286,6 +292,17 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_TEXTURE_PAGES                           64
 #define NUM_MUSIC_PAGES                             4
 #define NUM_SFX_PAGES                               32
+#elif EMS_BUILD_SETTING == EMS_ONLY_2_MB_BUILD_SETTING  
+// no music!
+// todo: 5/19 causes a crash, and causes flat cache corruption.
+// should be fixed... 
+#define NUM_FLAT_CACHE_PAGES                        5  // -1
+#define NUM_SPRITE_CACHE_PAGES                      20 // -0 Note this cant go below 20 because all the overlapping SCREEN3 pages!
+// dont do more than 63 pages. used as an index in a 4 byte thing. asm assumes one byte index
+#define NUM_TEXTURE_PAGES                           23 // -4
+#define NUM_MUSIC_PAGES                             0  // -4
+#define NUM_SFX_PAGES                               0  // -7
+
 #endif
 
 #define NUM_WAD_PAGES                               3

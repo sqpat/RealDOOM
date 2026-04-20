@@ -1508,27 +1508,27 @@ PUSHA_NO_AX_OR_BP_MACRO
 ; memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 xor   ax, ax
 cwd   ; dx zero for later
-mov   cx, (MAX_THINKERS * (SIZE THINKER_T)) / 2
+mov   cx, (MAX_THINKERS * (SIZE THINKER_T)) 
 mov   di, _thinkerlist
 push  ds
 pop   es
-rep   stosw
+rep   stosb
 
 ; consecutive. do both
 ;	memset(usedtexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
 ;	memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
 mov   di, _usedspritepagemem
-mov   cx, (_sfx_page_reference_count - _usedspritepagemem) / 2
-rep   stosw
+mov   cx, (_sfx_page_reference_count - _usedspritepagemem) 
+rep   stosb
 
 
 ;	for ( i = 0; i < NUM_FLAT_CACHE_PAGES; i++) {
 ;		allocatedflatsperpage[i] = 0;
 ;	}  
 
-mov   cl, NUM_FLAT_CACHE_PAGES / 2
+mov   cl, NUM_FLAT_CACHE_PAGES 
 mov   di, _allocatedflatsperpage
-rep   stosw
+rep   stosb
 
 
 ;	// L2 cache stuff
@@ -1656,8 +1656,8 @@ FLATINDEX_SEGMENT_9000            = 05000h + FLATINDEX_SEGMENT
 mov   dx, COMPOSITETEXTUREPAGE_SEGMENT_9000
 mov   es, dx
 xor   di, di
-mov   cx, (2 * MAX_TEXTURES) / 2
-rep   stosw
+mov   cx, (2 * MAX_TEXTURES)
+rep   stosb
 
 	
 ; these two are consecutive in memory
@@ -1667,8 +1667,8 @@ rep   stosw
 mov   dx, PATCHPAGE_SEGMENT
 mov   es, dx
 xor   di, di
-mov   cx, (2 * MAX_PATCHES) / 2
-rep   stosw
+mov   cx, (2 * MAX_PATCHES) 
+rep   stosb
 
 ; these two are consecutive in memory
 ;	FAR_memset(spritepage, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
@@ -1677,8 +1677,8 @@ rep   stosw
 mov   dx, SPRITEPAGE_SEGMENT_9000
 mov   es, dx
 xor   di, di
-mov   cx, (2 * MAX_SPRITE_LUMPS) / 2
-rep   stosw
+mov   cx, (2 * MAX_SPRITE_LUMPS) 
+rep   stosb
 
 
 ;	FAR_memset(flatindex, 0xFF, size_flatindex);
