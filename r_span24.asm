@@ -769,16 +769,15 @@ SELFMODIFY_SPAN_detailshift2minus_3:
 
 
 
-; todo avoid the push pop somehow
 
-pop   ax  ; for stack consistency across branches, this pop is done here. holds distance high word?
 
 
 ; 	if (fixedcolormap) {
 
 SELFMODIFY_SPAN_fixedcolormap_1:
-mov   ax, ax
-SELFMODIFY_SPAN_fixedcolormap_1_AFTER:
+SELFMODIFY_SPAN_fixedcolormap_1_AFTER = SELFMODIFY_SPAN_fixedcolormap_1+2
+pop   ax
+
 ; 		index = distance >> LIGHTZSHIFT;
 
 ;		if (index >= MAXLIGHTZ) {
@@ -804,7 +803,7 @@ xlat  byte ptr es:[bx]
 
 
 colormap_set:
-
+public colormap_set
 ; ax is colormap.
 
 ; todo could the table be prepopulated as word lookup with shl 2 + segdiff or whatever? where to store?
@@ -813,6 +812,7 @@ colormap_set:
 SHIFT_MACRO shl ax 2 ; colormap * 16
 ; target ss segment
 add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
+colormap_set_full:
 ; addr 0000 + first byte (4x colormap.)
 
 mov   es, word ptr ss:[_destview + 2]	; retrieve destview segment
@@ -883,8 +883,9 @@ ALIGN_MACRO
 SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
 SELFMODIFY_SPAN_fixedcolormap_2:
 use_fixed_colormap:
-mov   ax, 0000h   ; todo could inline the shl 2 i guess
-jmp   colormap_set
+mov   ax, 0000h   ; inlined shift 2
+add   sp, 2  ; undo pop
+jmp   colormap_set_full
 
 ALIGN_MACRO
 clip_colormap_to_max:
@@ -1306,8 +1307,8 @@ mov   al, byte ptr ds:[_player + PLAYER_T.player_extralightvalue]
 SHIFT_MACRO shl al 4
 mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+2 - OFFSET R_SPAN24_STARTMARKER_], al
 
-mov   ax, 0c089h  ; nop
 
+mov   ax, 03D58h  ; pop ax, cmp ax, imm16
 cmp   byte ptr ds:[_fixedcolormap], 0
 jne   do_span_fixedcolormap_selfmodify
 done_with_span_fixedcolormap_selfmodify:
@@ -1325,7 +1326,11 @@ retf
 ALIGN_MACRO	
 do_span_fixedcolormap_selfmodify:
 mov   al, byte ptr ds:[_fixedcolormap]
-mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 1 - OFFSET R_SPAN24_STARTMARKER_], al
+xor   ah, ah
+SHIFT_MACRO shl ax 2
+add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
+mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
 mov   ax, (((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) )SHL 8) + 0EBh
 jmp   done_with_span_fixedcolormap_selfmodify
 
@@ -1442,6 +1447,7 @@ ELSE
     SHL CX, 7
 ENDIF
     MOV WORD PTR CS:[_planezlight], CX
+    ; todo also update selfmodify colormap
     
     MOV CX, 0FF01h
     MOV AH, 0BAh ; MOV DX, imm
