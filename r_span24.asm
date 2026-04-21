@@ -140,7 +140,7 @@ go_generate_values:
 jmp   generate_distance_steps
 ALIGN_MACRO
 SELFMODIFY_fixed_colormap_toggle_TARGET:
-calcualte_colormap:
+calculate_colormap:
 mov   word ptr cs:[SELFMODIFY_compare_colormap_bits+1], ax
 SHIFT_MACRO shr ax 4 ; ah now known zero
 les   bx, dword ptr cs:[_planezlight]
@@ -240,7 +240,7 @@ SELFMODIFY_compare_colormap_bits:
     cmp   ax, 01000h
 ENSUREALIGN_408: ; todo odd
 SELFMODIFY_fixed_colormap_toggle:  ; becomes nop with fixedcolormap on.
-    jne   calcualte_colormap
+    jne   calculate_colormap
 SELFMODIFY_fixed_colormap_toggle_AFTER:
 
     done_updating_colormap:
@@ -436,16 +436,27 @@ SELFMODIFY_SPAN_viewy_hi_1:
 ELSE
 
     ; edi is distance
+
+    ; todo shld 12, al logic
+    shld  eax, edi, 16
+    and   ax, 07F0h  ; colormap bits.
+SELFMODIFY_compare_colormap_bits:
+    cmp   ax, 01000h
+ENSUREALIGN_408: ; todo odd
+SELFMODIFY_fixed_colormap_toggle:  ; becomes nop with fixedcolormap on.
+    jne   calculate_colormap
+SELFMODIFY_fixed_colormap_toggle_AFTER:
+
+    done_updating_colormap:
+
     LODSW ; grab x1
 
     xchg eax, edi         ; eax =  distance, x1 into di
     FAST_SHL1 di          ; word lookup
 
     PUSH SI     ; next SI
-    mov  si, bx ; restore unlodsw si   ;todo get rid of this just offset si by 2...
+    sub  si, 2
 
-    ; todo suck less in 386 branch.
-    push WORD PTR DS:[2 + BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)] ; push high word of distance in case needed for colormaps
 
 
     ; eax is distance
@@ -476,31 +487,36 @@ ELSE
 
     ; fixedmultrig sine
     movzx eax, word ptr es:[bx]
-    mov   ecx, ebp  ; temp copy for neg
+    movzx ecx, WORD PTR ES:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
+    mov   edx, ebp  ; copy for 2nd mul
     test  bh, 020h
     je    skip_invert_sin
-    NEG   ecx
+    NEG   edx
     skip_invert_sin:
-    imul  ecx
 
-    SHRD EAX, EDX, 16
-SELFMODIFY_SPAN_viewy_full_1:
-    ADD EAX, 010000000h
-    NEG EAX
-    SHR EAX, 6 ; Convert to 6.10
-
-
-
-    xchg ax, cx   ; store viewx in cx
-
-    ; fixedmultrig cosine
-    movzx eax, WORD PTR ES:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
     test  bh, 030h
     jpe   skip_invert_cos
     NEG   ebp
     skip_invert_cos:
 
+
+    imul  edx
+
+    SHRD  EAX, EDX, 16
+SELFMODIFY_SPAN_viewy_full_1:
+    ADD   EAX, 010000000h
+    NEG   EAX
+
+    mov   bh,  al    ; low bits
+    
+    xchg  eax, ecx   ; store xfrac in cx, get cos value
+    
+    SHR ECX, 8 ; Convert to 6.8.2
+    
+
     imul ebp
+
+
     SHRD EAX, EDX, 16
 
 SELFMODIFY_SPAN_viewx_full_1:
@@ -511,11 +527,10 @@ SELFMODIFY_SPAN_viewx_full_1:
 
     ; ax has xfrac
     ; cx has yfrac
-    xchg ax, bp
+    xchg ax, bp 
 
 
 
-    ; todo fixedcolormap.
 
 
 ENDIF
@@ -640,7 +655,10 @@ xor   cx, cx
 
 ; 6.10 to 6.8.2
 ; this could be one shift for low, zero for potato... hard to inline that selfmodify cleanly.
-SHIFT32_MACRO_RIGHT dx cl 2
+shr dx, 1
+rcr cl, 1
+shr dx, 1
+rcr cl, 1
 
 ; AX:BH has yfrac (6.8.2)
 ; DX:CL has ystep (6.8.2)
@@ -1245,8 +1263,8 @@ IF COMPISA LE COMPILE_286
 
 
 ELSE
-    MOV      SI, CS ; 2 byte, 2 cycle
-    MOV      ES, SI ; 2 byte, 2 cycle
+    MOV      ax, CS ; 2 byte, 2 cycle
+    MOV      ES, ax ; 2 byte, 2 cycle
 
 
     MOV DI, SELFMODIFY_SPAN_basexscale_full_1+2 - OFFSET R_SPAN24_STARTMARKER_
