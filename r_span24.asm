@@ -138,6 +138,20 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 ALIGN_MACRO	
 go_generate_values:
 jmp   generate_distance_steps
+ALIGN_MACRO
+SELFMODIFY_fixed_colormap_toggle_TARGET:
+calcualte_colormap:
+mov   word ptr cs:[SELFMODIFY_compare_colormap_bits+1], ax
+SHIFT_MACRO shr ax 4 ; ah now known zero
+les   bx, dword ptr cs:[_planezlight]
+xlat  byte ptr es:[bx]
+SHIFT_MACRO shl ax 2 ; colormap * 16
+add   ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
+
+mov   word ptr cs:[SELFMODIFY_set_colormap_segment+1], ax
+mov   bx, si  ; restore...
+jmp   done_updating_colormap
+
 
 ;
 ; R_MapPlanes24_
@@ -220,7 +234,16 @@ IF COMPISA LE COMPILE_286
 
     ; dx:di is distance. or todo EDI for 386.
 
+    mov   ax, dx
+    and   ax, 07F0h  ; colormap bits.
+SELFMODIFY_compare_colormap_bits:
+    cmp   ax, 01000h
+ENSUREALIGN_408: ; todo odd
+SELFMODIFY_fixed_colormap_toggle:  ; becomes nop with fixedcolormap on.
+    jne   calcualte_colormap
+SELFMODIFY_fixed_colormap_toggle_AFTER:
 
+    done_updating_colormap:
     LODSW ; grab x1
 
     xchg ax, di  ; grab distance, x1 into di
@@ -239,7 +262,6 @@ IF COMPISA LE COMPILE_286
 
     mov   bx, di          ; dword lookup if we add them
 
-    push  dx   ; store distance high word in case needed for colormap
 
 
     les   bp, dword ptr ds:[bx + di + ((DISTSCALE_SEGMENT - SPANSTART_SEGMENT) * 16)]
@@ -774,50 +796,15 @@ SELFMODIFY_SPAN_detailshift2minus_3:
 
 ; 	if (fixedcolormap) {
 
-SELFMODIFY_SPAN_fixedcolormap_1:
-SELFMODIFY_SPAN_fixedcolormap_1_AFTER = SELFMODIFY_SPAN_fixedcolormap_1+2
-pop   ax
-
-; 		index = distance >> LIGHTZSHIFT;
-
-;		if (index >= MAXLIGHTZ) {
-;			index = MAXLIGHTZ - 1;
-;		}
-
-cmp    ax, (MAXLIGHTZ - 1) SHL 4  ; 2032
-jae    clip_colormap_to_max
-SHIFT_MACRO shr ax 4   ; todo compare to maxlight preshift?
-
-
-index_set:
-
-;		ds_colormap_segment = colormaps_segment;
-;		ds_colormap_index = planezlight[index];
-
-les    bx, dword ptr cs:[_planezlight]
-
-xlat  byte ptr es:[bx]
-; ah known zero?
-; mov  al, byte ptr cs:[bx + _cs_zlight_offset]
-
-
-
-colormap_set:
-public colormap_set
-; ax is colormap.
-
-; todo could the table be prepopulated as word lookup with shl 2 + segdiff or whatever? where to store?
-;  shr ax only 3... les bx... add bx ,ax, mov word ptr ss, es:[bx] ?
-;  
-SHIFT_MACRO shl ax 2 ; colormap * 16
-; target ss segment
-add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
-colormap_set_full:
-; addr 0000 + first byte (4x colormap.)
 
 mov   es, word ptr ss:[_destview + 2]	; retrieve destview segment
 
-cli 	; disable interrupts because we usesp here
+cli 	; disable interrupts because we use sp here
+
+SELFMODIFY_set_colormap_segment:
+mov    ax, 01000h
+ENSUREALIGN_407:
+
 mov   ss, ax  ; pass in ax?
 mov   ax, cs
 mov   ds, ax
@@ -827,22 +814,22 @@ mov   ds, ax
 
 SELFMODIFY_SPAN_set_plane_0:
 mov   al, 010h
-mov   dx, SC_DATA						; outp 1 << i
 SELFMODIFY_SPAN_ds_ystep:
 mov     bp, 01000h
 ENSUREALIGN_401:
+mov   dx, SC_DATA						; outp 1 << i
 
 
 
 mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
 
 
-out   dx, al ; move this before/after sp for toggling ensurealign_402
 
 SELFMODIFY_SPAN_ds_xstep:
 mov     sp,  01000h
 ENSUREALIGN_402:
 
+out   dx, al ; move this before/after sp for toggling ensurealign_402
  
 
  ; use jump table with desired cs:ip for far jump
@@ -879,24 +866,12 @@ jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	 
 
 ALIGN_MACRO
 
+xchg ax, ax ; FORCE ODD ALIGNMENT
 
-SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
-SELFMODIFY_SPAN_fixedcolormap_2:
-use_fixed_colormap:
-mov   ax, 0000h   ; inlined shift 2
-add   sp, 2  ; undo pop
-jmp   colormap_set_full
-
-ALIGN_MACRO
-clip_colormap_to_max:
-les    bx, dword ptr cs:[_planezlight]
-xor    ax, ax
-mov    al, byte ptr es:[bx+MAXLIGHTZ-1]
-jmp   colormap_set
 
 
 MARKER_SM_SPAN24_AFTER_JUMP_1:
-PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1
+PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1    
 
 
 
@@ -916,7 +891,7 @@ endm
 
 ; final pixel
 last_span_pixel:
-
+public  last_span_pixel
     AND   CH, AH
     MOV   BH, CH
     MOV   BL, DH
@@ -1215,6 +1190,7 @@ PUBLIC R_DrawPlanes24_
 ; inline R_WriteBackSpanFrameConstants_
 ; get whole dword at the end here.
 
+mov      byte ptr cs:[SELFMODIFY_use_cached_vispalne_light_check+2], 0FEh
 
 mov      al, byte ptr ds:[_lastvisplane]
 mov      ah, SIZE VISPLANEHEADER_T
@@ -1308,12 +1284,13 @@ SHIFT_MACRO shl al 4
 mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+2 - OFFSET R_SPAN24_STARTMARKER_], al
 
 
-mov   ax, 03D58h  ; pop ax, cmp ax, imm16
+mov   ax, (((SELFMODIFY_fixed_colormap_toggle_TARGET - SELFMODIFY_fixed_colormap_toggle_AFTER) )SHL 8) + 075h  ; jnew
+
 cmp   byte ptr ds:[_fixedcolormap], 0
 jne   do_span_fixedcolormap_selfmodify
 done_with_span_fixedcolormap_selfmodify:
 ; modify instruction
-mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_1 - OFFSET R_SPAN24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_fixed_colormap_toggle - OFFSET R_SPAN24_STARTMARKER_], ax
 mov   si, OFFSET _visplaneheaders + VISPLANEHEADER_T.visplaneheader_minx ; initial case.
 jmp   drawplanes_loop
 
@@ -1329,9 +1306,9 @@ mov   al, byte ptr ds:[_fixedcolormap]
 xor   ah, ah
 SHIFT_MACRO shl ax 2
 add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
-mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_colormap_segment + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-mov   ax, (((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) )SHL 8) + 0EBh
+mov   ax, 0C089h ; nop
 jmp   done_with_span_fixedcolormap_selfmodify
 
 ALIGN_MACRO	
@@ -1430,7 +1407,11 @@ mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN24_STARTMARKER_
 ; al flatindex
 ; bl flattranslation
 ; ah visplane light
-
+    ; FEh lightlevel seems to never be used...?
+    SELFMODIFY_use_cached_vispalne_light_check:
+    cmp  ah, 0FEh
+    je   use_cached_visplane_light
+    mov  byte ptr cs:[SELFMODIFY_use_cached_vispalne_light_check+2], ah
 
 SELFMODIFY_SPAN_extralight_1:
     ADD AH, 0
@@ -1447,7 +1428,10 @@ ELSE
     SHL CX, 7
 ENDIF
     MOV WORD PTR CS:[_planezlight], CX
-    ; todo also update selfmodify colormap
+    MOV WORD PTR CS:[SELFMODIFY_compare_colormap_bits+1], CX ; make this dirty compare
+    
+    use_cached_visplane_light:
+    ; todo also update selfmodify colormap? how often does this change.
     
     MOV CX, 0FF01h
     MOV AH, 0BAh ; MOV DX, imm
@@ -2590,6 +2574,8 @@ public ENSUREALIGN_402
 public ENSUREALIGN_403
 public ENSUREALIGN_404
 public ENSUREALIGN_406
+public ENSUREALIGN_407
+public ENSUREALIGN_408
 
 
 
