@@ -524,7 +524,7 @@ ENDIF
 ; cx:bh is yfrac
 ; bp    is xfrac
 
-
+; es is free...
 
 
 start_writes:
@@ -545,7 +545,7 @@ mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_],
 
 
 
-; last two uses of ds, si
+; last uses of ds
 MOV    ax, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)] 
 mov    ds, ax  ; backup
 
@@ -555,23 +555,17 @@ mov   ax, ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 
-SELFMODIFY_SET_dc_yl_lookuptable:
-public SELFMODIFY_SET_dc_yl_lookuptable
- mov   ax, 01000h
- mov   es, ax
- lods  word ptr es:[si];    ; es:[si]  ; ds, si now free.
+mov ax, cs
+mov es, ax
 
-
-
-mov si, cs
-mov es, si  ; retrieve si
-mov si, ds
-
+mov   ax, word ptr cs:[si + OFFSET span_local_dc_yl_lookup_table_] ; todo try moving to start of file, displacement 1 byte?
 ; si is free
 
-SELFMODIFY_SPAN_destview_lo_1:
-add   ax, 01000h
-xchg  ax, bp               			; store base view offset in bp. ax gets xfrac.
+
+
+mov si, ds
+
+
 
 
 
@@ -584,6 +578,11 @@ mov   ds, di   ; backup x1
 
 SELFMODIFY_SPAN_and_detailshift_word:
 and   di, 7     ; and the hi byte for sure... AND BX below could not guarantee due to bh being 'dirty'.
+
+SELFMODIFY_SPAN_destview_lo_1:
+add   ax, 01000h
+ENSUREALIGN_409:
+xchg  ax, bp               			; store base view offset in bp. ax gets xfrac.
 
 
 SELFMODIFY_SPAN_and_detailshift_byte:
@@ -799,11 +798,12 @@ SELFMODIFY_SPAN_detailshift2minus_3:
 
 mov   es, word ptr ss:[_destview + 2]	; retrieve destview segment
 
-cli 	; disable interrupts because we use sp here
 
 SELFMODIFY_set_colormap_segment:
 mov    ax, 01000h
 ENSUREALIGN_407:
+
+cli 	; disable interrupts because we use sp here
 
 mov   ss, ax  ; pass in ax?
 mov   ax, cs
@@ -1407,9 +1407,9 @@ mov   byte ptr cs:[SELFMODIFY_SPAN_lookuppicnum+2 - OFFSET R_SPAN24_STARTMARKER_
 ; al flatindex
 ; bl flattranslation
 ; ah visplane light
-    ; FEh lightlevel seems to never be used...?
+    
     SELFMODIFY_use_cached_vispalne_light_check:
-    cmp  ah, 0FEh
+    cmp  ah, 0FEh ; FEh lightlevel seems to never be used...?
     je   use_cached_visplane_light
     mov  byte ptr cs:[SELFMODIFY_use_cached_vispalne_light_check+2], ah
 
@@ -2383,9 +2383,7 @@ les      ax, dword ptr ss:[_ds_source_offset]
 mov      word ptr ds:[_ds_source_offset_span+0], ax
 mov      word ptr ds:[_ds_source_offset_span+2], es
 
-; todo do just once
-mov      ax, word ptr ss:[_BSP_MUL_80_LOOKUP_SEGMENT]
-mov      word ptr ds:[SELFMODIFY_SET_dc_yl_lookuptable+1], ax
+
 
 
 
@@ -2559,6 +2557,19 @@ ENDP
 
 
 
+span_local_dc_yl_lookup_table_:
+PUBLIC span_local_dc_yl_lookup_table_
+
+
+sumof80s = 0
+MAX_PIXELS = 200
+REPT MAX_PIXELS
+    dw sumof80s 
+    sumof80s = sumof80s + 80
+ENDM
+
+
+
 
 
 ; end marker for this asm file
@@ -2576,6 +2587,7 @@ public ENSUREALIGN_404
 public ENSUREALIGN_406
 public ENSUREALIGN_407
 public ENSUREALIGN_408
+public ENSUREALIGN_409
 
 
 
