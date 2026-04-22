@@ -830,15 +830,9 @@ mov   ds, ax
 
 ; inlined drawspanprep...
 
-SELFMODIFY_SPAN_set_plane_0:
-mov   al, 010h
 SELFMODIFY_SPAN_ds_ystep:
 mov     bp, 01000h
 ENSUREALIGN_401:
-mov   dx, SC_DATA						; outp 1 << i
-
-
-
 mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
 
 
@@ -847,7 +841,6 @@ SELFMODIFY_SPAN_ds_xstep:
 mov     sp,  01000h
 ENSUREALIGN_402:
 
-out   dx, al ; move this before/after sp for toggling ensurealign_402
  
 
  ; use jump table with desired cs:ip for far jump
@@ -858,29 +851,9 @@ out   dx, al ; move this before/after sp for toggling ensurealign_402
 
 xor   bx, bx						; zero out bx as loopcount
 mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
+jmp   start_span_loop_first_iter
 
 
-
-
-; main loop start (i = 0, 1, 2, 3)
-
-
-
-mov   si, word ptr ds:[_spanfunc_inner_loop_count + bx] ; 
-
-; es is already pre-set..
-
-FAST_SHL1 si
-
-
-mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
-mov   dx, word ptr ds:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
-mov   cx, word ptr ds:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
-
-
-lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
-; ah gets 3F
-jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
 
 ALIGN_MACRO
 
@@ -936,6 +909,8 @@ mov   ds, ax
 inc   bx
 mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) -  OFFSET R_SPAN24_STARTMARKER_   )], bl
 
+
+start_span_loop_first_iter:
 
 mov   al, byte ptr ds:[_spanfunc_outp + bx]
 mov   dx, SC_DATA						; outp 1 << i
@@ -2429,7 +2404,6 @@ mov      byte ptr ds:[SELFMODIFY_SPAN_and_detailshift_word+2 - OFFSET R_SPAN24_S
 mov      byte ptr ds:[SELFMODIFY_SPAN_and_detailshift_byte+1 - OFFSET R_SPAN24_STARTMARKER_], 0F7h
 
 
-mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 1
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN24_STARTMARKER_], 3
 mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2 - OFFSET R_SPAN24_STARTMARKER_], 3
 
@@ -2471,7 +2445,6 @@ mov      byte ptr ds:[SELFMODIFY_SPAN_and_detailshift_word+2 - OFFSET R_SPAN24_S
 mov      byte ptr ds:[SELFMODIFY_SPAN_and_detailshift_byte+1 - OFFSET R_SPAN24_STARTMARKER_], 0F3h
 
 
-mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 3
 
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN24_STARTMARKER_], 1
 mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2 - OFFSET R_SPAN24_STARTMARKER_], 1
@@ -2524,7 +2497,6 @@ mov      byte ptr ds:[SELFMODIFY_SPAN_and_detailshift_byte+1 - OFFSET R_SPAN24_S
 
 
 mov      byte ptr ds:[_spanfunc_outp + 0], 15 ; technically this never has to be changed 
-mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 15
 
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN24_STARTMARKER_], 0
 mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2 - OFFSET R_SPAN24_STARTMARKER_], 0
