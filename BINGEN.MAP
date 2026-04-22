@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/22 16:11:37
+Created on:       26/04/22 19:44:18
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -43,7 +43,7 @@ R_COL24_TEXT           CODE           AUTO           163d:0000       00002349
 R_COL16_TEXT           CODE           AUTO           1872:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           193e:0000       0000058e
 R_COLFL_TEXT           CODE           AUTO           1997:0000       0000058e
-R_SPAN24_TEXT          CODE           AUTO           19f0:0000       000011f4
+R_SPAN24_TEXT          CODE           AUTO           19f0:0000       000011fa
 R_SPAN16_TEXT          CODE           AUTO           1b10:0000       00000f67
 R_SPAN0_TEXT           CODE           AUTO           1c07:0000       00000640
 R_SPANFL_TEXT          CODE           AUTO           1c6b:0000       00000597
@@ -505,43 +505,43 @@ Module: r_colfl.obj(r_colfl.ASM)
 1997:0334      MARKER_SM_COLFUNC_jump_offsetFL_
 1997:0000      R_COLUMNFL_STARTMARKER_
 Module: r_span24.obj(r_span24.ASM)
-19f0:0ea6*     evict_flat
+19f0:0eac*     evict_flat
 19f0:005b*     _spanfunc_jump_target
 19f0:0345*     MARKER_SM_SPAN24_AFTER_JUMP_1
-19f0:0b36*     do_next_drawplanes_loop
-19f0:0bb0*     loop_find_flat
+19f0:0b3c*     do_next_drawplanes_loop
+19f0:0bb6*     loop_find_flat
 19f0:0971*     last_span_pixel
-19f0:0ef2      R_WriteBackViewConstantsSpan24_
+19f0:0ef8      R_WriteBackViewConstantsSpan24_
 19f0:0201*     start_writes
-19f0:0b03*     exit_drawplanes
+19f0:0b0a*     exit_drawplanes
 19f0:0000      R_SPAN24_STARTMARKER_
-19f0:1064*     span_local_dc_yl_lookup_table_
-19f0:0e48*     flatcachemruL2
-19f0:0bc2*     update_l1_cache_from_l2
+19f0:106a*     span_local_dc_yl_lookup_table_
+19f0:0e4e*     flatcachemruL2
+19f0:0bc8*     update_l1_cache_from_l2
 19f0:011e*     R_MapPlanes24_
-19f0:0e84*     flat_is_unloaded
-19f0:0cf0*     single_plane_draw_loop
-19f0:0d42*     ENSUREALIGN_404
+19f0:0e8a*     flat_is_unloaded
+19f0:0cf6*     single_plane_draw_loop
+19f0:0d48*     ENSUREALIGN_404
 19f0:09b0*     ENSUREALIGN_400
 19f0:0125*     ENSUREALIGN_406
 19f0:0228*     ENSUREALIGN_409
 19f0:09a3*     ENSUREALIGN_402
-19f0:0d84*     ENSUREALIGN_403
+19f0:0d8a*     ENSUREALIGN_403
 19f0:013f*     ENSUREALIGN_408
 19f0:09a0*     ENSUREALIGN_401
 19f0:0984*     ENSUREALIGN_410
 19f0:0992*     ENSUREALIGN_407
-19f0:0c77*     SELFMODIFY_SPAN_viewz_13_3_1
+19f0:0c7d*     SELFMODIFY_SPAN_viewz_13_3_1
 19f0:0236*     SELFMODIFY_SELECT_port_routine
-19f0:0e93*     SELFMODIFY_SPAN_lookuppicnum
-19f0:0c59*     l1_cache_finished_updating
-19f0:0d98*     loop_check_next_pixel
+19f0:0e99*     SELFMODIFY_SPAN_lookuppicnum
+19f0:0c5f*     l1_cache_finished_updating
+19f0:0d9e*     loop_check_next_pixel
 19f0:0a5e      R_DrawPlanes24_
-19f0:0c6a*     SELFMODIFY_SPAN_flat_unloaded
+19f0:0c70*     SELFMODIFY_SPAN_flat_unloaded
 19f0:0135*     distance_steps_ready
-19f0:11f4      R_SPAN24_ENDMARKER_
-19f0:0b44*     drawplanes_loop
-19f0:0c5f*     done_with_mruL2
+19f0:11fa      R_SPAN24_ENDMARKER_
+19f0:0b4a*     drawplanes_loop
+19f0:0c65*     done_with_mruL2
 Module: r_span16.obj(r_span16.ASM)
 1b10:0e6f      R_WriteBackViewConstantsSpan16_
 1b10:0124*     R_DrawSpan16_
