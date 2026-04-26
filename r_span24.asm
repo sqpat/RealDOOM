@@ -455,110 +455,6 @@ SELFMODIFY_SPAN_viewy_hi_1:
     mov   cl, ah
     mov   ch, dl ; yfrac 6.8 in cx
 
-
-ELSE
-
-    ; edi is distance
-
-    ; todo shld 12, al logic
-    shld  eax, edi, 16
-    and   ax, 07F0h  ; colormap bits.
-SELFMODIFY_compare_colormap_bits:
-    cmp   ax, 01000h
-ENSUREALIGN_408: ; todo odd
-SELFMODIFY_fixed_colormap_toggle:  ; becomes nop with fixedcolormap on.
-    jne   calculate_colormap
-SELFMODIFY_fixed_colormap_toggle_AFTER:
-
-    done_updating_colormap:
-
-    LODSW ; grab x1
-
-    xchg eax, edi         ; eax =  distance, x1 into di
-    FAST_SHL1 di          ; word lookup
-
-    PUSH SI     ; next SI
-    sub  si, 2
-
-
-
-    ; eax is distance
-    ; di is x1 word lookup
-    ; si is ds_y word lookup
-    ;     length = R_FixedMulLocal (distance,distscale[x1]);
-
-    mov   bx, di          ; dword lookup if we add them
-
-    ; length = FixedMul (distance,distscale[x1]);
-
-    mul   dword ptr ds:[bx + di + ((DISTSCALE_SEGMENT - SPANSTART_SEGMENT) * 16)]
-    SHRD  EAX, EDX, 16
-
-
-    xchg  eax, ebp              ; ebp holds this for 2 muls
-
-;    angle = (viewangle + xtoviewangle[x1])>>ANGLETOFINESHIFT;
-
-    les   bx, dword ptr cs:[_viewangle_shiftright3_span]
-    add   bx, word ptr es:[di]		; ax is unmodded fine angle.. di is a word lookup
-    and   bh, 01Fh
-    FAST_SHL1 bx
-
-
-    MOV   DX, FINESINE_SEGMENT
-    MOV   ES, DX
-
-    ; fixedmultrig sine
-    movzx eax, word ptr es:[bx]
-    movzx ecx, WORD PTR ES:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
-    mov   edx, ebp  ; copy for 2nd mul
-    test  bh, 020h
-    je    skip_invert_sin
-    NEG   edx
-    skip_invert_sin:
-
-    test  bh, 030h
-    jpe   skip_invert_cos
-    NEG   ebp
-    skip_invert_cos:
-
-
-    imul  edx
-
-    SHRD  EAX, EDX, 16
-SELFMODIFY_SPAN_viewy_full_1:
-    ADD   EAX, 010000000h
-    NEG   EAX
-
-    mov   bh,  al    ; low bits
-
-    xchg  eax, ecx   ; store xfrac in cx, get cos value
-    
-    SHR ECX, 8 ; Convert to 6.8.2
-    
-
-    imul ebp
-
-
-    SHRD EAX, EDX, 16
-
-SELFMODIFY_SPAN_viewx_full_1:
-    ADD EAX, 010000000h
-    SHR EAX, 6 ; Convert to 6.10
-
-
-
-    ; ax has xfrac
-    ; cx has yfrac
-    xchg ax, bp 
-
-
-
-
-
-ENDIF
-
-
 ; cx:bh is yfrac
 ; bp    is xfrac
 
@@ -998,7 +894,547 @@ ALIGN_MACRO
 do_map_planes_loop:
     JMP map_planes_loop
 
+
+ELSE
+
+; TODO! improve 386 version.
+
+    ; edi is distance
+
+    ; todo shld 12, al logic
+    shld  eax, edi, 16
+    and   ax, 07F0h  ; colormap bits.
+SELFMODIFY_compare_colormap_bits:
+    cmp   ax, 01000h
+ENSUREALIGN_408: ; todo odd
+SELFMODIFY_fixed_colormap_toggle:  ; becomes nop with fixedcolormap on.
+    jne   calculate_colormap
+SELFMODIFY_fixed_colormap_toggle_AFTER:
+
+    done_updating_colormap:
+
+    LODSW ; grab x1
+
+    xchg eax, edi         ; eax =  distance, x1 into di
+    FAST_SHL1 di          ; word lookup
+
+    PUSH SI     ; next SI
+    sub  si, 2
+
+
+
+    ; eax is distance
+    ; di is x1 word lookup
+    ; si is ds_y word lookup
+    ;     length = R_FixedMulLocal (distance,distscale[x1]);
+
+    mov   bx, di          ; dword lookup if we add them
+
+    ; length = FixedMul (distance,distscale[x1]);
+
+    mul   dword ptr ds:[bx + di + ((DISTSCALE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    SHRD  EAX, EDX, 16
+
+
+    xchg  eax, ebp              ; ebp holds this for 2 muls
+
+;    angle = (viewangle + xtoviewangle[x1])>>ANGLETOFINESHIFT;
+
+    les   bx, dword ptr cs:[_viewangle_shiftright3_span]
+    add   bx, word ptr es:[di]		; ax is unmodded fine angle.. di is a word lookup
+    and   bh, 01Fh
+    FAST_SHL1 bx
+
+
+    MOV   DX, FINESINE_SEGMENT
+    MOV   ES, DX
+
+    ; fixedmultrig sine
+    movzx eax, word ptr es:[bx]
+    movzx ecx, WORD PTR ES:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
+    mov   edx, ebp  ; copy for 2nd mul
+    test  bh, 020h
+    je    skip_invert_sin
+    NEG   edx
+    skip_invert_sin:
+
+    test  bh, 030h
+    jpe   skip_invert_cos
+    NEG   ebp
+    skip_invert_cos:
+
+
+    imul  edx
+
+    SHRD  EAX, EDX, 16
+SELFMODIFY_SPAN_viewy_full_1:
+    ADD   EAX, 010000000h
+    NEG   EAX
+
+    mov   bh,  al    ; low bits
+
+    xchg  eax, ecx   ; store xfrac in cx, get cos value
+    
+    SHR ECX, 8 ; Convert to 6.8.2
+    
+
+    imul ebp
+
+
+    SHRD EAX, EDX, 16
+
+SELFMODIFY_SPAN_viewx_full_1:
+    ADD EAX, 010000000h
+    SHR EAX, 6 ; Convert to 6.10
+
+
+
+    ; ax has xfrac
+    ; cx has yfrac
+    xchg ax, bp 
+
+; cx:bh is yfrac
+; bp    is xfrac
+
+; es is free...
+
+
+start_writes:
+public start_writes
+
+
+MOV   AX, WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+mov   dx, ax ; backup
+
+
+; this is reversed, supposed to be  shift right 2 then shift left n, so instead we shift right 2 - n
+SELFMODIFY_SPAN_detailshift_2:
+mov ax, ax
+mov ax, ax
+
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+
+
+; last uses of ds
+MOV    ax, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)] 
+mov    es, ax  ; backup
+
+SELFMODIFY_SPAN_detailshift_1:
+mov   ax, ax
+mov   ax, ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+
+mov ax, cs
+mov ds, ax
+
+
+mov   ax, word ptr ds:[si + OFFSET span_local_dc_yl_lookup_table_] ; todo try moving to start of file, displacement 1 byte?
+; si is free
+
+SELFMODIFY_SPAN_destview_lo_1:
+add   ax, 01000h
+ENSUREALIGN_409:
+
+shr   di, 1   ; dc_x * 1
+mov si, di  
+
+ ; nops if potato etc
+SELFMODIFY_SPAN_detailshift2minus_1:
+ shr   si, 1							
+ shr   si, 1							; num pixels per plane
+
+ add   ax, si    ; base offset...
+
+
+mov  si, es ; es is free
+
+mov  es, di  ; back up...
+
+
+
+; todo improve this logic.
+; todo cache last value?
+
+SELFMODIFY_SELECT_port_routine:
+SELFMODIFY_SELECT_port_routine_AFTER = SELFMODIFY_SELECT_port_routine + 2
+public SELFMODIFY_SELECT_port_routine
+
+; HIGH DETAIL ROUTINE
+and   di, 3
+jz    do_vga_plane_0_start
+jpe   do_vga_plane_3_start
+dec   di
+jz    do_vga_plane_1_start
+
+do_vga_plane_2_start:
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 0 * SPANFUNC_ARG_SIZE], 4
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 1 * SPANFUNC_ARG_SIZE], 8
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 2 * SPANFUNC_ARG_SIZE], 1
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 3 * SPANFUNC_ARG_SIZE], 2
+jmp   done_with_vga_plane_writes
+
+SELFMODIFY_SELECT_port_routine_TARGET_LO:
+do_lo_quality_routine:
+and   di, 1
+xchg  ax, di
+mov   al, 3
+jz    use_lo_plane_zero
+mov   al, 12
+use_lo_plane_zero:
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 0 * SPANFUNC_ARG_SIZE], al
+xor   al, 15
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 1 * SPANFUNC_ARG_SIZE], al
+xchg  ax, di  ; restore ax
+jmp   done_with_vga_plane_writes
+
+
+do_vga_plane_1_start:
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 0 * SPANFUNC_ARG_SIZE], 2
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 1 * SPANFUNC_ARG_SIZE], 4
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 2 * SPANFUNC_ARG_SIZE], 8
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 3 * SPANFUNC_ARG_SIZE], 1
+jmp   done_with_vga_plane_writes
+
+do_vga_plane_3_start:
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 0 * SPANFUNC_ARG_SIZE], 8
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 1 * SPANFUNC_ARG_SIZE], 1
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 2 * SPANFUNC_ARG_SIZE], 2
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 3 * SPANFUNC_ARG_SIZE], 4
+jmp   done_with_vga_plane_writes
+
+do_vga_plane_0_start:
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 0 * SPANFUNC_ARG_SIZE], 1
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 1 * SPANFUNC_ARG_SIZE], 2
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 2 * SPANFUNC_ARG_SIZE], 4
+mov   byte ptr ds:[SPANFUNC_ARG_PORT_BYTE + 3 * SPANFUNC_ARG_SIZE], 8
+
+SELFMODIFY_SELECT_port_routine_TARGET_POTATO:
+done_with_vga_plane_writes:
+
+
+; di free
+
+
+
+
+xchg  ax, bp               			; store base view offset in bp. ax gets xfrac.
+
+
+
+
+
+
+
+
+; dx: has ystep 6.10 still
+; cx:bh has yfrac 6.8.2. bh is okay to and into DI.
+; ax has xfrac
+; si has xstep
+; bp has base view offset
+; ds is cs
+; di is free! todo use
+; es has x1 backup.
+
+
+; AX has xfrac (6.8)
+; SI has xstep (6.8)
+
+
+
+; the above offset of 010h, 020h, 030h
+; and to 1, 3, 7 still works to loop around. We are just eliminating bit 3.
+
+; i suppose this whole section could be super optimized for potato/low with entire chunks of code replaced.
+
+xor bl ,bl
+
+shr dx, 1
+rcr bl, 1
+shr dx, 1
+rcr bl, 1
+
+; todo just ax writes, swap reg... 
+
+mov   word ptr ds:[SPANFUNC_ARG_XFRAC + 0 * SPANFUNC_ARG_SIZE], ax
+SELFMODIFY_SPAN_set_xfrac_lookup_potato:
+add   ax, si
+SELFMODIFY_SPAN_set_xfrac_lookup_potato_AFTER:
+mov   word ptr ds:[SPANFUNC_ARG_XFRAC + 1 * SPANFUNC_ARG_SIZE], ax
+SELFMODIFY_SPAN_set_xfrac_lookup_low:
+add   ax, si
+SELFMODIFY_SPAN_set_xfrac_lookup_low_AFTER:
+mov   word ptr ds:[SPANFUNC_ARG_XFRAC + 2 * SPANFUNC_ARG_SIZE], ax
+add   ax, si
+mov   word ptr ds:[SPANFUNC_ARG_XFRAC + 3 * SPANFUNC_ARG_SIZE], ax
+
+
+SELFMODIFY_SPAN_set_xfrac_lookup_TARGET:
+
+xchg  ax, cx
+mov   word ptr ds:[SPANFUNC_ARG_YFRAC + 0 * SPANFUNC_ARG_SIZE], ax
+SELFMODIFY_SPAN_set_yfrac_lookup_potato:
+add   bh, bl
+SELFMODIFY_SPAN_set_yfrac_lookup_potato_AFTER:
+adc   ax, dx
+mov   word ptr ds:[SPANFUNC_ARG_YFRAC + 1 * SPANFUNC_ARG_SIZE], ax
+SELFMODIFY_SPAN_set_yfrac_lookup_low:
+add   bh, bl
+SELFMODIFY_SPAN_set_yfrac_lookup_low_AFTER:
+adc   ax, dx
+mov   word ptr ds:[SPANFUNC_ARG_YFRAC + 2 * SPANFUNC_ARG_SIZE], ax
+add   bh, bl
+adc   ax, dx
+mov   word ptr ds:[SPANFUNC_ARG_YFRAC + 3 * SPANFUNC_ARG_SIZE], ax
+
+SELFMODIFY_SPAN_set_yfrac_lookup_TARGET:
+
+; done with x/y....
+
+ mov   cx, es  ; dc_x * 1
+
+  
+SELFMODIFY_SPAN_ds_x2:
+ mov   ax, 01000h
+
+
+ sub   ax, cx  ; x2 - x1
+ mov   dx, ax  ; get plane copy
+
+
+SELFMODIFY_SPAN_and_detailshift_byte:
+ and   cx, 3
+SELFMODIFY_SPAN_sub_detailshift:
+ sub   cx, 4
+ neg   ch  ; ch = 1
+
+
+SELFMODIFY_SPAN_and_detailshift_byte_2:
+ and   dx, 3
+
+
+
+
+ ; nops if potato etc
+SELFMODIFY_SPAN_detailshift2minus_3:
+ shr   ax, 1							
+ shr   ax, 1							; num pixels per plane
+ 
+ 
+ xor   si, si
+
+; di = carrying the starting loop offset
+; bx = unused?
+; es = unused?
+; bp = destplane
+; ax = dc_x2 - dx_x1 >> detailshift
+; dx = vga plane iter
+; ch = 1
+; cl = dc_x1 vga plane - detailshift 
+; dl = dc_x2-dc_x1 vga plane
+; dh = 0
+; si = 0
+
+
+
+; UNROLLED LOOP START
+mov   word ptr ds:[SPANFUNC_ARG_INNER_LOOP_COUNT + 0 * SPANFUNC_ARG_SIZE], ax
+
+SELFMODIFY_SPAN_set_loopcount_potato:
+sub   dl, ch
+SELFMODIFY_SPAN_set_loopcount_potato_AFTER:
+sbb   ax, si
+mov   word ptr ds:[SPANFUNC_ARG_INNER_LOOP_COUNT + 1 * SPANFUNC_ARG_SIZE], ax
+SELFMODIFY_SPAN_set_loopcount_low:
+sub   dl, ch
+SELFMODIFY_SPAN_set_loopcount_low_AFTER:
+sbb   ax, si
+mov   word ptr ds:[SPANFUNC_ARG_INNER_LOOP_COUNT + 2 * SPANFUNC_ARG_SIZE], ax
+sub   dl, ch
+sbb   ax, si
+mov   word ptr ds:[SPANFUNC_ARG_INNER_LOOP_COUNT + 3 * SPANFUNC_ARG_SIZE], ax
+
+
+
+SELFMODIFY_SPAN_set_loopcount_TARGET:
+
+ 
+xchg  ax, bp
+
+mov   word ptr ds:[SPANFUNC_ARG_DESTVIEW + 0 * SPANFUNC_ARG_SIZE], ax
+SELFMODIFY_SPAN_set_destview_potato:
+add   cl, ch ; ch = 1, incrementing towards 0
+SELFMODIFY_SPAN_set_destview_potato_AFTER:
+adc   ax, si
+mov   word ptr ds:[SPANFUNC_ARG_DESTVIEW + 1 * SPANFUNC_ARG_SIZE], ax
+SELFMODIFY_SPAN_set_destview_low:
+add   cl, ch ; ch = 1, incrementing towards 0
+SELFMODIFY_SPAN_set_destview_low_AFTER:
+adc   ax, si
+mov   word ptr ds:[SPANFUNC_ARG_DESTVIEW + 2 * SPANFUNC_ARG_SIZE], ax
+add   cl, ch ; ch = 1, incrementing towards 0
+adc   ax, si
+mov   word ptr ds:[SPANFUNC_ARG_DESTVIEW + 3 * SPANFUNC_ARG_SIZE], ax
+
+
+SELFMODIFY_SPAN_set_destview_TARGET:
+
+
+
+
+; 	if (fixedcolormap) {
+
+
+SELFMODIFY_SPAN_set_destview_segment:
+mov   ax, 01000h
+mov   es, ax
+
+cli 	; disable interrupts because we use sp here
+
+mov   ax, cs
+mov   ss, ax
+
+mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
+mov   ds, word ptr ds:[_ds_source_offset_span+2] 
+
+
+
+
+; inlined DrawSpan
+
+xor   sp, sp
+
+
+jmp   start_span_loop_first_iter
+
+
+
+
+ALIGN_MACRO
+
+xchg ax, ax ; FORCE ODD ALIGNMENT
+
+
+
+MARKER_SM_SPAN24_AFTER_JUMP_1:
+PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1    
+
+
+
+REPT MAX_PIXELS - 1
+    AND   CH, AH
+    MOV   BH, CH
+    MOV   BL, DH
+    SHR   BX, 1
+    SHR   BX, 1
+    MOV   AL, byte ptr DS:[BX]
+    mov   si, ax
+    movs  byte ptr es:[di], byte ptr ss:[si]
+    ADD   DX, SP ; DX = XXXXXXxx xxxxxx00
+    ADD   CX, BP ; CX = 00YYYYYY yyyyyyyy
+    
+endm
+
+; final pixel
+last_span_pixel:
+public  last_span_pixel
+    AND   CH, AH
+    MOV   BH, CH
+    MOV   BL, DH
+    SHR   BX, 1
+    SHR   BX, 1
+    MOV   AL, byte ptr DS:[BX]
+    mov   si, ax
+    movs  byte ptr es:[di], byte ptr ss:[si]
+ 
+
+
+do_span_loop:
+
+SELFMODIFY_SPAN_set_span_counter:
+mov   sp, 0
+ENSUREALIGN_410:  ; important
+
+; loop if i < loopcount.
+SELFMODIFY_SPAN_compare_span_counter:
+cmp   sp, 040h
+jae   span_i_loop_done
+
+mov   ax, cs
+mov   ss, ax
+
+
+start_span_loop_first_iter:
+
+; todo use ss/sp instead of ds/si and popa
+
+POPA_MACRO_REAL
+
+out   dx, al                            ; note ah has 3Fh
+
+SELFMODIFY_set_colormap_segment:
+mov    bp, 01000h
+ENSUREALIGN_407:
+mov    ss, bp
+
+
+mov   dx, bx
+
+
+FAST_SHL1 si
+
+
+mov   word ptr cs:[SELFMODIFY_SPAN_set_span_counter+1], sp ; autoincremented
+
+SELFMODIFY_SPAN_ds_ystep:
+mov    bp, 01000h
+ENSUREALIGN_401:
+
+SELFMODIFY_SPAN_ds_xstep:
+mov     sp,  01000h
+ENSUREALIGN_402: ; todo odd
+
+jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
+
+ALIGN_MACRO	
+span_i_loop_done:
+
+mov   ax, FIXED_DS_SEGMENT
+mov   ss, ax
+
+
+; restore sp, bp
+SELFMODIFY_SPAN_sp_storage:
+mov sp, 01000h
+ENSUREALIGN_400:
+
+
+
+
+sti								; reenable interrupts
+
+    POP SI ; Retrieve SI for next iter
+    
+    MOV BP, SP
+    DEC BYTE PTR SS:[BP + local_loop_count]
+    MOV BP, SPANSTART_SEGMENT
+
+    JNZ do_map_planes_loop
+    
+
+    ; LOOP DEPTH: 2
+    RET map_planes_args_size
+    ; ==================== HOLE HOLE HOLE ====================
+
+ALIGN_MACRO	
+do_map_planes_loop:
+    JMP map_planes_loop
+
 ENDP
+
+ENDIF
 
 
 
