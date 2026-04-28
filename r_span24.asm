@@ -98,7 +98,12 @@ public _spanfunc_jump_target
 ; full quality
 
 
-BYTES_PER_PIXEL = 14h
+IF COMPISA LE COMPILE_286
+    BYTES_PER_PIXEL = 014h
+ELSE
+    BYTES_PER_PIXEL = 011h
+ENDIF
+
 MAX_PIXELS = 80
 ;bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) ; even offset
 bytecount = last_span_pixel
@@ -169,9 +174,15 @@ SHIFT_MACRO shr ax 4 ; ah now known zero
 les   bx, dword ptr cs:[_planezlight]
 xlat  byte ptr es:[bx]
 SHIFT_MACRO shl ax 2 ; colormap * 16
-add   ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
 
-mov   word ptr cs:[SELFMODIFY_set_colormap_segment+1], ax
+IF COMPISA LE COMPILE_286
+    add   ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
+    mov   word ptr cs:[SELFMODIFY_set_colormap_segment+1], ax
+ELSE
+    add    ax, 03F0h + (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
+    mov    fs, ax
+ENDIF
+
 mov   bx, si  ; restore...
 jmp   done_updating_colormap
 
@@ -894,10 +905,20 @@ ALIGN_MACRO
 do_map_planes_loop:
     JMP map_planes_loop
 
+; todo maybe export to diff file
+; END 286 VERSION
+; END 286 VERSION
+; END 286 VERSION
+
 
 ELSE
 
-; TODO! improve 386 version.
+; todo maybe export to diff file
+; BEGIN 386 VERSION
+; BEGIN 386 VERSION
+; BEGIN 386 VERSION
+
+
 
     ; edi is distance
 
@@ -988,6 +1009,7 @@ SELFMODIFY_SPAN_viewx_full_1:
     SHR EAX, 6 ; Convert to 6.10
 
 
+; TODO! improve 386 version from here on down
 
     ; ax has xfrac
     ; cx has yfrac
@@ -1012,8 +1034,9 @@ SELFMODIFY_SPAN_detailshift_2:
 mov ax, ax
 mov ax, ax
 
+SHL   ax, 2 ; todo back into detailshift...?
 
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 
 
@@ -1024,8 +1047,9 @@ mov    es, ax  ; backup
 SELFMODIFY_SPAN_detailshift_1:
 mov   ax, ax
 mov   ax, ax
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+4 - OFFSET R_SPAN24_STARTMARKER_], ax
 
+; todo single write above with eax...
 
 mov ax, cs
 mov ds, ax
@@ -1321,33 +1345,30 @@ xchg ax, ax ; FORCE ODD ALIGNMENT
 MARKER_SM_SPAN24_AFTER_JUMP_1:
 PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1    
 
-
+;y high x low
 
 REPT MAX_PIXELS - 1
-    AND   CH, AH
-    MOV   BH, CH
-    MOV   BL, DH
-    SHR   BX, 1
-    SHR   BX, 1
-    MOV   AL, byte ptr DS:[BX]
-    mov   si, ax
-    movs  byte ptr es:[di], byte ptr ss:[si]
-    ADD   DX, SP ; DX = XXXXXXxx xxxxxx00
-    ADD   CX, BP ; CX = 00YYYYYY yyyyyyyy
+
+
+    MOV   ESI, EBX ; 3 byte
+    SHR   SI,  10 ; 3 byte
+    ROL   ESI, CL ; 3 byte
+    MOVZX SI,  BYTE PTR DS:[SI] ; 3 byte
+    movs  byte ptr es:[di], byte ptr fs:[si]
+    ADD   EBX, EBP ; 3 byte
+
     
 endm
 
 ; final pixel
 last_span_pixel:
 public  last_span_pixel
-    AND   CH, AH
-    MOV   BH, CH
-    MOV   BL, DH
-    SHR   BX, 1
-    SHR   BX, 1
-    MOV   AL, byte ptr DS:[BX]
-    mov   si, ax
-    movs  byte ptr es:[di], byte ptr ss:[si]
+
+    SHR   BX,  10 ; 3 byte
+    ROL   EBX, CL ; 3 byte
+    MOVZX SI,  BYTE PTR DS:[BX] ; 3 byte
+    movs  byte ptr es:[di], byte ptr fs:[si]
+
  
 
 
@@ -1368,19 +1389,19 @@ mov   ss, ax
 
 start_span_loop_first_iter:
 
-; todo use ss/sp instead of ds/si and popa
+; fs already set...
 
 POPA_MACRO_REAL
-
-out   dx, al                            ; note ah has 3Fh
-
-SELFMODIFY_set_colormap_segment:
-mov    bp, 01000h
-ENSUREALIGN_407:
-mov    ss, bp
+out    dx, al                            ; note ah has 3Fh
 
 
-mov   dx, bx
+shl    ebx, 16    ; x frac set
+mov    bx,  cx
+shl    bx,  2    ;todo adjust beforehand.
+
+
+mov    cx, 6   ; todo ch??
+
 
 
 FAST_SHL1 si
@@ -1389,12 +1410,11 @@ FAST_SHL1 si
 mov   word ptr cs:[SELFMODIFY_SPAN_set_span_counter+1], sp ; autoincremented
 
 SELFMODIFY_SPAN_ds_ystep:
-mov    bp, 01000h
+SELFMODIFY_SPAN_ds_xstep:
+mov    ebp, 010000000h
 ENSUREALIGN_401:
 
-SELFMODIFY_SPAN_ds_xstep:
-mov     sp,  01000h
-ENSUREALIGN_402: ; todo odd
+ENSUREALIGN_402: 
 
 jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
 
@@ -1770,8 +1790,14 @@ do_span_fixedcolormap_selfmodify:
 mov   al, byte ptr ds:[_fixedcolormap]
 xor   ah, ah
 SHIFT_MACRO shl ax 2
-add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
-mov   word ptr cs:[SELFMODIFY_set_colormap_segment + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+IF COMPISA LE COMPILE_286
+    add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
+    mov   word ptr cs:[SELFMODIFY_set_colormap_segment + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
+ELSE
+    add    ax, 03F0h + (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
+    mov    fs, ax
+ENDIF
 
 mov   ax, 0C089h ; nop
 jmp   done_with_span_fixedcolormap_selfmodify
@@ -3075,12 +3101,15 @@ public ENSUREALIGN_402
 public ENSUREALIGN_403
 public ENSUREALIGN_404
 public ENSUREALIGN_406
-public ENSUREALIGN_407
 public ENSUREALIGN_408
 public ENSUREALIGN_409
 public ENSUREALIGN_410
 
 
+IF COMPISA LE COMPILE_286
+    public ENSUREALIGN_407
+ELSE
+ENDIF
 
 
 END
