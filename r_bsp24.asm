@@ -14222,6 +14222,20 @@ ENDP
 
 
 ;R_RenderPlayerView_
+
+ALIGN_MACRO
+set_fixed_colormap_nonzero:
+
+;		fixedcolormap =  player.fixedcolormapvalue << 2; 
+SHIFT_MACRO shl       al 2
+mov       byte ptr ds:[_fixedcolormap], al
+; todo dont repeat every frame if no change
+mov       ah, al
+mov       cx, MAXLIGHTSCALE / 2        ;        scalelightfixed[i] = fixedcolormap;
+mov       di, OFFSET _scalelightfixed  ;     }
+rep       stosw
+jmp       done_setting_colormap
+
 ALIGN_MACRO
 setup_level_constants:
 call    R_WriteBackLevelConstants24_
@@ -14254,22 +14268,12 @@ Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 
 ;    if (player.fixedcolormapvalue) {
 
-mov       al, byte ptr ds:[_player + 05Fh]
-mov       byte ptr ds:[_fixedcolormap], al   ; al is zero
+mov       al, byte ptr ds:[_player + PLAYER_T.player_fixedcolormapvalue]
 ;		fixedcolormap = 0;
 test      al, al
-je        done_setting_colormap
+jne       set_fixed_colormap_nonzero
 
-set_fixed_colormap_nonzero:
-
-;		fixedcolormap =  player.fixedcolormapvalue << 2; 
-SHIFT_MACRO shl       al 2
-mov       byte ptr ds:[_fixedcolormap], al
-
-mov       ah, al
-mov       cx, MAXLIGHTSCALE / 2        ;        scalelightfixed[i] = fixedcolormap;
-mov       di, OFFSET _scalelightfixed  ;     }
-rep       stosw
+mov       byte ptr ds:[_fixedcolormap], al   ; al is zero
 
 
 done_setting_colormap:

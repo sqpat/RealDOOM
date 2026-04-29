@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/27 15:29:10
+Created on:       26/04/29 11:27:02
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -340,7 +340,7 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079c:0000      SM_MPUMD_STARTMARKER_
 079c:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-081a:395c      R_WriteBackViewConstants24_
+081a:395e      R_WriteBackViewConstants24_
 081a:0d91*     tx_already_positive
 081a:2695*     R_AddLine_
 081a:33b8      R_GetPatchTexture_Far24_
@@ -381,14 +381,14 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:1009*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
 081a:2592*     R_Subsector_
 081a:236d*     do_top_texture_draw
-081a:38fa*     R_WriteBackLevelConstants24_
+081a:38fc*     R_WriteBackLevelConstants24_
 081a:163b*     SELFMODIFY_set_rw_distance_lo
 081a:0000      R_BSP24_STARTMARKER_
 081a:0200*     OFFSET_CEILINGCLIP
 081a:153e*     exit_rendersegloop
 081a:12f4*     scales_set
 081a:169d*     R_GetSourceSegment0_START
-081a:376c      R_RenderPlayerView24_
+081a:3780      R_RenderPlayerView24_
 081a:0966*     FixedDivBSPLocal_
 081a:155f*     increment_loop_values
 081a:05d8*     div48_32_BSPLocal_
@@ -399,7 +399,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:2430*     SELFMODIFY_set_pixel_count_shift_mul_bot
 081a:239e*     R_GetSourceSegment0_START_TWOSIDED
 081a:325e*     R_GetTexturePage_
-081a:3ae6*     R_WriteBackFrameConstants_
+081a:3ae8*     R_WriteBackFrameConstants_
 081a:09e0*     FixedMulTrigNoShiftCosine_BSPLocal_
 081a:0a0a*     R_ClearPlanes_
 081a:0056*     _cachedsegmentlumpsBSPLocal
@@ -1638,4 +1638,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e120 (254240.)
 Entry point address: 2fd6:7cbe
-Link time: 00:00.59
+Link time: 00:00.04
