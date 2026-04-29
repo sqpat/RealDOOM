@@ -610,7 +610,7 @@ call	Z_QuickMapRenderPlanes_
 ;call	dword ptr ds:[_R_WriteBackViewConstantsSpanCall]
 db    09Ah
 _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL:
-dw    R_WRITEBACKVIEWCONSTANTSSPAN24OFFSET, SPANFUNC_JUMP_LOOKUP_SEGMENT
+dw    R_WRITEBACKVIEWCONSTANTSSPAN24OFFSET, SPANFUNC_SEGMENT
 call	Z_QuickMapUndoFlatCache_
 ;call	dword ptr ds:[_R_WriteBackViewConstantsMaskedCall]
 db    09Ah

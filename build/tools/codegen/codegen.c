@@ -156,7 +156,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
     "SKYTEXTURE_TEXTURE_SEGMENT",
 
-    "SPANFUNC_JUMP_LOOKUP_SEGMENT",
+    "SPANFUNC_SEGMENT",
     "COLFUNC_MASKEDMAPPING_SEGMENT",
     "COLFUNC_SEGMENT",
     "MASKEDCONSTANTS_FUNCAREA_SEGMENT",
@@ -1253,7 +1253,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 
     skytexture_texture_segment,
 
-    spanfunc_jump_lookup_segment,
+    spanfunc_segment,
     colfunc_segment_maskedmapping,
     colfunc_segment,
     maskedconstants_funcarea_segment,

@@ -591,26 +591,26 @@ void __near Z_RemapRenderFunctions(){
 		case 3:
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanesFLOffset;
-			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpanFLOffset);
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_segment, R_WriteBackViewConstantsSpanFLOffset);
 			ds_source_offset = DRAWSPAN_AH_OFFSET;
 			break;
 		case 2:
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes0Offset;
-			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan0Offset);
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_segment, R_WriteBackViewConstantsSpan0Offset);
 			ds_source_offset = DRAWSPAN_AH_OFFSET;
 			break;
 		case 1:
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes16Offset;
-			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan16Offset);
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_segment, R_WriteBackViewConstantsSpan16Offset);
 			ds_source_offset = DRAWSPAN_BX_OFFSET;
 			break;
 		case 0:
 		default:
 			// remap this to the 24 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes24Offset;
-			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan24Offset);
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_segment, R_WriteBackViewConstantsSpan24Offset);
 			ds_source_offset = DRAWSPAN_AH_OFFSET;
 	}
 

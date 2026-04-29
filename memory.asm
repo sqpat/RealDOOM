@@ -60,7 +60,7 @@ dw 0,  OPENINGS_SEGMENT,  0,  OPENINGS_SEGMENT,  0,  0,  0,  0
 ; _ds_source_segment  0xDA
 dw 00, 00, 00, 00, 00, 00, 00, 00
 ; 0xE0    spanfunc_segment_storage EAh
-dw 0, 0, 0, 0, 0, SPANFUNC_JUMP_LOOKUP_SEGMENT, 0, 0
+dw 0, 0, 0, 0, 0, SPANFUNC_SEGMENT, 0, 0
 
 
 ; 0xF0   validcount (0xF4)= 1
@@ -284,14 +284,14 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 700
 dw  00, 00, 00, 00
 ; 708 R_DrawPlanesCall
-dw R_DrawPlanes24Offset, spanfunc_jump_lookup_segment
+dw R_DrawPlanes24Offset, SPANFUNC_SEGMENT
 ; 70C R_DrawMaskedCall
 dw R_DrawMasked24Offset, drawfuzzcol_area_segment
 
 ; 710 R_WriteBackMaskedFrameConstants
 dw R_WriteBackMaskedFrameConstants24Offset, maskedconstants_funcarea_segment
 ; 714 R_WriteBackViewConstantsSpan
-;dw R_WriteBackViewConstantsSpan24Offset, spanfunc_jump_lookup_segment
+;dw R_WriteBackViewConstantsSpan24Offset, SPANFUNC_SEGMENT
 
 ; 714
 dw  00, 00, 00, 00, 00, 00

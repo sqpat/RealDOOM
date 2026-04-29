@@ -181,6 +181,7 @@ dw 0F0F0h, 0F0F0h
 _lastviewz_shortangle:
 dw 0F0F0h  ; 16 bit?
 _viewangle_shiftright3_bsp:
+public _viewangle_shiftright3_bsp
 dw 0F0F0h
 _lastviewz:
 dw 0F0F0h, 0F0F0h
@@ -15077,6 +15078,7 @@ mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_4+1], ax
 mov      ax, es  
 SHIFT_MACRO shr ax 3
 mov      word ptr ds:[_viewangle_shiftright3_bsp], ax
+mov      word ptr ss:[_viewangle_shiftright3], ax
 
 
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_2+1], ax

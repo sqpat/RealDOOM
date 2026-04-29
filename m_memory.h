@@ -677,7 +677,7 @@ drawmaskedfuncarea_sprite?  86FD:0000
 #define spanfunc_jump_lookup_9000         ((byte  __far*)                   (((uint32_t)spanfunc_jump_lookup)   - 0x9C000000 + 0x90000000))
 //#define spanfunc_function_area_9000       ((uint16_t  __far*)               (((uint32_t)spanfunc_function_area) - 0x9C000000 + 0x90000000))
 
-#define spanfunc_jump_lookup_segment      ((segment_t) ((int32_t)spanfunc_jump_lookup >> 16))
+#define spanfunc_segment      ((segment_t) ((int32_t)spanfunc_jump_lookup >> 16))
 //#define spanfunc_function_area_segment    ((segment_t) ((int32_t)spanfunc_function_area >> 16))
 #define render_9C00_end_segment_24           ((segment_t) ((int32_t)render_9C00_end_24 >> 16))
 #define render_9C00_end_segment_16           ((segment_t) ((int32_t)render_9C00_end_16 >> 16))

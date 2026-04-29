@@ -32,10 +32,10 @@ ENDP
 
 R_DRAWSPANACTUAL_DIFF = (OFFSET R_DrawSpan0_ - OFFSET R_SPAN0_STARTMARKER_)
 
-DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT)) 
+DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_SEGMENT - COLORMAPS_SEGMENT)) 
 
 
-;SPANFUNC_JUMP_LOOKUP_SEGMENT and COLORMAPS_SEGMENT difference is  006A0h
+;SPANFUNC_SEGMENT and COLORMAPS_SEGMENT difference is  006A0h
 _basexscale = 0
 _extralight =     0
 
@@ -55,6 +55,7 @@ _spanfunc_prt:
 
 _spanfunc_outp:
 _planezlight = 0
+_ds_y = 0
 
 
 ; NOTE: cs:offset stuff for self modifying code must be zero-normalized
@@ -249,7 +250,7 @@ sar  bx, 1
 
 ; call R_DrawSpan0_
 db 09Ah
-dw ((SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + (OFFSET R_DrawSpan0_ - OFFSET R_SPAN0_STARTMARKER_)
+dw ((SPANFUNC_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + (OFFSET R_DrawSpan0_ - OFFSET R_SPAN0_STARTMARKER_)
 dw COLORMAPS_SEGMENT
 
 
@@ -1420,7 +1421,7 @@ PUBLIC R_WriteBackViewConstantsSpan0_
 
 
 
-mov      ax, SPANFUNC_JUMP_LOOKUP_SEGMENT
+mov      ax, SPANFUNC_SEGMENT
 mov      ds, ax
 
 

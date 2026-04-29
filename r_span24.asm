@@ -32,7 +32,7 @@ ENDP
 
 
 DRAWSPAN_AH_OFFSET             = 03F00h
-DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT)) + DRAWSPAN_AH_OFFSET
+DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_SEGMENT - COLORMAPS_SEGMENT)) + DRAWSPAN_AH_OFFSET
 
 ; lcall cs:[00xx] here to call R_DrawSpan with the right CS:IP for colormaps to be at cs:3F00
 
@@ -75,8 +75,8 @@ dw 0, 0
 ALIGN 8
 db  2, 0  ; _spanfunc_outp[1]
 
-
 _viewangle_shiftright3_span:
+PUBLIC _viewangle_shiftright3_span
 dw 0, XTOVIEWANGLE_SEGMENT
 
 ALIGN 8
@@ -507,7 +507,7 @@ mov ax, cs
 mov ds, ax
 
 
-mov   ax, word ptr ds:[si + OFFSET span_local_dc_yl_lookup_table_] ; todo try moving to start of file, displacement 1 byte?
+mov   ax, word ptr ds:[si + OFFSET SPAN_LOCAL_DC_YL_LOOKUP_TABLE] ; todo try moving to start of file, displacement 1 byte?
 ; si is free
 
 SELFMODIFY_SPAN_destview_lo_1:
@@ -1066,7 +1066,7 @@ mov   dword ptr ds:[SELFMODIFY_SPAN_ds_xstepystep + 2 - OFFSET R_SPAN24_STARTMAR
 
 
 
-mov   ax, word ptr ds:[si + OFFSET span_local_dc_yl_lookup_table_] ; todo try moving to start of file, displacement 1 byte?
+mov   ax, word ptr ds:[si + OFFSET SPAN_LOCAL_DC_YL_LOOKUP_TABLE] ; todo try moving to start of file, displacement 1 byte?
 ; si is free
 
 SELFMODIFY_SPAN_destview_lo_1:
@@ -2803,7 +2803,7 @@ PUBLIC R_WriteBackViewConstantsSpan24_
 
 
 
-mov      ax, SPANFUNC_JUMP_LOOKUP_SEGMENT
+mov      ax, SPANFUNC_SEGMENT
 mov      ds, ax
 
 
@@ -2813,7 +2813,7 @@ les      ax, dword ptr ss:[_ds_source_offset]
 mov      word ptr ds:[_ds_source_offset_span+0], ax
 mov      word ptr ds:[_ds_source_offset_span+2], es
 
-mov      ax, SPANFUNC_JUMP_LOOKUP_SEGMENT
+mov      ax, SPANFUNC_SEGMENT
 mov      es, ax
 
 
@@ -3053,9 +3053,11 @@ retf
 ENDP
 
 
+; todo get segment? use in r_sky?
 
-span_local_dc_yl_lookup_table_:
-PUBLIC span_local_dc_yl_lookup_table_
+ALIGN 16
+SPAN_LOCAL_DC_YL_LOOKUP_TABLE:
+PUBLIC SPAN_LOCAL_DC_YL_LOOKUP_TABLE
 
 
 sumof80s = 0
