@@ -141,7 +141,7 @@ _playingstate = 	                _NULL_OFFSET + 000BFh
 
 _viletryx =                         _NULL_OFFSET + 000CCh
 _viletryy =                         _NULL_OFFSET + 000D0h
-;_viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h ; unused now
+_shiftedfixedcolormap = 			_NULL_OFFSET + 000D4h
 _snd_SfxDevice = 					_NULL_OFFSET + 000D6h
 _snd_MusicDevice =				    _NULL_OFFSET + 000D7h
 

@@ -14223,18 +14223,7 @@ ENDP
 
 ;R_RenderPlayerView_
 
-ALIGN_MACRO
-set_fixed_colormap_nonzero:
 
-;		fixedcolormap =  player.fixedcolormapvalue << 2; 
-SHIFT_MACRO shl       al 2
-mov       byte ptr ds:[_fixedcolormap], al
-; todo dont repeat every frame if no change
-mov       ah, al
-mov       cx, MAXLIGHTSCALE / 2        ;        scalelightfixed[i] = fixedcolormap;
-mov       di, OFFSET _scalelightfixed  ;     }
-rep       stosw
-jmp       done_setting_colormap
 
 ALIGN_MACRO
 setup_level_constants:
@@ -14267,18 +14256,6 @@ Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 
 
 ;    if (player.fixedcolormapvalue) {
-
-mov       al, byte ptr ds:[_player + PLAYER_T.player_fixedcolormapvalue]
-;		fixedcolormap = 0;
-test      al, al
-jne       set_fixed_colormap_nonzero
-
-mov       byte ptr ds:[_fixedcolormap], al   ; al is zero
-
-
-done_setting_colormap:
-
-
 
 
 
@@ -14887,11 +14864,35 @@ mov      byte ptr ds:[SELFMODIFY_BSP_extralight2_plusone+1], al
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight2_plusone_TWOSIDED+1], al
 skip_extralight_selfmodifies_this_frame:
 
-mov      al, byte ptr ss:[_fixedcolormap]
-cmp      al, byte ptr ds:[_lastfixedcolormap]  ; in cs segment
-je       skip_fixed_colormap_selfmodify_this_frame
+mov       al, byte ptr ss:[_player + PLAYER_T.player_fixedcolormapvalue]
+
+cmp       al, byte ptr ds:[_lastfixedcolormap]  ; in cs segment
+je        skip_fixed_colormap_selfmodify_this_frame
 ; zero these in either case.
-mov      byte ptr ds:[_lastfixedcolormap], al
+mov       byte ptr ds:[_lastfixedcolormap], al
+
+mov       byte ptr ss:[_fixedcolormap], al
+
+;		fixedcolormap =  player.fixedcolormapvalue << 2; 
+
+push      ax
+
+xor       ah, ah
+SHIFT_MACRO shl       ax 4
+mov       word ptr ss:[_shiftedfixedcolormap], ax
+pop       ax
+; todo dont repeat every frame if no change
+test      al, al
+
+je        skip_setting_colormap
+mov       ah, al
+push      ss
+pop       es
+mov       cx, MAXLIGHTSCALE / 2        ;        scalelightfixed[i] = fixedcolormap;
+mov       di, OFFSET _scalelightfixed  ;     }
+rep       stosw
+
+skip_setting_colormap:
 
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3], al
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_5+3], al

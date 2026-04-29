@@ -1695,9 +1695,7 @@ retf
 
 ALIGN_MACRO	
 do_span_fixedcolormap_selfmodify:
-mov   al, byte ptr ds:[_fixedcolormap]
-xor   ah, ah
-SHIFT_MACRO shl ax 2
+mov   ax, word ptr ds:[_shiftedfixedcolormap]
 
 IF COMPISA LE COMPILE_286
     add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
