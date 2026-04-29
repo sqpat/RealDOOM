@@ -1302,14 +1302,60 @@ mov   ds, dx
 add   si, (PALETTEBYTES_SEGMENT - GAMMATABLE_SEGMENT) * 16
 
 mov   dx, PEL_DATA
-mov   cx, 768
+mov   cx, 64
+; unroll 12 instances per loop (3 bytes per loop)
 
+ALIGN_MACRO
 loop_palette_out:
 
 lodsb                   ; *palette
 xlat                    ; gammatablelookup[*palette]
-SHIFT_MACRO sar   ax 2  ; gammatablelookup[*palette] >> 2
 out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
+lodsb                   ; *palette
+xlat                    ; gammatablelookup[*palette]
+out   dx, al
+
 
 loop  loop_palette_out
 
