@@ -274,39 +274,33 @@ lds   bx, dword ptr [bp - 6]
 push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 2]
 push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 0]  ; push call 1 z
 
-mov   di, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
+mov   bx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 
 ;				an = m_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 
 mov   ax, FINESINE_SEGMENT
 mov   es, ax
 
-SHIFT_MACRO shr di 2
-and   di, 0FFFEh  ; clear bottom bits. same as shr 3 shl 1
-mov   ax, di
+SHIFT_MACRO shr bx 2
+
+and   bx, 0FFFEh  ; clear bottom bits. same as shr 3 shl 1
 
 ; time to calculate ax dx bx cx.
 ; z, mt_tfog, -1 all pushed on stack already.
 ;	fogRef = P_SpawnMobj (m_pos->x.w + FastMul16u32(20, finecosine[an]), m_pos->y.w + FastMul16u32(20,finesine[an]) , thing_pos->z.w, MT_TFOG, -1);
 
-mov   bx, word ptr es:[di]
+mov   dx, word ptr es:[bx]
 
-xor   dx, dx
-test  ah, 020h
+
+test  bh, 020h
+mov   ax, 20
 je    skip_sin_invert
-neg   bx
-dec   dx
+neg   ax
 skip_sin_invert:
 
-; dx has sin ebits
-
-mov   cx, 20
 
 ; FastMul16u32u
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
+MUL  DX 
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
 adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
@@ -318,21 +312,15 @@ push  ax   ; get these after next mul call
 COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
 
-xor   ax, ax  ; cos sign bits
-mov   cx, 20
-mov   bx, di
+mov   dx, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
+mov   ax, 20
 test  bh, 030h
-mov   bx, word ptr es:[di + COSINE_OFFSET_IN_SINE]
 jpe   skip_cos_invert
-neg   bx
-dec   ax  ; sign bits
+neg   ax
 skip_cos_invert:
 
 ; FastMul16u32u
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
+MUL  DX       
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]
 adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_x + 2] ;ax/dx ready
@@ -342,6 +330,7 @@ pop   ds ; restore ds
 
 pop   bx
 pop   cx ; cx/bx ready
+
 call  P_SpawnMobj_
 mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
