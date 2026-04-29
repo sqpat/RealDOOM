@@ -788,8 +788,9 @@ lodsw
 test  ax, ax
 jz    skip_berserk
 inc   ax  ;    // Strength counts up to diminish fade.
-stosw
 skip_berserk:
+stosw
+
 
 
 ; invis
