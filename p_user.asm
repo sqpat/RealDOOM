@@ -243,12 +243,12 @@ les   ax, dword ptr ds:[di + PLAYER_T.player_viewheightvalue] ; dx:ax will have 
 mov   dx, es
 cmp   byte ptr ds:[di + PLAYER_T.player_playerstate], PST_LIVE ; 0
 jne   skip_live_height_checks
-    lea   di, [di + PLAYER_T.player_deltaviewheight + 0]
+    mov   di, OFFSET _player + PLAYER_T.player_deltaviewheight
     ; di is offset in this section.
     xor   si, si ; use si as 0 reg
 
-    add   ax, word ptr ds:[di + 0]
-    adc   dx, word ptr ds:[di + 2]
+    add   ax, word ptr ds:[di + 0] ; player_deltaviewheight + 0
+    adc   dx, word ptr ds:[di + 2] ; player_deltaviewheight + 2
 
     cmp   dx, VIEWHEIGHT_HIGHBITS
     jl    dont_cap_viewheight_high
@@ -262,28 +262,44 @@ jne   skip_live_height_checks
     mov   word ptr ds:[di + 2], ax
     jmp   done_with_viewheightcapping_all  ; the following checks would be guaranteed false...
 
+    ; dx:ax still =  player->viewheight
     dont_cap_viewheight_high:
     cmp   dx, VIEWHEIGHT_HIGHBITS/2
     jg    done_with_viewheightcapping_low
     jl    cap_viewheight_low
-    cmp   ax, 08000h  ; VIEWHEIGHT_HIGHBITS/2 lowbits
-    jae   done_with_viewheightcapping_low
+    test  ax, ax  ; VIEWHEIGHT_HIGHBITS/2 lowbits  08000h
+    js    done_with_viewheightcapping_low
     cap_viewheight_low:
     mov   ax, 08000h
-    mov   dx, VIEWHEIGHT_HIGHBITS
-    cmp   word ptr ds:[di + 2], si 
-    jg    done_with_viewheightcapping_low  ; positive
+    mov   dx, VIEWHEIGHT_HIGHBITS/2
+
+
+;	    if (player->deltaviewheight <= 0)
+;		player->deltaviewheight = 1;
+
+
+    cmp   word ptr ds:[di + 2], si ; 0
+    jg    done_with_viewheightcapping_low  ; positive, dont set to 1.
     jl    cap_delta
     ; zero...
     cmp   word ptr ds:[di + 0], si ; 0
-    jne   done_with_viewheightcapping_low
+    ja    done_with_viewheightcapping_low  ; positive, dont set to 1
     cap_delta:
-    mov   word ptr ds:[di + 0], 04000h  ; it would have been added below. instead add now and skip that section
-    inc   si
-    mov   word ptr ds:[di + 2], si ; 1
+    
+
+    mov   word ptr ds:[di + 0], 04001h  ; 04000h would have been added below. instead add now and skip that section
+    mov   word ptr ds:[di + 2], si   ; zero
     jmp   done_with_viewheightcapping_all
 
     done_with_viewheightcapping_low:
+
+; now we compare deltaviewheight...
+
+;       player->deltaviewheight += FRACUNIT/4;
+;	    if (!player->deltaviewheight)
+;	        player->deltaviewheight = 1;
+
+
     cmp   word ptr ds:[di], si 
     jne   add_to_viewheight_again
     cmp   word ptr ds:[di + 2], si 
@@ -292,7 +308,7 @@ jne   skip_live_height_checks
     add   word ptr ds:[di + 0], 04000h  
     adc   word ptr ds:[di + 2], si      ; 0
     jnz   done_with_viewheightcapping_all
-    cmp   word ptr ds:[di], si   ; check zero again
+    cmp   word ptr ds:[di + 0], si   ; check zero again
     jne   done_with_viewheightcapping_all
     inc   word ptr ds:[di + 0] ; set to 1.
 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/29 22:04:56
+Created on:       26/04/30 10:29:30
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -68,9 +68,9 @@ P_SPEC_TEXT            CODE           AUTO           2440:7492       000009a2
 P_SWITCH_TEXT          CODE           AUTO           2440:7e34       000003a6
 P_TELEPT_TEXT          CODE           AUTO           2440:81da       0000017b
 P_TICK_TEXT            CODE           AUTO           2440:8356       000001b8
-P_USER_TEXT            CODE           AUTO           2440:850e       0000042a
-P_INFO_TEXT            CODE           AUTO           2440:8938       00000326
-AM_MAP_TEXT            CODE           AUTO           2440:8c5e       00000b59
+P_USER_TEXT            CODE           AUTO           2440:850e       00000428
+P_INFO_TEXT            CODE           AUTO           2440:8936       00000326
+AM_MAP_TEXT            CODE           AUTO           2440:8c5c       00000b59
 P_MATH_TEXT            CODE           AUTO           2440:97c0       000007c3
 HU_SETUP_TEXT          CODE           AUTO           2440:9f84       00000248
 HU_LIB_TEXT            CODE           AUTO           2440:a1cc       0000014d
@@ -142,8 +142,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 004a:1141      WI_ENDMARKER_
 004a:08bb*     WI_initStats_
 004a:03e7*     WI_slamBackground_
-004a:0cfb*     WI_updateNoState_
 004a:073d*     WI_drawPercent_
+004a:0cfb*     WI_updateNoState_
 004a:0dff*     WI_initVariables_
 004a:0d59      WI_Ticker_
 004a:0000      WI_STARTMARKER_
@@ -200,8 +200,8 @@ Module: m_menu.obj(m_menu.ASM)
 015f:085f*     M_NewGame_
 015f:09c5*     M_ChangeMessages_
 015f:0a02*     M_EndGame_
-015f:06bb*     M_QuickLoad_
 015f:07e7*     M_MusicVol_
+015f:06bb*     M_QuickLoad_
 015f:05ed*     M_QuickSaveResponse_
 015f:0838*     M_DrawNewGame_
 015f:078c*     M_Sound_
@@ -510,8 +510,8 @@ Module: r_colfl.obj(r_colfl.ASM)
 1998:0334      MARKER_SM_COLFUNC_jump_offsetFL_
 1998:0000      R_COLUMNFL_STARTMARKER_
 Module: r_span24.obj(r_span24.ASM)
-19f1:005b*     _spanfunc_jump_target
 19f1:0ea6*     evict_flat
+19f1:005b*     _spanfunc_jump_target
 19f1:0345*     MARKER_SM_SPAN24_AFTER_JUMP_1
 19f1:0b36*     do_next_drawplanes_loop
 19f1:0bb0*     loop_find_flat
@@ -586,31 +586,31 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd0:058a*     ENSUREALIGN_104_sprite
 1dd0:0b7e*     ENSUREALIGN_109
 1dd0:05a4*     ENSUREALIGN_101_sprite
-1dd0:1527*     ENSUREALIGN_106
+1dd0:0b20*     ENSUREALIGN_111
 1dd0:0f74*     FastDiv3232FFFF_
 1dd0:0988*     ENSUREALIGN_114
-1dd0:0b20*     ENSUREALIGN_111
 1dd0:097c*     ENSUREALIGN_117
 1dd0:0b85*     ENSUREALIGN_110
-1dd0:0596*     ENSUREALIGN_106_sprite
 1dd0:093e*     ENSUREALIGN_120
 1dd0:1124*     ENSUREALIGN_121
 1dd0:129d*     ENSUREALIGN_122
 1dd0:0153*     ENSUREALIGN_102
+1dd0:1527*     ENSUREALIGN_106
 1dd0:1511*     ENSUREALIGN_107
 1dd0:0a62*     ENSUREALIGN_113
 1dd0:044c*     ENSUREALIGN_132
 1dd0:0408*     ENSUREALIGN_133
 1dd0:033f*     ENSUREALIGN_129
 1dd0:05d2*     ENSUREALIGN_130
+1dd0:0596*     ENSUREALIGN_106_sprite
 1dd0:0a95*     ENSUREALIGN_128
 1dd0:14ab*     ENSUREALIGN_131
-1dd0:12f2*     ENSUREALIGN_123
 1dd0:098c*     ENSUREALIGN_118
 1dd0:0bcd*     ENSUREALIGN_115
 1dd0:0923*     ENSUREALIGN_119
 1dd0:0418*     ENSUREALIGN_135
 1dd0:098f*     ENSUREALIGN_116
+1dd0:12f2*     ENSUREALIGN_123
 1dd0:14bd*     ENSUREALIGN_127
 1dd0:0695*     three_page_sprite
 1dd0:0512*     ENSUREALIGN_132_sprite
@@ -620,9 +620,9 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd0:0440*     ENSUREALIGN_134
 1dd0:152d*     ENSUREALIGN_105
 1dd0:151b*     ENSUREALIGN_104
-1dd0:1535*     ENSUREALIGN_101
 1dd0:051a*     ENSUREALIGN_131_sprite
 1dd0:12a6*     ENSUREALIGN_125
+1dd0:1535*     ENSUREALIGN_101
 1dd0:052c*     ENSUREALIGN_127_sprite
 1dd0:1930*     R_WriteBackMaskedLevelConstants24_
 1dd0:1242*     continue_checking_if_drawseg_obscures_sprite
@@ -752,8 +752,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 2440:3f24*     A_FireShotgun_
 2440:3e3c*     P_BulletSlope_
 2440:4018*     A_LoadShotgun2_
-2440:3f52*     A_FireShotgun2_
 2440:39c0*     P_PSPR_STARTMARKER_
+2440:3f52*     A_FireShotgun2_
 2440:3fc6*     A_FireCGun_
 2440:3b16      P_DropWeapon_
 2440:401e*     A_CloseShotgun2_
@@ -802,8 +802,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2440:4cf5*     A_BruisAttack_
 2440:5b68      P_SetMobjState_
 2440:44f8*     P_TryWalk_
-2440:4c8b*     A_HeadAttack_
 2440:5855*     A_BrainScream_
+2440:4c8b*     A_HeadAttack_
 2440:56b4*     A_Pain_
 2440:4f5a*     PIT_VileCheck_
 2440:572b*     A_BossDeath_
@@ -811,14 +811,14 @@ Module: p_enemy.obj(p_enemy.ASM)
 2440:5c17*     P_ENEMY_ENDMARKER_
 2440:51ce*     A_Fire_
 2440:4a60*     A_SPosAttack_
-2440:4b99*     A_SpidRefire_
 2440:4adc*     A_CPosAttack_
+2440:4b99*     A_SpidRefire_
 2440:4507*     P_NewChaseDir_
 2440:51c2*     A_StartFire_
 2440:4d8f*     A_Tracer_
 2440:5484*     A_SkullAttack_
-2440:4194*     P_ENEMY_STARTMARKER_
 2440:4b4a*     A_CPosRefire_
+2440:4194*     P_ENEMY_STARTMARKER_
 2440:4c06*     A_TroopAttack_
 2440:564c*     A_PainAttack_
 2440:57fb*     A_BrainAwake_
@@ -921,54 +921,54 @@ Module: p_tick.obj(p_tick.ASM)
 2440:8430      P_Ticker_
 2440:836c      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-2440:8938*     P_USER_ENDMARKER_
+2440:8936*     P_USER_ENDMARKER_
 2440:850f*     P_Thrust_
 2440:8547*     P_CalcHeight_
-2440:86f1*     P_DeathThink_
+2440:86ef*     P_DeathThink_
 2440:850f*     P_USER_STARTMARKER_
-2440:866d*     P_MovePlayer_
-2440:87e9      P_PlayerThink_
+2440:866b*     P_MovePlayer_
+2440:87e7      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-2440:8b62      GetPainChance_
-2440:8bf4      GetAttackSound_
-2440:8be0      GetDeathState_
-2440:8bc0      GetSeeState_
-2440:8b22      GetXDeathState_
-2440:8bb6      GetPainSound_
-2440:8ba4      GetActiveSound_
-2440:8b74      GetRaiseState_
-2440:8bea      GetPainState_
-2440:8bd6      GetMissileState_
-2440:8b44      GetMeleeState_
-2440:8c22      GetDamage_
-2440:8c5e*     P_INFO_ENDMARKER_
-2440:8b80      GetMobjMass_
-2440:8c4e      GetSpawnHealth_
-2440:8938*     P_INFO_STARTMARKER_
+2440:8b60      GetPainChance_
+2440:8bf2      GetAttackSound_
+2440:8bde      GetDeathState_
+2440:8bbe      GetSeeState_
+2440:8b20      GetXDeathState_
+2440:8bb4      GetPainSound_
+2440:8ba2      GetActiveSound_
+2440:8b72      GetRaiseState_
+2440:8be8      GetPainState_
+2440:8bd4      GetMissileState_
+2440:8b42      GetMeleeState_
+2440:8c20      GetDamage_
+2440:8c5c*     P_INFO_ENDMARKER_
+2440:8b7e      GetMobjMass_
+2440:8c4c      GetSpawnHealth_
+2440:8936*     P_INFO_STARTMARKER_
 Module: am_map.obj(am_map.ASM)
-2440:8d91*     FastMulTrig16Sine_
-2440:8ed8*     AM_findMinMaxBoundaries_
-2440:8ffd*     AM_clearMarks_
-2440:8d62*     FastMulTrig16Cosine_
-2440:8f58*     AM_changeWindowLoc_
-2440:9014*     AM_Start_
-2440:8c5e*     AM_MAP_STARTMARKER_
-2440:90f2*     AM_minOutWindowScale_
-2440:8de5*     AM_activateNewScale_
-2440:926f      AM_Ticker_
-2440:95e6*     AM_drawLineCharacter_
-2440:936e*     AM_drawMline_
-2440:95ae*     AM_rotate_
-2440:8e3a*     AM_restoreScaleAndLoc_
-2440:8dd0*     CYMTOF16_
-2440:8dc0*     CXMTOF16_
-2440:96ae      AM_Drawer_
-2440:8ea3*     AM_addMark_
-2440:97b7*     AM_MAP_ENDMARKER_
-2440:963b*     AM_drawPlayers_
-2440:9115      AM_Responder_
-2440:94cc*     AM_drawWalls_
-2440:934c*     DOOUTCODE_
+2440:8d8f*     FastMulTrig16Sine_
+2440:8ed6*     AM_findMinMaxBoundaries_
+2440:8ffb*     AM_clearMarks_
+2440:8d60*     FastMulTrig16Cosine_
+2440:8f56*     AM_changeWindowLoc_
+2440:9012*     AM_Start_
+2440:8c5c*     AM_MAP_STARTMARKER_
+2440:90f0*     AM_minOutWindowScale_
+2440:8de3*     AM_activateNewScale_
+2440:926d      AM_Ticker_
+2440:95e4*     AM_drawLineCharacter_
+2440:936c*     AM_drawMline_
+2440:95ac*     AM_rotate_
+2440:8e38*     AM_restoreScaleAndLoc_
+2440:8dce*     CYMTOF16_
+2440:8dbe*     CXMTOF16_
+2440:96ac      AM_Drawer_
+2440:8ea1*     AM_addMark_
+2440:97b5*     AM_MAP_ENDMARKER_
+2440:9639*     AM_drawPlayers_
+2440:9113      AM_Responder_
+2440:94ca*     AM_drawWalls_
+2440:934a*     DOOUTCODE_
 Module: p_math.obj(p_math.ASM)
 2440:9812*     ENSUREALIGN_903
 2440:9864      FixedMulTrigNoShiftCosine_MapLocal_
@@ -1302,8 +1302,8 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 2fd5:63ec*     _SB_IntController1Mask
 2fd5:704b      SB_StopPlayback_
 2fd5:63eb      _SB_IntController2Mask
-2fd5:6b96*     S_NormalizeSfxVolume_
 2fd5:63ef      _SB_OriginalVoiceVolumeRight
+2fd5:6b96*     S_NormalizeSfxVolume_
 2fd5:70ed*     S_SBFX_ENDMARKER_
 2fd5:7027*     SB_DMA_EndTransfer_
 2fd5:6606*     S_IncreaseRefCount_
@@ -1644,4 +1644,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e120 (254240.)
 Entry point address: 2fd5:7cce
-Link time: 00:00.04
+Link time: 00:00.60
