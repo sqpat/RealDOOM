@@ -371,16 +371,24 @@ ALIGN 16
 MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 
+
 PROC    R_DrawColumn24NormalStretch_ FAR
 PUBLIC  R_DrawColumn24NormalStretch_
 
+; weird. tested to run a bit faster on real 286 if odd aligned pixel loop.
+
+; possible but doesnt gel with aligns:
+; xchg ax, dx -> inc ax -> mov [..], ax -> mov ax, dx  
+
+  xchg  ax, ax
+  inc   dx        ;   we sort of get this for free in ALU since we are sort of just waiting to prefetch the following instruction anyway
   mov   word ptr cs:[((COLFUNC_FUNCTION_AREA_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_normalstretch_+1], dx ; five bytes
 
 
    ; ch is unset (garbage), but implied value 0. skip the mul ch step
 
 ; credit to zero318 for various ideas for the function
-   MOV  DX, AX  ; copy center24y
+   MOV  DX, AX  ; restore center24y
 
    AND  DH, BL
    SUB  CL, DH  ; apply neg sign
@@ -393,7 +401,7 @@ PUBLIC  R_DrawColumn24NormalStretch_
    mov  dx, 07Fh
     ; dont need to zero ch. first use of SI is ANDed anyway.
 
-; todo clean this up...
+
    
    xchg si, cx   ; si gets hi texel, cx gets low texel 
 
@@ -406,7 +414,7 @@ PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_normalstretch_
    mov     es, ax; ready the viewscreen segment
 
    cli 
-   ;lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and ax to 004Fh (hardcoded) to mvoe into sp
+
    mov     ss, sp
    mov     sp, 04Fh
 
@@ -417,8 +425,8 @@ PUBLIC MARKER_SM_COLFUNC_jump_offset24_normalstretch_
    jmp loop_done_normalstretch         ; relative jump to be modified before function is called
 ; currently EVEN
 ; 12 bytes each
+  xchg ax, ax
 ENSUREALIGN_204:
-
 
    ;; 12 bytes loop iter
 
@@ -465,12 +473,10 @@ loop_done_normalstretch:
 
 
 ENDP
-COMMENT @
 public ENSUREALIGN_201
 public ENSUREALIGN_202
 public ENSUREALIGN_203
 public ENSUREALIGN_204
-@
 
 ; end marker for this asm file
 PROC R_COLUMN24_ENDMARKER_ 
