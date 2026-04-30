@@ -3021,9 +3021,6 @@ carry_gametic_inc:
 inc   word ptr ds:[_gametic+2]
 jmp   done_with_gametic_inc
 
-carry_maketic_inc:
-inc   word ptr ds:[_maketic+2]
-jmp   done_with_maketic_inc
 do_advance_demo:
 call  D_DoAdvanceDemo_
 jmp   done_advancing_demo
@@ -3057,8 +3054,6 @@ inc   word ptr ds:[_gametic]
 jz    carry_gametic_inc
 done_with_gametic_inc:
 inc   word ptr ds:[_maketic]
-jz    carry_maketic_inc
-done_with_maketic_inc:
 jmp   continue_tic
 
 do_skullanimdecrease:

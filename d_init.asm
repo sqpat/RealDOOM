@@ -733,7 +733,6 @@ call  DoPrintChain_
 call  I_Init_
 
 mov   word ptr ds:[_maketic+0], 0
-mov   word ptr ds:[_maketic+2], 0
 
 
 mov   ax, S_INIT_STRING_TEXT

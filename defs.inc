@@ -540,6 +540,7 @@ _W_CheckNumForNameFar_addr =         _NULL_OFFSET + 0078Ch
 
 _gametime = 				         _NULL_OFFSET + 00790h
 _maketic = 				             _NULL_OFFSET + 00794h
+; 796 unused.
 _starttime = 				         _NULL_OFFSET + 00798h
 _oldentertics =					     _NULL_OFFSET + 0079Ch
 _inhelpscreensstate =				 _NULL_OFFSET + 0079Eh

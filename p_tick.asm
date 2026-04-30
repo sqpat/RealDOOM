@@ -330,7 +330,7 @@ jz        extra_add_to_leveltime
 retf  
 extra_add_to_leveltime:
 inc       word ptr ds:[_leveltime+2]
-
+retf
 
 ALIGN_MACRO
 continue_checking_tf_types:

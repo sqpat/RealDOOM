@@ -49,7 +49,7 @@
 #define P_SetThingPositionFarOffset             0x2A74
 #define P_SpawnMapThingOffset                   0x2BEC
 #define P_SpawnSpecialsOffset                   0x7DA8
-#define AM_DrawerOffset                         0x96AC
+#define AM_DrawerOffset                         0x96AE
 #define S_StartSoundFarOffset                   0xB7EA
 #define S_StartOffset                           0xB8C9
 #define M_InitOffset                            0x1186
