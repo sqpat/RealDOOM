@@ -1802,6 +1802,8 @@ and    al, NOT 8
 or     al, 4
 out    dx, al   ; outp(SC_INDEX + 1, (inp(SC_INDEX + 1)&~8) | 4);
 
+GC_MODE             =   5
+
 mov    dx, GC_INDEX ; 03Ceh
 mov    al, GC_MODE  ; 5
 out    dx, al
@@ -1829,6 +1831,8 @@ shl    cx, 1
 xor    ax, ax
 mov    di, ax
 rep    stosw        ; FAR_memset(currentscreen, 0, 0xFFFFu);
+
+CRTC_INDEX 			=   03D4h
 
 mov    dx, CRTC_INDEX
 mov    al, 20; CRTC_UNDERLINE

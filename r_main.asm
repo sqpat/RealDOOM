@@ -61,6 +61,8 @@ inc   dx
 mov   al, 00Fh
 out   dx, al
 
+GC_MODE             =   5
+
 ;    outp(GC_INDEX, GC_MODE);
 mov   dx, GC_INDEX
 mov   al, GC_MODE

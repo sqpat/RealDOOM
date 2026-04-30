@@ -5543,6 +5543,7 @@ ELSE
    mov   bp, 01000h ;high byte set.
    jmp   skip_walllights
    ALIGN_MACRO
+   SELFMODIFY_BSP_fixedcolormap_6_TARGET_ALTERNATE:
    use_max_light:
    ; ugly 
    mov   bx, MAXLIGHTSCALE - 1
@@ -5635,7 +5636,7 @@ ENSUREALIGN_069:
 ENDP
 
 just_do_draw_mid:
-ENSUREALIGN_075:
+
 
 ; ds must be reset to cs returning here.
 
@@ -5659,16 +5660,16 @@ SELFMODIFY_set_rwscale_hi_mid:
 mov   cx, 01000h   ; todo ch is always zero...? so mov cl..?
 ENSUREALIGN_003:
 
-SELFMODIFY_set_rwscale_lo_mid:
-mov   ax, 01000h 
 
-SELFMODIFY_BSP_fixedcolormap_6:
-SELFMODIFY_BSP_fixedcolormap_6_AFTER = SELFMODIFY_BSP_fixedcolormap_6 + 2
 
 cmp   cl, 3
+SELFMODIFY_set_rwscale_lo_mid:
+mov   ax, 01000h 
 ENSUREALIGN_004:
 
+SELFMODIFY_BSP_fixedcolormap_6:
 jae   use_max_light
+SELFMODIFY_BSP_fixedcolormap_6_AFTER:
 do_lightscaleshift:
 
 ; shift 8
@@ -8703,17 +8704,17 @@ push  dx       ; later popped into dx  ; todo remove?
 SELFMODIFY_set_rwscale_hi_bottop:
 mov   cx, 01000h 
 ENSUREALIGN_007:
+
+
+cmp   cl, 3
+
 SELFMODIFY_set_rwscale_lo_bottop:
 mov   ax, 01000h 
 ENSUREALIGN_008:
 
-
-mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot+2], al
-
 SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED:
-SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_AFTER = SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED + 2
-cmp   cl, 3
 jae   use_max_light_TWOSIDED
+SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_AFTER:
 do_lightscaleshift_TWOSIDED:
 
 ; shift 8
@@ -8764,6 +8765,7 @@ ALIGN_MACRO
 
 
 ; up to here now
+SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_TARGET_ALTERNATE:
 
 use_max_light_TWOSIDED:
 ; ugly 
@@ -14917,9 +14919,9 @@ mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3_TWOSIDED], ax
 
-mov      ax, 0F980h  ; cmp cl, imm8
-mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_6], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_6], ((SELFMODIFY_BSP_fixedcolormap_6_TARGET_ALTERNATE - SELFMODIFY_BSP_fixedcolormap_6_AFTER) SHL 8) + 073h ; jae use_max_light
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED], ((SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_TARGET_ALTERNATE - SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_AFTER) SHL 8) + 073h ; jae use_max_light_TWOSIDED
+
 
 
 jmp      done_with_bsp_fixedcolormap_selfmodify
@@ -15197,7 +15199,7 @@ public ENSUREALIGN_071
 public ENSUREALIGN_072
 public ENSUREALIGN_073
 public ENSUREALIGN_074
-public ENSUREALIGN_075
+
 public ENSUREALIGN_076
 public ENSUREALIGN_078
 public ENSUREALIGN_079
@@ -15247,6 +15249,10 @@ public ENSUREALIGN_324
 IF COMPISA GE COMPILE_386
 ELSE
 public ENSUREALIGN_051
+public ENSUREALIGN_008
+public ENSUREALIGN_003
+public ENSUREALIGN_004
+public ENSUREALIGN_007
 public ENSUREALIGN_066
 public ENSUREALIGN_067
 public ENSUREALIGN_068

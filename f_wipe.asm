@@ -115,6 +115,7 @@ PUBLIC I_FinishUpdate_Fwipe_local_
 ;		destscreen.h.fracbits = 0x0000;
 ;	}
 
+CRTC_INDEX 			=   03D4h
 
 push  dx
 mov   ax, word ptr ds:[_destscreen]

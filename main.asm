@@ -1289,6 +1289,9 @@ cleared_flag_8:
 
 call  Z_QuickMapPalette_
 
+PEL_WRITE_ADR		=	03C8h
+PEL_DATA			=	03C9h
+
 mov   dx, PEL_WRITE_ADR
 xor   ax, ax
 out   dx, al
