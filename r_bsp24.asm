@@ -5537,7 +5537,11 @@ ELSE
    mov   cx, cs
    jmp   increment_loop_values  ; restore bp here
 
+   ALIGN_MACRO
+   SELFMODIFY_BSP_fixedcolormap_6_TARGET:
 
+   mov   bp, 01000h ;high byte set.
+   jmp   skip_walllights
    ALIGN_MACRO
    use_max_light:
    ; ugly 
@@ -5655,10 +5659,13 @@ SELFMODIFY_set_rwscale_hi_mid:
 mov   cx, 01000h   ; todo ch is always zero...? so mov cl..?
 ENSUREALIGN_003:
 
-
-cmp   cl, 3
 SELFMODIFY_set_rwscale_lo_mid:
 mov   ax, 01000h 
+
+SELFMODIFY_BSP_fixedcolormap_6:
+SELFMODIFY_BSP_fixedcolormap_6_AFTER = SELFMODIFY_BSP_fixedcolormap_6 + 2
+
+cmp   cl, 3
 ENSUREALIGN_004:
 
 jae   use_max_light
@@ -5679,11 +5686,12 @@ SELFMODIFY_add_wallights:
 mov   dh, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
 ENSUREALIGN_070:
 ; dl 0 from earlier cwd.
-xchg  ax, bx  ; cx:bx is proper value again.
 ;        set colormap offset to high byte
 
 
 mov   bp, dx
+skip_walllights:
+xchg  ax, bx  ; cx:bx is proper value again.
 ; INLINED FASTDIV3232FFF_ 
 
 ; set ax:dx ffffffff
@@ -8695,11 +8703,16 @@ push  dx       ; later popped into dx  ; todo remove?
 SELFMODIFY_set_rwscale_hi_bottop:
 mov   cx, 01000h 
 ENSUREALIGN_007:
-
-cmp   cl, 3
 SELFMODIFY_set_rwscale_lo_bottop:
 mov   ax, 01000h 
 ENSUREALIGN_008:
+
+
+mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot+2], al
+
+SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED:
+SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_AFTER = SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED + 2
+cmp   cl, 3
 jae   use_max_light_TWOSIDED
 do_lightscaleshift_TWOSIDED:
 
@@ -8721,10 +8734,10 @@ SELFMODIFY_add_wallights_TWOSIDED:
 mov   bl, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
 ENSUREALIGN_021:
 
-xchg  ax, bx  ; cx:bx is proper value again.
 ;        set colormap offset to high byte
 
-
+skip_walllights_TWOSIDED:
+xchg  ax, bx  ; cx:bx is proper value again.
 
 mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_TWOSIDED+2], al
 mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot+2], al
@@ -8733,6 +8746,7 @@ mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot+2], al
 
 
 jmp   light_set_TWOSIDED
+ALIGN_MACRO
 
 IF COMPISA GE COMPILE_386
    ALIGN_MACRO
@@ -8741,7 +8755,10 @@ IF COMPISA GE COMPILE_386
    xor   dx, dx
    jmp   seg_non_textured_TWOSIDED
 ENDIF
-
+ALIGN_MACRO
+SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_TARGET:
+mov   bl, MAXLIGHTSCALE - 1
+jmp   skip_walllights_TWOSIDED
 ALIGN_MACRO
 
 
@@ -14882,18 +14899,9 @@ xor       ah, ah
 SHIFT_MACRO shl       ax 4
 mov       word ptr ss:[_shiftedfixedcolormap], ax
 pop       ax
-; todo dont repeat every frame if no change
-test      al, al
 
-je        skip_setting_colormap
-mov       ah, al
-push      ss
-pop       es
-mov       cx, MAXLIGHTSCALE / 2        ;        scalelightfixed[i] = fixedcolormap;
-mov       di, OFFSET _scalelightfixed  ;     }
-rep       stosw
-
-skip_setting_colormap:
+mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_6_TARGET+2], al
+mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_TARGET+1], al
 
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3], al
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_5+3], al
@@ -14909,6 +14917,10 @@ mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3_TWOSIDED], ax
 
+mov      ax, 0F980h  ; cmp cl, imm8
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_6], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED], ax
+
 
 jmp      done_with_bsp_fixedcolormap_selfmodify
 ALIGN_MACRO
@@ -14916,10 +14928,7 @@ do_bsp_fixedcolormap_selfmodify:
 
 
 
-; zero out the value in the walllights read which wont be updated again.
-; It'll get a fixedcolormap value by default. We could alternately get rid of the loop that sets scalelightfixed to fixedcolormap and modify the instructions like above.
-mov   word ptr cs:[SELFMODIFY_add_wallights+3], OFFSET _scalelightfixed 
-mov   word ptr cs:[SELFMODIFY_add_wallights_TWOSIDED+3], OFFSET _scalelightfixed 
+
 
 mov   ax, ((SELFMODIFY_BSP_fixedcolormap_2_TARGET - SELFMODIFY_BSP_fixedcolormap_2_AFTER) SHL 8) + 0EBh
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
@@ -14927,6 +14936,10 @@ mov   ah, (SELFMODIFY_BSP_fixedcolormap_3_TARGET - SELFMODIFY_BSP_fixedcolormap_
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
 mov   ah, (SELFMODIFY_BSP_fixedcolormap_4_TARGET - SELFMODIFY_BSP_fixedcolormap_4_AFTER)
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4], ax
+mov   ah, (SELFMODIFY_BSP_fixedcolormap_6_TARGET - SELFMODIFY_BSP_fixedcolormap_6_AFTER)
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_6], ax
+mov   ah, (SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_TARGET - SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED_AFTER)
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_6_TWOSIDED], ax
 
 mov   ah, (SELFMODIFY_BSP_fixedcolormap_3_TARGET_TWOSIDED - SELFMODIFY_BSP_fixedcolormap_3_AFTER_TWOSIDED)
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3_TWOSIDED], ax
