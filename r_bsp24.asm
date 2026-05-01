@@ -5365,7 +5365,7 @@ sub   si, cx   ; yl - yh. technically we want to know if (yh - yl) is positive t
 ; ax is floorclip+1
 ; dl is ceilingclip+1
 SELFMODIFY_BSP_markfloor_1:
-public SELFMODIFY_BSP_markfloor_1
+
 SELFMODIFY_BSP_markfloor_1_AFTER = SELFMODIFY_BSP_markfloor_1 + 2
 inc   cx			; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET top = yh + 1... + cmp cl, dl    OR  jmp    markfloor_done ; 
 db  038h, 0D1h   ; cmp cl, dl with specific encoding for selfmodify
@@ -5398,7 +5398,7 @@ jmp   SHORT markfloordirty_mid  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into
 SELFMODIFY_BSP_markfloor_1_TARGET:
 
 markfloor_done:
-public  markfloor_done
+
 ; get jns check sort of for free, we need to sal anyway on fall thru
 sal   si, 1        ; multiply pixel count by 2. if signed no pixels to draw
 jg    jump_to_mid_no_pixels_to_draw ; had to wait until floors/ceils marked to early out.
@@ -5426,7 +5426,7 @@ sar   di, 1
 
 
 SELFMODIFY_BSP_add_destview_offset:
-public SELFMODIFY_BSP_add_destview_offset
+
 lea   di, [di + bp + 01000h]           ; di has destview offset  ; rare, dont align
 
 
@@ -5434,7 +5434,7 @@ lea   di, [di + bp + 01000h]           ; di has destview offset  ; rare, dont al
 mov   si, dx  ; 2, 2   dx already multiplied by 2
 shl   si, 1   ; 4, 2
 SELFMODIFY_set_pixel_count_shift_mul:
-public SELFMODIFY_set_pixel_count_shift_mul
+
 ; 12 per is 01 d6 d1 e6 
 ; 10 per is d1 e6 01 d6 
 add   si, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
@@ -5500,7 +5500,7 @@ ELSE
    test  bh, 010h
 
    SELFMODIFY_set_rw_distance_lo:
-   public SELFMODIFY_set_rw_distance_lo
+
    mov   ax, 01000h
    ENSUREALIGN_066:
 
@@ -5513,7 +5513,7 @@ ELSE
    jnz   do_32_bit_finetan_mul
 
    do_16_bit_mul:
-   public do_16_bit_mul
+
 
    ; BX * CX:AX
 
@@ -5596,7 +5596,6 @@ done_with_finetanmul:
 SELFMODIFY_set_cx_rw_offset_lo:	
 add   ax, 01000h   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi:
-public SELFMODIFY_set_ax_rw_offset_hi
 adc   dx, 01000h
 
 
@@ -5604,8 +5603,8 @@ adc   dx, 01000h
 
 
 ; inlined function. 
-R_GetSourceSegment0_START:
-PUBLIC  R_GetSourceSegment0_START
+; R_GetSourceSegment0_START:
+
 
 
 ; okay. we modify the first instruction in this argument. 
@@ -5615,7 +5614,7 @@ PUBLIC  R_GetSourceSegment0_START
    ; AND texturecol (dl) to mask (ah) then mul al to that. then add base segment.
 
 
-SELFMODIFY_BSP_set_seglooptexrepeat0:
+SELFMODIFY_BSP_set_seglooptexrepeat_mid:
 ; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
 jmp    out_of_texture_bounds_mid
 
@@ -5629,14 +5628,13 @@ and   ah, dl   ; ah has loopwidth-1 (modulo )
 mul   ah       ; al has heightval
 
 add_base_segment_and_draw_mid:  ; align target?
-SELFMODIFY_add_cached_segment0:
+SELFMODIFY_add_cached_segment_mid:
 add   ax, 01000h
 ENSUREALIGN_069:
 
 ENDP
 
 just_do_draw_mid:
-
 
 ; ds must be reset to cs returning here.
 
@@ -6017,8 +6015,8 @@ rep   stosb
 done_skipping_markfloor_copy_mid:
 
 ; clean up the self modified code of renderseg loop. 
-mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_mid_AFTER)
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_mid], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_mid+1], (SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_mid_AFTER)
 
 ; single wall mid texture has no clipping done...
 
@@ -6058,8 +6056,8 @@ ALIGN_MACRO
 seglooptexrepeat_mid_is_jmp:
 ; ds already cs
 ; todo make sure the word write is word aligned.
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_1 - SELFMODIFY_BSP_set_seglooptexrepeat_mid_AFTER)
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_mid], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_mid+1], (SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_1 - SELFMODIFY_BSP_set_seglooptexrepeat_mid_AFTER)
 jmp   just_do_draw_mid
 
 
@@ -6083,11 +6081,11 @@ ret
 ALIGN_MACRO
    SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_1:
    ; start of the path.
-   non_repeating_texture_mid:
+   ; non_repeating_texture_mid
    cmp   dx, word ptr ds:[_segloopnextlookup]
    jge   out_of_texture_bounds_mid
    cmp   dx, word ptr ds:[_segloopprevlookupBSPLocal]
-   jnge  out_of_texture_bounds_mid
+   jl    out_of_texture_bounds_mid
    xchg  ax, dx
    sub   al, byte ptr ds:[_segloopcachedbasecolBSPLocal]
    mul   byte ptr ds:[_segloopheightvalcache]
@@ -6106,7 +6104,7 @@ ALIGN_MACRO
    ENSUREALIGN_074:
    pop   bx
    mov   dx, word ptr ds:[_segloopcachedsegment]
-   mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
+   mov   word ptr ds:[SELFMODIFY_add_cached_segment_mid+1], dx
 
 
 
@@ -6117,8 +6115,8 @@ ALIGN_MACRO
    je    seglooptexrepeat_mid_is_jmp
    ; modulo is seglooptexrepeat - 1
    ; todo make sure the word write is word aligned.
-   mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0],   0B8h   ; mov ax, xxxx
-   mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], dx
+   mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_mid],   0B8h   ; mov ax, xxxx
+   mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_mid+1], dx
 
    jmp   just_do_draw_mid
 
@@ -8596,15 +8594,16 @@ ELSE
    les   bx, dword ptr es:[bx]
 
   SELFMODIFY_set_rw_distance_lo_topbot:
-  public SELFMODIFY_set_rw_distance_lo_topbot
+
   mov   ax, 01000h
+  ; todo check align
 
    SELFMODIFY_set_rw_distance_hi_topbot:
    mov   cx, 01000h
    jnz   do_32_bit_finetan_mul_TWOSIDED
 
    do_16_bit_mul_TWOSIDED:
-   public do_16_bit_mul_TWOSIDED
+
 
    ; BX * CX:AX
 
@@ -8683,9 +8682,8 @@ done_with_finetanmul_TWOSIDED:
 SELFMODIFY_set_cx_rw_offset_lo_TWOSIDED:	
 add   ax, 01000h   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED:
-public SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED
 adc   dx, 01000h
-
+public SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED
 ; texturecolumn = dx:ax...  or just dx (whole number)
 
 ;	if (rw_scale.h.intbits >= 3) {
@@ -8783,7 +8781,7 @@ light_set_TWOSIDED:
 
 
 
-; todo probably broken
+
 IF COMPISA GE COMPILE_386
    ; set up eax
    mov  ax, -1
@@ -9043,8 +9041,8 @@ ENDIF
 ALIGN_MACRO
 
 
-SELFMODIFY_BSP_set_seglooptexmodulo_top_TARGET_1:
-non_repeating_texture0_top:
+SELFMODIFY_BSP_set_seglooptexrepeat_top_TARGET_1:
+; non_repeating_texture_top
 cmp   dx, word ptr ds:[_segloopnextlookup]
 jge   out_of_texture_bounds_top
 cmp   dx, word ptr ds:[_segloopprevlookupBSPLocal] ; todo ss, ds-> cs etc
@@ -9054,20 +9052,21 @@ sub   al, byte ptr ds:[_segloopcachedbasecolBSPLocal]
 mul   byte ptr ds:[_segloopheightvalcache]
 jmp   add_base_segment_and_draw0_top
 ALIGN_MACRO
-SELFMODIFY_BSP_set_seglooptexmodulo_top_TARGET_2:
+SELFMODIFY_BSP_set_seglooptexrepeat_top_TARGET_2:
 out_of_texture_bounds_top:
 ; branch nonpush with moves etc. 
 push  bx
 SELFMODIFY_BSP_set_toptexture:
 
 mov   ax, 01000h
+; todo ensurealign
 mov   bx, 0
 call  R_GetColumnSegment_ ; todo is di, si used?
 ENSUREALIGN_310:
 
 pop   bx
 mov   dx, word ptr ds:[_segloopcachedsegment]
-mov   word ptr ds:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
+mov   word ptr ds:[SELFMODIFY_add_cached_segment_top_TWOSIDED+1], dx
 
 
 
@@ -9077,15 +9076,15 @@ mov   cl, 0B8h  ; mov ax, xxxx
 mov   dx, word ptr ds:[_segloopheightvalcache]
 test  dh, dh
 jne   seglooptexrepeat0_is_not_jmp_top
-mov   dx, (SELFMODIFY_BSP_set_seglooptexmodulo_top_TARGET_1 - SELFMODIFY_BSP_set_seglooptexmodulo_top_AFTER)
+mov   dx, (SELFMODIFY_BSP_set_seglooptexrepeat_top_TARGET_1 - SELFMODIFY_BSP_set_seglooptexrepeat_top_AFTER)
 mov   cl, 0E9h  ; jmp 
 
 seglooptexrepeat0_is_not_jmp_top:
 ; modulo is seglooptexrepeat - 1
-mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexmodulo_top],   cl
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexmodulo_top+1], dx
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_top],   cl
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_top+1], dx
 
-jmp   just_do_draw0_top
+jmp   just_do_draw_top
 
 
 record_masked:
@@ -9099,7 +9098,7 @@ record_masked:
 xchg  ax, si  ; backup si
 les   si, dword ptr ds:[_maskedtexturecol_bsp]
 add   si, bx  ; bx byte ptr
-; dx can be FFFFh. i think thats bad?
+; dx can be FFFFh. i think thats bad? hacky fix. investigate
 inc   dx
 jz    write_zero_masked_lookup  ; todo set to texwidth and jump back?
 dec   dx
@@ -9248,9 +9247,9 @@ sar   bx, 1
 lea   bp, [si + bsp_local_dc_yl_lookup_table_ - 2]
 add   bx, word ptr ds:[si+bp]                   ; add * 80 lookup table value 
 
+
 ; inlined function. 
-R_GetSourceSegment0_START_TWOSIDED:
-PUBLIC  R_GetSourceSegment0_START_TWOSIDED
+;R_GetSourceSegment0_START_TWOSIDED:
 
 
 
@@ -9259,27 +9258,29 @@ PUBLIC  R_GetSourceSegment0_START_TWOSIDED
   ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
    ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
 
+; dx has texcolumn 
 
-SELFMODIFY_BSP_set_seglooptexmodulo_top:
+SELFMODIFY_BSP_set_seglooptexrepeat_top:
 ; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
 jmp    out_of_texture_bounds_top
 
-SELFMODIFY_BSP_set_seglooptexmodulo_top_AFTER = SELFMODIFY_BSP_set_seglooptexmodulo_top + 3
+SELFMODIFY_BSP_set_seglooptexrepeat_top_AFTER = SELFMODIFY_BSP_set_seglooptexrepeat_top + 3
+
 
 SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED:
 public SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED
 
-and   dl, ah   ; ah has loopwidth-1 (modulo )
-mul   dl       ; al has heightval
+and   ah, dl   ; ah has loopwidth-1 (modulo )
+mul   ah       ; al has heightval
 
 add_base_segment_and_draw0_top:  ; align target?
-SELFMODIFY_add_cached_segment0_TWOSIDED:
+SELFMODIFY_add_cached_segment_top_TWOSIDED:
 add   ax, 01000h
 
 ENDP
 
-just_do_draw0_top:
-public just_do_draw0_top
+just_do_draw_top:
+public just_do_draw_top
 ENSUREALIGN_093:
 
 
@@ -9345,8 +9346,8 @@ mov   ds, dx
 
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
-R_GetSourceSegment0_DONE_TOP:
-public R_GetSourceSegment0_DONE_TOP
+;R_GetSourceSegment0_DONE_TOP:
+
 
 POPA_BSP_BOTTOP_MACRO
 ;skip_top_draw:
@@ -9419,7 +9420,6 @@ xchg   ax, si
 ; si:di are dc_yl, dc_yh
 
 
-; todo move the post R_GetSourceSegment1_ logic here. 
 
 
 
@@ -9435,29 +9435,28 @@ add   bx, word ptr ds:[si+bp]                   ; add * 80 lookup table value
 
 
 ; BEGIN INLINED R_GetSourceSegment1_
-R_GetSourceSegment1_:
-PUBLIC R_GetSourceSegment1_
+;R_GetSourceSegment1_:
+
 
 
 
 SELFMODIFY_BSP_set_seglooptexrepeat_bot:
 ; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
-jmp SHORT out_of_texture_bounds1
-
+jmp SHORT out_of_texture_bounds_bot
+xchg   ax, ax  ; will be selfmodified.
 SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER:
-public SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER
 
-;ALIGN_MACRO
-xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
-and   dl, ah   ; ah has loopwidth-1 (modulo )
-mul   dl       ; al has heightval
-add_base_segment_and_draw1:
-SELFMODIFY_add_cached_segment1:
+
+
+and   ah, dl   ; ah has loopwidth-1 (modulo )
+mul   ah       ; al has heightval
+add_base_segment_and_draw_bot:
+SELFMODIFY_add_cached_segment_bot:
 add   ax, 01000h
 ENSUREALIGN_098:  
 
-just_do_draw1:
-public just_do_draw1
+just_do_draw_bot:
+
 ; ax carries _dc_source_segment
 
 mov   ds, ax ; set _dc_source_segment
@@ -9548,22 +9547,21 @@ ALIGN_MACRO
 ; this was only called in one place. this runs often, so inline it.
 ; target for function init
 SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_1:
-non_repeating_texture1:
+; non_repeating_texture_bot
 ; finally set dx back to texturecolumn in this case
 
 cmp   dx, word ptr ds:[2 + _segloopnextlookup]
-jge   out_of_texture_bounds1
+jge   out_of_texture_bounds_bot
 cmp   dx, word ptr ds:[2 + _segloopprevlookupBSPLocal]
-jnge  out_of_texture_bounds1  
-
+jl    out_of_texture_bounds_bot  
 xchg  ax, dx  ; put texturecol in ax
 sub   al, byte ptr ds:[2 + _segloopcachedbasecolBSPLocal]
 mul   byte ptr ds:[2 + _segloopheightvalcache] ;interleaved bytes
-jmp   add_base_segment_and_draw1
+jmp   add_base_segment_and_draw_bot
 ALIGN_MACRO
 ; target for function reset
 SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_2:
-out_of_texture_bounds1:
+out_of_texture_bounds_bot:
 push  bx
 
 SELFMODIFY_BSP_set_bottomtexture:
@@ -9576,7 +9574,7 @@ pop   bx
 
 mov   dx, word ptr ds:[2 + _segloopcachedsegment]
 ; todo: ds = cs here
-mov   word ptr ds:[SELFMODIFY_add_cached_segment1+1], dx
+mov   word ptr ds:[SELFMODIFY_add_cached_segment_bot+1], dx
 
 
 
@@ -9591,12 +9589,12 @@ je    seglooptexrepeat1_is_jmp
 mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot],   0B8h   ; mov ax, xxxx
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot+1], dx
 
-jmp   just_do_draw1
+jmp   just_do_draw_bot
 ALIGN_MACRO
 ; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat1_is_jmp:
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], ((SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_1 - SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER) SHL 8) + 0EBh
-jmp   just_do_draw1
+jmp   just_do_draw_bot
 ;END INLINED R_GetSourceSegment1_ AGAIN
 
 
@@ -9615,9 +9613,10 @@ mov   bp, 01000h
 
 
 ; clean up the self modified code of renderseg loop. 
-mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexmodulo_top], 0E9h
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexmodulo_top+1], (SELFMODIFY_BSP_set_seglooptexmodulo_top_TARGET_2 - SELFMODIFY_BSP_set_seglooptexmodulo_top_AFTER )
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], ((SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER) SHL 8) + 0EBh
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_top], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_top+1], (SELFMODIFY_BSP_set_seglooptexrepeat_top_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_top_AFTER )
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot+1], (SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER)
 
 
 
@@ -11215,16 +11214,16 @@ mov   di, 129   ; hack to fit data in 8 bits
 
 tempbits_not_minus128:
 mov   bx, word ptr [bp - 8]
-les   ax, dword ptr ds:[bx + PSPDEF_T.pspdef_sy]  ; label
+les   bx, dword ptr ds:[bx + PSPDEF_T.pspdef_sy]  ; label
 mov   cx, es
-mov   bx, FRACUNIT_OVER_2
+mov   ax, FRACUNIT_OVER_2
 sub   cx, di
-sub   bx, ax
+sub   ax, bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_texturemid + 0], ax
 mov   ax, BASEYCENTER
 sbb   ax, cx
 mov   word ptr ds:[si + VISSPRITE_T.vs_texturemid + 2], ax
 mov   ax, word ptr [bp - 0Eh]
-mov   word ptr ds:[si + VISSPRITE_T.vs_texturemid + 0], bx
 test  ax, ax
 
 ;    vis->x1 = x1 < 0 ? 0 : x1;

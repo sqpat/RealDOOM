@@ -36,7 +36,10 @@ ENDP
 	
 
 
-
+hack_fix_texel_1:
+ALIGN_MACRO
+xor  cl, cl
+jmp  done_fixing_texel_1
 
 ALIGN 16
 
@@ -65,6 +68,10 @@ PUBLIC  R_DrawColumn24NoLoop_
    ADC  CL, DL
 
    xchg bp, bx   ; bp gets lowstep, bx gets xlat lookup
+
+   ; todo HACK alert. why does this calculate as FF sometimes???
+   js  hack_fix_texel_1
+   done_fixing_texel_1:
 
    xor  dx, dx   ; dx gets 0
    xchg dl, ch   ; zero ch fo xchg into si. dx gets hi step
@@ -133,6 +140,11 @@ ENDP
 
 ; NOTE r_mask cannot reach this function. it only maps one EMS page including colormaps instead of also the one after it.
 
+hack_fix_texel_2:
+ALIGN_MACRO
+xor  cx, cx
+jmp  done_fixing_texel_2
+
 ALIGN 16
 
 
@@ -169,7 +181,9 @@ PUBLIC  R_DrawColumn24NoLoopStretch_
    
    ;lds  dx, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and dx to 004Fh (hardcoded)
    mov  dx, 04Fh
+   js   hack_fix_texel_2
    mov  ch, dh   ; ch gets 0
+   done_fixing_texel_2:
    xchg si, cx   ; si gets hi texel, cx gets low texel 
 
 
@@ -219,6 +233,9 @@ loop_done_noloopandstretch:
     retf
 ENDP
 
+hack_fix_texel_3:
+xor  cl, cl
+jmp  done_fixing_texel_3
 
 ALIGN 16
 PROC    R_DrawColumn24NoLoopMasked_ FAR
@@ -240,17 +257,14 @@ PUBLIC  R_DrawColumn24NoLoopMasked_
    MUL  BX
    ADD  SI, AX
    ADC  CL, DL
-
+   js   hack_fix_texel_3
+   done_fixing_texel_3:
 
    xchg bp, bx   ; bp gets lowstep, bx gets xlat lookup
 
    xor  dx, dx   ; dx gets 0
    xchg dl, ch   ; zero ch fo xchg into si. dx gets hi step
    dec  dx       ; minus one to account for lodsb
-   inc  cl
-   jz   keep_cl
-   dec  cl
-   keep_cl:
    xchg cx, si      
 
    jmp MARKER_SM_COLFUNC_set_destview_segment24_noloop_
