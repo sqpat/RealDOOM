@@ -3067,7 +3067,7 @@ public R_ProjectSprite_
 ; bp - 022h:   spriteindex. used for spriteframes and spritetopindex?
 ; bp - 024h:   flip
 ; bp - 026h:   vis->x1
-; bp - 028h:   vis->x2
+
 
 
 mov   dx, es					   ; back this up...
@@ -3419,9 +3419,13 @@ cmp   ax, 01000h
 jle   not_too_far_off_right_side_highbits
 jump_to_exit_project_sprite_2:
 jmp   exit_project_sprite
+usedwidth_is_1:
+mov   ah, 1      ; encodes 257, hack..
+jmp   done_hacking_usedwidth
+
 ALIGN_MACRO
 not_too_far_off_right_side_highbits:
-push  ax ; bp - 026h
+push  ax ; x1, bp - 026h
 mov   ax, SPRITEWIDTHS_SEGMENT
 mov   es, ax
 xor   ax, ax
@@ -3434,10 +3438,10 @@ mov   es, word ptr [bp - 020h]   ; es holds bp - 020h to go into the next mul.
 ;    }
 
 
-cmp   al, 1
-jne   usedwidth_not_1
-mov   ah, al      ; encodes 257, hack..
-usedwidth_not_1:
+dec   ax
+
+jz    usedwidth_is_1
+done_hacking_usedwidth:
 
 ;   temp.h.fracbits = 0;
 ;    temp.h.intbits = usedwidth;
@@ -3446,8 +3450,8 @@ usedwidth_not_1:
 ;	temp.h.intbits = centerx;
 ;	temp.w += FixedMul (tx.w,xscale.w);
 
-dec   ax
-mov   word ptr cs:[SELFMODIFY_set_usedwidth + 3], ax
+mov   word ptr cs:[SELFMODIFY_set_usedwidth + 3], ax ; usedwidth -1
+inc   ax
 
 
 
@@ -3506,19 +3510,28 @@ ELSE
 
 ENDIF
 
+;    x2 = ((centerxfrac + FixedMul (tx,xscale) ) >>FRACBITS) - 1;
 ;    x2 = temp.h.intbits - 1;
 
-SELFMODIFY_BSP_centerx_6:
-add   dx, 01000h
-dec   dx
-push  dx ; bp - 028h
+SELFMODIFY_BSP_centerx_6_minus_one:
+add   dx, 01000h   ; - 1 already baked in
+
 
 ;    // off the left side
 ;    if (x2 < 0)
 ;        return;
 
-test  dx, dx
+
 js    jump_to_exit_project_sprite_2  ; 06Ah ish out of range
+
+
+SELFMODIFY_BSP_viewwidth_3:
+cmp   dx, 01000h
+jl    x2_smaller_than_viewwidth  ; todo bench branch out and jump back
+SELFMODIFY_BSP_viewwidth_5_minus_one:
+mov   dx, 01000h
+x2_smaller_than_viewwidth:
+; dx has x2
 
 mov   si, word ptr ds:[_vissprite_p]
 cmp   si, MAX_VISSPRITES_ADDRESS
@@ -3526,6 +3539,8 @@ je   got_vissprite
 ; don't increment vissprite if its the max index. reuse this index.
 add   word ptr ds:[_vissprite_p], SIZE VISSPRITE_T
 got_vissprite:
+
+mov   word ptr ds:[si + VISSPRITE_T.vs_x2], dx
 
 
 les   ax, dword ptr [bp - 01Eh]
@@ -3608,17 +3623,9 @@ mov   word ptr ds:[si + VISSPRITE_T.vs_x1], ax
 ;    vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
 
 
-mov   ax, word ptr [bp - 028h]  ; get x2
 
-SELFMODIFY_BSP_viewwidth_3:
-mov   bx, 01000h
-cmp   ax, bx
-jl    x2_smaller_than_viewwidth
-lea   ax, [bx - 1]
-x2_smaller_than_viewwidth:
 les   bx, dword ptr [bp - 01Eh]
 mov   cx, es
-mov   word ptr ds:[si + VISSPRITE_T.vs_x2], ax
 mov   ax, 1
 ; todo: make a "div65536" function which does a shift strategy rather than needing the full thing?
 call FixedDivWholeA_BSPLocal_
@@ -14712,10 +14719,10 @@ mov      word ptr ds:[SELFMODIFY_BSP_centerx_2+1], ax
 
 mov      word ptr ds:[SELFMODIFY_BSP_centerx_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_centerx_5+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_6+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_centerx_7+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_centerx_8+1], ax
-
+dec      ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_6_minus_one+2], ax
 
 
 ;mov      ax, COLFUNC_FILE_START_SEGMENT
@@ -14746,8 +14753,11 @@ mov      byte ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_bot+2], al
 
 mov      ax, word ptr ss:[_viewwidth]
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_3+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_4+1], ax
+dec      ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_5_minus_one+1], ax
+inc      ax
 shr      ax, 1
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_1+1], ax
 
