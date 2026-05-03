@@ -3232,8 +3232,8 @@ mov   si, dx						; si stores temp highbits
 ;    if (labs(tx.w)>(tz.w<<2)){ // check just high 16 bits?
 
 jge   tx_already_positive				; labs sign check
-neg   ax
 neg   dx
+neg   ax
 sbb   dx, 0
 tx_already_positive:
 public tx_already_positive
@@ -4276,7 +4276,6 @@ ALIGN_MACRO
 IF COMPISA GE COMPILE_386
 ELSE
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_2+1], ax
-   mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_2_TWOSIDED+1], ax
 ENDIF
    xchg  ax, dx
    ADC   AX, 0  ; finally add carry.
@@ -4674,7 +4673,7 @@ xor       cx, cx
 
 SELFMODIFY_set_rw_normal_angle_shift3:
 mov       bx, 01000h
-sub       cx, word ptr [bp - 012h]   ; rw_angle lo from R_AddLine
+cmp       cx, word ptr [bp - 012h]   ; rw_angle lo from R_AddLine
 sbb       bx, word ptr [bp - 010h]   ; rw_angle hi from R_AddLine
 
 
@@ -4687,7 +4686,7 @@ sbb       bx, word ptr [bp - 010h]   ; rw_angle hi from R_AddLine
 js        tempangle_not_smaller_than_fineang180
 neg       ax
 neg       dx
-sbb       ax, 0
+sbb       ax, cx ; 0
 tempangle_not_smaller_than_fineang180:
 
 
@@ -5456,7 +5455,7 @@ and   bh, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 
 
-sub   bx, FINE_TANGENT_MAX        ; bx now -2048 to 2047
+sub   bh, (FINE_TANGENT_MAX SHR 8)        ; bx now -2048 to 2047
 sbb   bp, bp
 xor   bx, bp          ; bx now 0 to 2048, bp has sign.. but table is 2048 entries.
 
@@ -5467,8 +5466,8 @@ IF COMPISA GE COMPILE_386
    mov   ebx, dword ptr es:[bx]
    not   bp
    movsx ecx, bp
-   sub   ebx, ecx
    xor   ebx, ecx  ;apply sign
+   sub   ebx, ecx
 
 
   SELFMODIFY_set_rw_distance_hi_386_base:
@@ -5486,6 +5485,12 @@ IF COMPISA GE COMPILE_386
    mov   byte ptr ds:[SELFMODIFY_skip_markfloordirty_mid], MOV_AL_IMM8_OPCODE  
    jmp   SHORT markfloor_done
    ALIGN_MACRO
+   SELFMODIFY_BSP_fixedcolormap_6_TARGET:
+
+   mov   bp, 01000h ;high byte set.
+   jmp   skip_walllights
+   ALIGN_MACRO
+   SELFMODIFY_BSP_fixedcolormap_6_TARGET_ALTERNATE:
    use_max_light:
    ; ugly 
    mov   bx, MAXLIGHTSCALE - 1
@@ -5500,11 +5505,9 @@ ELSE
    test  bh, 010h
 
    SELFMODIFY_set_rw_distance_lo:
-
    mov   ax, 01000h
    ENSUREALIGN_066:
 
-   les   bx, dword ptr es:[bx]
 
 
    SELFMODIFY_set_rw_distance_hi:
@@ -5516,15 +5519,21 @@ ELSE
 
 
    ; BX * CX:AX
+   mov bx,  word ptr es:[bx] ; todo dont LES if 16 bit...?
 
    mul  bx        ; AX * BX
    mov  ax, bx    ; for next mul
    mov  bx, dx    ; store hi result
    mul  cx
    add  ax, bx    ; add previous hi into lo
-   adc  dx, 0     ; es may be known 0?
+   adc  dx, 0
+   inc  bp
+   jz   done_with_finetanmul
 
-   jmp  done_with_16bitmul
+   neg  dx
+   neg  ax
+   sbb  dx, 0
+   jmp  done_with_finetanmul
    ALIGN_MACRO
    markfloordirty_mid:
    or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 1 ; floor bit
@@ -5549,9 +5558,10 @@ ELSE
    mov   bx, MAXLIGHTSCALE - 1
    jmp   do_light_write
 
-
+   ALIGN_MACRO
    do_32_bit_finetan_mul:
 
+  les   bx, dword ptr es:[bx] ; todo dont LES if 16 bit...?
   push  si     ; this path pushes si... 
   mov   si, es
 
@@ -5564,16 +5574,14 @@ ELSE
   XCHG AX, cx
   MUL  BX
   MOV  BX, ES
-  ADD  AX, BX
+  ADD  BX, AX
+  ADC  CX, DX
   SELFMODIFY_set_rw_distance_lo_2:
-  mov   bx, 01000h
+  mov  ax, 01000h
   ENSUREALIGN_068:
   
-  XCHG AX, si
-  ADC  cx, DX
-
-  MUL  BX
-  ADD  AX, si
+  MUL  SI
+  ADD  AX, bx
   ADC  DX, cx
   pop  si
 
@@ -5592,12 +5600,12 @@ ENDIF
 
 done_with_finetanmul:
 
-; todo self modify the neg of this in somehow?
+;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
+
 SELFMODIFY_set_cx_rw_offset_lo:	
 add   ax, 01000h   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi:
 adc   dx, 01000h
-
 
 ; texturecolumn = dx:ax...  or just dx (whole number)
 
@@ -5623,7 +5631,6 @@ jmp    out_of_texture_bounds_mid
 
 SELFMODIFY_BSP_set_seglooptexrepeat_mid_AFTER:
 ENSUREALIGN_323:
-xchg  ax, ax  ; TODO: remove: ENSUREALIGN_069 even toggle for now
 and   ah, dl   ; ah has loopwidth-1 (modulo )
 mul   ah       ; al has heightval
 
@@ -5631,6 +5638,7 @@ add_base_segment_and_draw_mid:  ; align target?
 SELFMODIFY_add_cached_segment_mid:
 add   ax, 01000h
 ENSUREALIGN_069:
+
 
 ENDP
 
@@ -6614,6 +6622,13 @@ finish_midtex_selfmodify_TWOSIDED:
    ; self modifying code for rw_distance
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_topbot+1], ax
    mov   word ptr ds:[SELFMODIFY_get_rw_distance_lo_1+1], ax ; ??
+
+IF COMPISA GE COMPILE_386
+ELSE
+   mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_2_TWOSIDED+1], ax
+ENDIF
+
+
    xchg  ax, dx
    ADC   AX, 0
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_hi_topbot+1], ax
@@ -8548,7 +8563,7 @@ and   bh, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 
 
-sub   bx, FINE_TANGENT_MAX        ; bx now -2048 to 2047
+sub   bh, (FINE_TANGENT_MAX SHR 8)        ; bx now -2048 to 2047
 sbb   bp, bp
 xor   bx, bp          ; bx now 0 to 2048, bp has sign.. but table is 2048 entries.
 
@@ -8562,8 +8577,8 @@ IF COMPISA GE COMPILE_386
    mov   ebx, dword ptr es:[bx]
    not   bp
    movsx ecx, bp
-   sub   ebx, ecx
    xor   ebx, ecx  ;apply sign
+   sub   ebx, ecx
 
 
   SELFMODIFY_set_rw_distance_hi_386_base_topbot:
@@ -8591,12 +8606,10 @@ ELSE
 
    SHIFT_MACRO shl bx 2
    test  bh, 010h
-   les   bx, dword ptr es:[bx]
 
   SELFMODIFY_set_rw_distance_lo_topbot:
 
   mov   ax, 01000h
-  ; todo check align
 
    SELFMODIFY_set_rw_distance_hi_topbot:
    mov   cx, 01000h
@@ -8606,15 +8619,22 @@ ELSE
 
 
    ; BX * CX:AX
+   mov   bx, word ptr es:[bx] ; todo dont LES if 16 bit...?
 
    mul  bx        ; AX * BX
    mov  ax, bx    ; for next mul
    mov  bx, dx    ; store hi result
    mul  cx
    add  ax, bx    ; add previous hi into lo
-   adc  dx, 0     ; es may be known 0?
+   adc  dx, 0
 
-   jmp  done_with_16bitmul_TWOSIDED
+   inc  bp
+   jz   done_with_finetanmul_TWOSIDED
+   ; todo out of range by a byte. would be nice to use the mul's prefetch juice
+   neg   dx
+   neg   ax
+   sbb   dx, 0
+   jmp  done_with_finetanmul_TWOSIDED
    ALIGN_MACRO
    markceildirty:
    or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 2 ; ceiling bit
@@ -8637,30 +8657,33 @@ ELSE
 
 
 
-; todo: make this faster.
+
 
 ALIGN_MACRO
 do_32_bit_finetan_mul_TWOSIDED:
+public do_32_bit_finetan_mul_TWOSIDED
 
-  mov   si, es
+  les   bx, dword ptr es:[bx]
 
-  MUL  BX
-  MOV  ES, DX
+   ; CX:AX * SI:BX ... fixed mul so shifted 16.
+
+  MUL  BX     ; AX * BX
+  mov  si, es
+  MOV  ES, DX  ; es stores hi of lo * lo.
 
 
   MOV  AX, cx
-  MUL  si
-  XCHG AX, cx
-  MUL  BX
+  MUL  si      ; CX * si
+  XCHG AX, cx  ; store lo in cx. cx has eventual hi...
+  MUL  BX      ; CX * bx
   MOV  BX, ES
-  ADD  AX, BX
+  ADD  BX, AX
+  ADC  CX, DX
   SELFMODIFY_set_rw_distance_lo_2_TWOSIDED:
-  mov   bx, 01000h
-  XCHG AX, si
-  ADC  cx, DX
+  mov  ax, 01000h  ; todo odd
 
-  MUL  BX
-  ADD  AX, si
+  MUL  SI     ; AX * si
+  ADD  AX, BX
   ADC  DX, cx
 
 
@@ -8678,12 +8701,13 @@ ENDIF
 
 done_with_finetanmul_TWOSIDED:
 
+;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
 
-SELFMODIFY_set_cx_rw_offset_lo_TWOSIDED:	
+SELFMODIFY_set_cx_rw_offset_lo_TWOSIDED:
 add   ax, 01000h   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED:
 adc   dx, 01000h
-public SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED
+
 ; texturecolumn = dx:ax...  or just dx (whole number)
 
 ;	if (rw_scale.h.intbits >= 3) {
@@ -15245,6 +15269,7 @@ public ENSUREALIGN_323
 public ENSUREALIGN_324
 @
 
+COMMENT @
 IF COMPISA GE COMPILE_386
 ELSE
 public ENSUREALIGN_051
@@ -15262,6 +15287,7 @@ public ENSUREALIGN_091
 public ENSUREALIGN_099
 ENDIF
 
-
+@
+public ENSUREALIGN_068
 
 END
