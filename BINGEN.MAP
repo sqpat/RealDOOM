@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/05/04 10:00:22
+Created on:       26/05/04 10:42:08
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -30,7 +30,7 @@ M_MENU_TEXT            CODE           AUTO           015f:0000       00001559
 F_WIPE_TEXT            CODE           AUTO           02b5:0000       000005fa
 F_FINALE_TEXT          CODE           AUTO           0315:0000       00000b97
 P_SAVEG_TEXT           CODE           AUTO           03cf:0000       00000bb7
-P_SETUP_TEXT           CODE           AUTO           048b:0000       00000a82
+P_SETUP_TEXT           CODE           AUTO           048b:0000       00000a85
 SM_OPL2_TEXT           CODE           AUTO           0534:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0628:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0729:0000       00000730
@@ -286,20 +286,20 @@ Module: p_saveg.obj(p_saveg.ASM)
 03cf:06db*     P_ArchivePlayers_
 03cf:0895*     P_ArchiveThinkers_
 Module: p_setup.obj(p_setup.ASM)
-048b:0210*     P_LoadLineDefs_
-048b:04a0*     P_GroupLines_
-048b:036b*     P_LoadNodes_
-048b:0703*     Z_FreeConventionalAllocations_
-048b:05f5*     P_LoadThings_
-048b:0a82      P_SETUP_ENDMARKER_
+048b:0213*     P_LoadLineDefs_
+048b:04a3*     P_GroupLines_
+048b:036e*     P_LoadNodes_
+048b:0706*     Z_FreeConventionalAllocations_
+048b:05f8*     P_LoadThings_
+048b:0a85      P_SETUP_ENDMARKER_
 048b:001d*     P_LoadSectors_
-048b:06b1*     R_LoadPatchColumnsColormap0_
+048b:06b4*     R_LoadPatchColumnsColormap0_
 048b:0000      P_SETUP_STARTMARKER_
-048b:03cd*     P_LoadSegs_
+048b:03d0*     P_LoadSegs_
 048b:0000*     P_LoadVertexes_
-048b:0318*     P_LoadSubsectors_
-048b:0849      P_SetupLevel_
-048b:01d0*     P_LoadBlockMap_
+048b:031b*     P_LoadSubsectors_
+048b:084c      P_SetupLevel_
+048b:01d3*     P_LoadBlockMap_
 048b:0115*     P_LoadSideDefs_
 Module: sm_opl2.obj(sm_opl2.ASM)
 0534:0926*     OPLpauseMusic_OPL2_
@@ -414,9 +414,9 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:21e2*     do_32_bit_finetan_mul_TWOSIDED
 081a:00c0*     OFFSET_FLOORCLIP
 081a:152d*     R_RenderSegLoop_
-081a:23b7*     SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED
 081a:18d7*     v2_y_equals_v1_y_TWOSIDED
 081a:0ce0*     R_ProjectSprite_
+081a:23b7*     SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED
 081a:2a0e*     R_GetColumnSegment_
 081a:0384*     R_ScaleFromGlobalAngle_
 081a:17bc*     SELFMODIFY_mark_planes_dirty
@@ -1254,7 +1254,6 @@ Module: g_setup.obj(g_setup.ASM)
 Module: r_setup.obj(r_setup.ASM)
 2fd8:638f      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTS
 2fd8:60d8*     R_InitTextureMapping_
-2fd8:6223*     loop_next_yslope
 2fd8:639f      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSMASKEDCALL
 2fd8:63aa*     R_SETUP_ENDMARKER_
 2fd8:62dc      R_ExecuteSetViewSize_
