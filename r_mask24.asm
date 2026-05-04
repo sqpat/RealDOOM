@@ -2079,10 +2079,9 @@ mov   bx, si						; side_render_t is 4 bytes each
 shl   si, 1							; side_t is 8 bytes each
 add   bh, (_sides_render SHR 8 )		; sides render near addr is ds:[0xAE00]
 mov   si, word ptr es:[si + SIDE_T.s_midtexture]		; lookup side->midtexture
-mov   ax, word ptr ds:[bx + SIDE_RENDER_T.sr_rowoffset] 
-mov   word ptr cs:[SELFMODIFY_MASKED_siderender_00+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   ax, word ptr ds:[bx + SIDE_RENDER_T.sr_secnum] 
-mov   word ptr cs:[SELFMODIFY_MASKED_siderender_02+1 - OFFSET R_MASK24_STARTMARKER_], ax
+les   ax, dword ptr ds:[bx + SIDE_RENDER_T.sr_rowoffset] 
+mov   byte ptr cs:[SELFMODIFY_MASKED_siderender_00+1 - OFFSET R_MASK24_STARTMARKER_], al
+mov   word ptr cs:[SELFMODIFY_MASKED_siderender_02+1 - OFFSET R_MASK24_STARTMARKER_], es
 
 mov   ax, TEXTURETRANSLATION_SEGMENT
 shl   si, 1
@@ -2317,7 +2316,7 @@ sbb   ax, 01000h
 ;    dc_texturemid.h.intbits += side_render->rowoffset;
 
 SELFMODIFY_MASKED_siderender_00:
-add   ax, 01000h
+add   ax, 0h
 ENSUREALIGN_120:
 
 mov   byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_STARTMARKER_], al

@@ -330,8 +330,8 @@ xchg   bx, di
 lodsw
 xchg   ax, dx ; dx stores textureoffset
 lodsw
-and    al, 07Fh   ; rowoffsets only make sense being 0-7F 
-stosw   ; siderender_t rowoffset ; todo store as byte
+and    ax, 07Fh     ; rowoffsets only make sense being 0-7F 
+stosw   ; siderender_t rowoffset        ; TODO store as byte somewhere else.
 mov    ax, word ptr ds:[si + (MAPSIDEDEF_T.mapsidedef_sector - MAPSIDEDEF_T.mapsidedef_toptexture)]  ; + 24, read ahead..
 
 SHIFT_MACRO rol ax 4   ; preserves negative 1 case
