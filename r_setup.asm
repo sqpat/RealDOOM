@@ -342,7 +342,7 @@ _SELFMODIFY_sub_viewheight_shr_1:
 sub   cx, 01000h
 jns   skip_labs
 neg   cx
-inc   cx
+dec   cx
 skip_labs:
 mov   bx, 08000h
 _SELFMODIFY_viewwidth_precalculate:
