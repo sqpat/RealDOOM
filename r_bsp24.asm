@@ -10243,11 +10243,12 @@ xchg  ax, bx   ; store x1 in bx
 lods  word ptr es:[si]        ; backsector  floor
 cmp   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]  ; frontsector ceiling
 jge   clipsolid_ax_swap_bottom_door
+not_closed_bot_door_after_all:
 xchg  ax, cx                  ; cx has old si+0 (backsector floor)
 lods  word ptr es:[si]        ; backsector  ceiling
 cmp   ax, word ptr es:[di + SECTOR_T.sec_floorheight]    ; frontsector floor
 jle   clipsolid_ax_swap_top_door
-
+not_closed_top_door_after_all:
 ;    // Window.
 ;    if (backsector->ceilingheight != frontsector->ceilingheight
 ;	|| backsector->floorheight != frontsector->floorheight)
@@ -10286,14 +10287,10 @@ jmp   R_ClipPassWallSegment_
 
 ALIGN_MACRO
 clipsolid_ax_swap_bottom_door:
-mov   cx, JMP_SHORT_REL8_OPCODE + ((SELFMODIFY_set_closed_door_type_TARGET_BOT - SELFMODIFY_set_closed_door_type_AFTER) SHL 8)
-xchg  ax, bx                   ; grab cached x1
-jmp   R_ClipSolidWallSegment_
+jmp   do_closed_door_check_bottomdoor
 ALIGN_MACRO
 clipsolid_ax_swap_top_door:
-mov   cx, JMP_SHORT_REL8_OPCODE + ((SELFMODIFY_set_closed_door_type_TARGET_TOP - SELFMODIFY_set_closed_door_type_AFTER) SHL 8)
-xchg  ax, bx                   ; grab cached x1
-jmp   R_ClipSolidWallSegment_
+jmp   do_closed_door_check_topdoor
 
 exit_addline_3:
 jmp   END_R_ADDLINE_LABEL
@@ -10475,6 +10472,52 @@ jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 
 
 ENDP
+ALIGN_MACRO
+do_closed_door_check_topdoor:
+push  si
+push  es
+push  cx
+mov   cx, SIDES_SEGMENT
+mov   es, cx
+mov   si, word ptr [bp - 8]
+shl   si, 1
+cmp   word ptr es:[si + SIDE_T.s_toptexture], 0
+je    not_real_closed_door_false_alarm_top
+mov   cx, JMP_SHORT_REL8_OPCODE + ((SELFMODIFY_set_closed_door_type_TARGET_TOP - SELFMODIFY_set_closed_door_type_AFTER) SHL 8)
+add   sp, 6
+xchg  ax, bx                   ; grab cached x1
+jmp   R_ClipSolidWallSegment_
+ALIGN_MACRO
+not_real_closed_door_false_alarm_top:
+pop   cx
+pop   es
+pop   si
+jmp   not_closed_top_door_after_all
+
+
+ALIGN_MACRO
+do_closed_door_check_bottomdoor:
+push  si
+push  es
+push  cx
+mov   cx, SIDES_SEGMENT
+mov   es, cx
+mov   si, word ptr [bp - 8]
+shl   si, 1
+cmp   word ptr es:[si + SIDE_T.s_bottomtexture], 0
+je    not_real_closed_door_false_alarm_bot
+mov   cx, JMP_SHORT_REL8_OPCODE + ((SELFMODIFY_set_closed_door_type_TARGET_BOT - SELFMODIFY_set_closed_door_type_AFTER) SHL 8)
+add   sp, 6
+xchg  ax, bx                   ; grab cached x1
+jmp   R_ClipSolidWallSegment_
+ALIGN_MACRO
+not_real_closed_door_false_alarm_bot:
+pop   cx
+pop   es
+pop   si
+jmp   not_closed_bot_door_after_all
+
+
 
 ;R_ClipPassWallSegment_
 ALIGN_MACRO
