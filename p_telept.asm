@@ -270,9 +270,9 @@ mov   ax, word ptr ds:[_setStateReturn]
 call  S_StartSound_
 
 
-lds   bx, dword ptr [bp - 6]
-push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 2]
-push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 0]  ; push call 1 z
+lds   si, dword ptr [bp - 6]
+push  word ptr ds:[si + MOBJ_POS_T.mp_z + 2]
+push  word ptr ds:[si + MOBJ_POS_T.mp_z + 0]  ; push call 1 z
 
 mov   bx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 
@@ -291,36 +291,49 @@ and   bx, 0FFFEh  ; clear bottom bits. same as shr 3 shl 1
 
 mov   dx, word ptr es:[bx]
 
+; annoying. sin/cos value is 16 bit unsigned. need to apply sign AFTER the mul.
 
 test  bh, 020h
 mov   ax, 20
 je    skip_sin_invert
+mul   dx
+neg   dx
 neg   ax
+adc   dx, 0
+jmp   neg_sin_done
 skip_sin_invert:
 
 
 ; FastMul16u32u
 MUL  DX 
+neg_sin_done:
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
 adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
 
 
-push  dx
-push  ax   ; get these after next mul call
+
 
 COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
 
-mov   dx, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
-mov   ax, 20
 test  bh, 030h
+mov   bx, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
+xchg  cx, dx ;  cx:bx get y
+xchg  ax, bx 
+mov   dx, 20
+
 jpe   skip_cos_invert
+mul   dx
+neg   dx
 neg   ax
+adc   dx, 0
+jmp   neg_cos_done
 skip_cos_invert:
 
 ; FastMul16u32u
 MUL  DX       
+neg_cos_done:
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]
 adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_x + 2] ;ax/dx ready
@@ -328,8 +341,6 @@ adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_x + 2] ;ax/dx ready
 push  ss
 pop   ds ; restore ds
 
-pop   bx
-pop   cx ; cx/bx ready
 
 call  P_SpawnMobj_
 mov   dl, SFX_TELEPT
