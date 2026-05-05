@@ -4,18 +4,17 @@
 [![RealDOOM 0.78 Alpha Recording](https://img.youtube.com/vi/tmDWH_pMDAQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=tmDWH_pMDAQ)
 
 
-
 RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
 
 The current release supports Shareware and commercial DOOM/DOOM2 as well as Ultimate DOOM. TNT and Plutonia are not currently supported. Custom wads are not currently supported.
 
-The current development focus is on bugfixing and ASM rewrites of the rest of the codebase to produce an entirely ASM application.
+The current development focus is on bugfixing and preparing the project for an upcoming Beta release.
 
 ### Running RealDOOM
 
-RealDOOM is still in a Alpha state and so it does not cleanly support many hardware configurations yet. The easiest way to run it is to use EMM386 with a page frame set and the pageable conventional memory enabled. 16 bit machines will need EMS 4.0 compatible hardware with conventional pagination such as a 286 chipset supporting such features or a something like an Intel Above Board.
+RealDOOM is still in a Pre-Beta state and so it does not cleanly support many hardware configurations yet. The easiest way to run it is to use EMM386 with a page frame set and the pageable conventional memory enabled. 16 bit machines will need EMS 4.0 compatible hardware with conventional pagination such as a 286 chipset supporting such features or a something like an Intel Above Board.
 
-Performance on 32-bit PCs is similar to Vanilla DOOM, so performance should generally be okay on a 486 or Pentium. Slower machines might want to turn detail level to low or potato for faster framerates.
+Performance on 32-bit PCs is a little faster than Vanilla DOOM for processors with onboard cache, and much faster than Vanilla DOOM for processors without onboard cache. A well-tuned 25 mhz 286 should manage ~10-20 fps depending on quality settings. A 386DX-40 should manage 12-30 fps depending on quality settings.
 
 The "minimum spec" is a standard 4.77 MhZ 8088 machine with a VGA card, ~560KB conventional free, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers or SQEMM, or the chipset specific build if available, which is faster.
 
@@ -34,8 +33,12 @@ Simply run the makeall script and select your build option (286, 386, 8086, chip
 There are also a lot of hard caps on things like texture size and count, node count, etc. 
 
 ### Known bugs:
- - Occasional missing columns on Player Sprite renders
- - Occasional misdraws of sprites over the border and HUD
+ - DOS text mode scroll errors on exit (CLS at the prompt to fix this)
+ - Occasional garbage column drawns
+ - Teleport sprites are not always rendered properly
+ - Doom2 Map30 produces graphical glitches
+ - Sound Effects broken since 0.87 (will be fixed soon)
+ - Lots of subpixel graphical inaccuracies compared to Vanilla DOOM
  
 ### Release History:
  Not necessarily meant to be accurate, but just to give an overview of the general order in which things are probably going to be built.
@@ -150,27 +153,36 @@ There are also a lot of hard caps on things like texture size and count, node co
   - Lots more bugfixing...
  
  (Oct 11, 2025)      
-**v0.78** : Pre-Alpha 1
+~~**v0.78** : Pre-Alpha 1~~
   - Sound effects bugfixed but not optimized
 
-### Future Roadmap:
+(April 4, 2026)  
+~~**v0.87** : Pre-Pre Beta 1~~
+  - Full ASM engine
+  - Near fully render pipeline rewrite
+  - 25-30% FPS increase compared to 0.78
 
-**Remaining Alpha Goals:**
- - improved sfx code
- - helpful user facing diagnostics such as EMS/memory testing
+(May 5, 2026)  
+**v0.88** : Pre-Pre Beta 2
+  - Full render pipeline rewrite
+  - 35-40% FPS increase compared to 0.78
+
+### Future Roadmap:
   
 **Beta Goals:**
- - Remove clib dependencies
- - Entirely ASM application 
- - "More" feature complete
-   - AWE32, Gravis SFX - etc
+ - helpful user facing diagnostics such as EMS/memory testing
+ - fix sound effects
+ - support save games > 64k
+ - lots of bugfixing
+
+**Post Beta Goals:**
  - Improved custom WAD support
+ - Fix Flat Renderer
+ 
 
 **"1.0" Goals:**
- - 386 Render path optimization (mainly for 386SX)
+ - Further 386 render path optimizations
  - General stability and architecture improvements
- - Rewrite render path from scratch
-**Post 1.0 Goals:**
  - EMS 3.2 compatible version
  - Remove MS-DOS dependencies, self boot version?
   
@@ -180,4 +192,4 @@ There are also a lot of hard caps on things like texture size and count, node co
 Various performance benchmarks can be found in this spreadsheet:
 [RealDOOM Benchmark Results](https://docs.google.com/spreadsheets/d/1gt8gqvKrvJh5GH_xDKoZ98G4jY873s6zx_Y5EaFbb7M/)
 
-For the most part, a 386SX currently runs RealDOOM ~20% faster than (vanilla) DOOM 1.9. 32 bit bus cpus all generally run it 5-10% worse than vanilla. A very fast 286 achieves around 6-7 FPS in high quality, 10-11 in low, and 15-16 in potato quality. 5150/5160 class machines are sub 1 FPS.
+For the most part, a 386SX currently runs RealDOOM ~75% faster than (vanilla) DOOM 1.9. A 386DX runs 40-50% faster. A 286-25 achieves around 9-10 FPS in high quality, 14-16 in low, and 20-22 in potato quality. 5150/5160 class machines are sub 1 FPS.
