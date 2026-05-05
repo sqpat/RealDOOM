@@ -117,6 +117,8 @@ mov   word ptr cs:[SELFMODIFY_changeswitchtexture_useagain], ax
 
 xor   bx, bx
 mov   ax, word ptr ds:[_numswitches]
+SHIFT_MACRO shl ax 2  ; word compare num switches * 2
+
 ALIGN_MACRO
 check_next_switch:
 
