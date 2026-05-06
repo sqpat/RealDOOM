@@ -311,8 +311,10 @@ je    skip_enddoom
 
     mov ax, 00200h
     xor bx, bx
-    mov dx, 02300h
+    mov dx, 01700h ; dh = 23
     int 010h        ; // Set text pos
+
+
 
     mov  al, 0Ah  ; newline
     call putchar_stdout_
