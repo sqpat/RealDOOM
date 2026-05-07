@@ -3747,36 +3747,7 @@ pop   ax
 pop   cx
 ret   
 
-ALIGN_MACRO
- 
-;		// figure out startpage based on LRU
-;		startpage = NUM_SPRITE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
 
-evict_and_find_startpage_multi:
-PUBLIC evict_and_find_startpage_multi
-; did not find all the pages in l1 cache
-xor   ax, ax ; set ah to 0. 
-mov   bx, NUM_SPRITE_L1_CACHE_PAGES - 1 + OFFSET _spriteL1LRU 
-
-mov   cl, NUM_SPRITE_L1_CACHE_PAGES - 1  ; ch was already 0
-sub   cl, dl
-; dl is ; dl is numpages-1
-; bx is startpage
-; cx is ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)
-
-; start from last page of lru, work backward to find this page
-
-find_start_page_loop_multi:
-
-;		while (_spriteL1LRU[startpage] > ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)){
-;			startpage--;
-;		}
-
-mov   al, byte ptr ds:[bx]
-cmp   al, cl
-jle   found_startpage_multi
-dec   bx
-jmp   find_start_page_loop_multi
 ALIGN_MACRO
 
 found_start_page_single:
@@ -3818,6 +3789,36 @@ mov   byte ptr cs:[SELFMODIFY_compare_lastvissprite_patch_2+1], al
 pop   ax  ; return value
 pop   cx
 ret
+ALIGN_MACRO
+ 
+;		// figure out startpage based on LRU
+;		startpage = NUM_SPRITE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
+
+evict_and_find_startpage_multi:
+PUBLIC evict_and_find_startpage_multi
+; did not find all the pages in l1 cache
+xor   ax, ax ; set ah to 0. 
+mov   bx, NUM_SPRITE_L1_CACHE_PAGES - 1 + OFFSET _spriteL1LRU 
+
+mov   cl, NUM_SPRITE_L1_CACHE_PAGES - 1  ; ch was already 0
+sub   cl, dl
+; dl is ; dl is numpages-1
+; bx is startpage
+; cx is ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)
+
+; start from last page of lru, work backward to find this page
+
+find_start_page_loop_multi:
+
+;		while (_spriteL1LRU[startpage] > ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)){
+;			startpage--;
+;		}
+
+mov   al, byte ptr ds:[bx]
+cmp   al, cl
+jle   found_startpage_multi
+dec   bx
+jmp   find_start_page_loop_multi
 
 ALIGN_MACRO
 do_l2_sprite_cache_marklru_3:
