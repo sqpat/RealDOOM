@@ -6633,13 +6633,13 @@ mov   byte ptr ds:[_lastfixedcolormap], al
 
 
 
+mov      bx, SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_
 cmp   al, 0
 jne   do_fixedcolormap_selfmodify
 do_no_fixedcolormap_selfmodify:
 
 ; replace with nop.
 ; nop 
-mov      bx, SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_
 mov      ax, TWO_BYTE_NOP 
 mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASK24_STARTMARKER_], ax
 ; lea bp, [bp + 0] ; 3 byte nop
