@@ -270,43 +270,42 @@ mov   ax, word ptr ds:[_setStateReturn]
 call  S_StartSound_
 
 
-lds   si, dword ptr [bp - 6]
-push  word ptr ds:[si + MOBJ_POS_T.mp_z + 2]
-push  word ptr ds:[si + MOBJ_POS_T.mp_z + 0]  ; push call 1 z
-
-mov   bx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
+lds   bx, dword ptr [bp - 6]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 2]  ; thing->z not mobjpos->z
+push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 0]  ; push call 1 z
 
 ;				an = m_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 
-mov   ax, FINESINE_SEGMENT
-mov   es, ax
+mov   bx, FINESINE_SEGMENT
+mov   es, bx
+
+mov   bx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 
 SHIFT_MACRO shr bx 2
 
-and   bx, 0FFFEh  ; clear bottom bits. same as shr 3 shl 1
+and   bl, 0FEh  ; clear bottom bits. same as shr 3 shl 1
 
 ; time to calculate ax dx bx cx.
 ; z, mt_tfog, -1 all pushed on stack already.
 ;	fogRef = P_SpawnMobj (m_pos->x.w + FastMul16u32(20, finecosine[an]), m_pos->y.w + FastMul16u32(20,finesine[an]) , thing_pos->z.w, MT_TFOG, -1);
 
+COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
+
 mov   dx, word ptr es:[bx]
+mov   cx, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
 
 ; annoying. sin/cos value is 16 bit unsigned. need to apply sign AFTER the mul.
 
-test  bh, 020h
 mov   ax, 20
-je    skip_sin_invert
 mul   dx
+test  bh, 020h
+je    skip_sin_invert
 neg   dx
 neg   ax
 adc   dx, 0
-jmp   neg_sin_done
+
 skip_sin_invert:
 
-
-; FastMul16u32u
-MUL  DX 
-neg_sin_done:
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
 adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
@@ -314,26 +313,21 @@ adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
 
 
 
-COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
 
-test  bh, 030h
-mov   bx, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
 xchg  cx, dx ;  cx:bx get y
-xchg  ax, bx 
-mov   dx, 20
-
-jpe   skip_cos_invert
+xchg  ax, di ; except di holds onto low until angle jpe check..
+mov   ax, 20
 mul   dx
+; kinda gross.
+test  bh, 030h
+mov   bx, di
+jpe   skip_cos_invert
 neg   dx
 neg   ax
 adc   dx, 0
-jmp   neg_cos_done
 skip_cos_invert:
 
-; FastMul16u32u
-MUL  DX       
-neg_cos_done:
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]
 adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_x + 2] ;ax/dx ready
