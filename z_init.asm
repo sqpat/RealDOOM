@@ -231,9 +231,16 @@ IFDEF COMP_CH
     ;mov    al, 0AFh
     ;out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable page E000 UMBs. F000 read only.
 
+	;// set default pages
+	;for (i = 0xC; i < 0x24; i++){
+	;	// initialize pages..
+	;	outp(0xE8, i);
+	;	outpw(0xEA, i+0x04); // set default EMS pages for global stuff...
+	;}
+
     ; set default pages
-    loop_next_page_setup:
     mov     ax, 0Ch
+    loop_next_page_setup:
 
     out    SCAMP_PAGE_SELECT_REGISTER, al
     add    al, 4
