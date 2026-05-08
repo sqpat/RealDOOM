@@ -27,6 +27,8 @@ HT18_PAGE_D000 = 01Ch
 
 HT18_PAGE_SELECT_REGISTER = 01EEh
 HT18_PAGE_SET_REGISTER = 01ECh
+EMS_MEMORY_PAGE_OFFSET = 0250h
+
 
 .CODE
 
@@ -184,11 +186,11 @@ cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 lodsw
-out dx, ax
+out dx, al
 lodsw
-out dx, ax
+out dx, al
 lodsw
-out dx, ax
+out dx, al
 sti
 pop dx
 pop si
@@ -205,9 +207,9 @@ cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 lodsw
-out dx, ax
+out dx, al
 lodsw
-out dx, ax
+out dx, al
 sti
 pop dx
 pop si
@@ -226,7 +228,7 @@ cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 lodsw
-out dx, ax
+out dx, al
 sti
 pop dx
 pop si
@@ -238,62 +240,72 @@ ENDP
 
 @
 
-;todo test
 
-PROC Z_QuickMapPageFrame_ FAR
-PUBLIC Z_QuickMapPageFrame_
-
-push dx
-push bx
-
-mov  bx, ax
-xor  bh, bh
-mov  ds:[_currentpageframes+bx], dl
-
-mov  bx, dx
-mov  dx, HT18_PAGE_SELECT_REGISTER
-cli
-out  dx, al
-mov  dx, HT18_PAGE_SET_REGISTER
-xchg ax, bx
-add  ax, MUS_DATA_PAGES
-out dx, ax
-sti
-
-pop bx
-pop dx
-
-ret
-
-ENDP
 
 ; todo inline its one use
 PROC Z_QuickMapMusicPageFrame_ FAR
 PUBLIC Z_QuickMapMusicPageFrame_
 
-	push dx
-	mov  ds:[_currentpageframes], al
+push dx
+mov  ds:[_currentpageframes], al
 
-	mov  ah, al
-	mov  al, HT18_PAGE_D000
-	mov  dx, HT18_PAGE_SELECT_REGISTER
-	cli
-	out  dx, al
+mov  ah, al
+mov  al, HT18_PAGE_D000
+mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
+out  dx, al
 
-	
-	
-	mov  dx, HT18_PAGE_SET_REGISTER
-	xchg al, ah	 ; ah becomes 0
-	mov  ax, MUS_DATA_PAGES
-	out  dx, ax
-	sti
-	pop  dx
-	retf
+xor  ax, ax
+
+mov  dl, HT18_PAGE_SET_REGISTER AND 0FFh
+
+add  ax, EMS_MEMORY_PAGE_OFFSET + (MUS_DATA_PAGES)
+out  dx, ax
+sti
+
+pop dx
+exit_page_frame:
+
+retf
+
+
 ENDP
+
+
+PROC   Z_QuickMapSFXPageFrame_ NEAR
+PUBLIC Z_QuickMapSFXPageFrame_
+
+cmp  al, byte ptr ds:[_currentpageframes + 1]
+je   exit_sfx_pageframe
+
+push dx
+mov  byte ptr ds:[_currentpageframes + 1], al
+
+mov  dx, HT18_PAGE_SELECT_REGISTER
+mov  ah, al
+mov  al, HT18_PAGE_D000 + SFX_PAGE_FRAME_INDEX	; page D400
+cli
+out  dx, al
+
+mov  dl, HT18_PAGE_SET_REGISTER AND 0FFh
+
+mov  al, ah
+xor  ah, ah
+
+add  ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
+out  dx, ax
+sti
+
+pop  dx
+
+exit_sfx_pageframe:
+ret
+ENDP
+
 
 LUMP_MASK = 0FCh 
 
-PROC   Z_QuickMapWADPageFrame_ FAR
+PROC   Z_QuickMapWADPageFrame_ NEAR
 PUBLIC Z_QuickMapWADPageFrame_
 
 
@@ -311,21 +323,23 @@ mov  al, HT18_PAGE_D000 + WAD_PAGE_FRAME_INDEX	; page D800
 cli
 out  dx, al
 
-mov  dx, HT18_PAGE_SET_REGISTER
+mov  dl, HT18_PAGE_SET_REGISTER AND 0FFh
 mov  al, ah
 xor  ah, ah
 
 SHIFT_MACRO SHR AX 2
 
-add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + FIRST_LUMPINFO_LOGICAL_PAGE)
+add  ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
 out  dx, ax
 sti
 
 pop  dx
 
 exit_wad_pageframe:
-;pop  ax
-retf
+
+ret
+
+ENDP	
 
 
 END

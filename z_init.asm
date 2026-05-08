@@ -87,6 +87,12 @@ SCAMP_PAGE_CHIPSET_SET_REGISTER = 0EDh
 HT18_PAGE_SELECT_REGISTER = 01EEh
 HT18_PAGE_SET_REGISTER = 01ECh
 
+HT18_CHIPSET_CONFIG_REGISTER_SELECT = 1EDh
+HT18_CHIPSET_CONFIG_REGISTER_READWRITE = 1EFh
+HT18_EMS_CONFIG_REGISTER = 00h
+HT18_PAGE_D000 = 01Ch
+
+
 
 
 
@@ -282,43 +288,45 @@ IFDEF COMP_CH
     push   dx
     mov    word ptr ds:[_EMS_PAGE], 0D000h   ; TODO unhardcode
 
+    mov al, HT18_EMS_CONFIG_REGISTER
+    mov dx, HT18_CHIPSET_CONFIG_REGISTER_SELECT
+    out dx, al
+    mov dx, HT18_CHIPSET_CONFIG_REGISTER_READWRITE
+    in  al, dx
+    or  al, 02h                                        ; enable EMS flag on
+    out dx, al
+
     ;   set d000 pages to working values
     mov    dx, HT18_PAGE_SELECT_REGISTER
-    mov    al, 01Ch
+    mov    al, HT18_PAGE_D000 + MUS_PAGE_FRAME_INDEX
     out    dx, al
-    dec    dx
-    dec    dx
-    mov    al, 03Ch
-    out    dx, al
+    mov    dl, HT18_PAGE_SET_REGISTER AND 0FFh
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
+    out    dx, ax
     
-    inc    dx
-    inc    dx
-    mov    al, 01Dh
+    mov    dl, HT18_PAGE_SELECT_REGISTER AND 0FFh
+    mov    al, HT18_PAGE_D000 + SFX_PAGE_FRAME_INDEX
     out    dx, al
-    dec    dx
-    dec    dx
-    mov    al, 03Dh
-    out    dx, al
+    mov    dl, HT18_PAGE_SET_REGISTER AND 0FFh
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE)
+    out    dx, ax
 
-    inc    dx
-    inc    dx
-    mov    al, 01Eh
+    mov    dl, HT18_PAGE_SELECT_REGISTER AND 0FFh
+    mov    al, HT18_PAGE_D000 + WAD_PAGE_FRAME_INDEX
     out    dx, al
-    dec    dx
-    dec    dx
-    mov    al, 03Eh
-    out    dx, al
+    mov    dl, HT18_PAGE_SET_REGISTER AND 0FFh
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
+    out    dx, ax
 
-    inc    dx
-    inc    dx
-    mov    al, 01Fh
+    mov    dl, HT18_PAGE_SELECT_REGISTER AND 0FFh
+    mov    al, HT18_PAGE_D000 + BSP_PAGE_FRAME_INDEX
     out    dx, al
-    dec    dx
-    dec    dx
-    mov    al, 03Fh
-    out    dx, al
+    mov    dl, HT18_PAGE_SET_REGISTER AND 0FFh
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE)
+    out    dx, ax
 
 
+    
     pop    dx
     ret
     ENDP

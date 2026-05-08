@@ -309,6 +309,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define MUS_PAGE_FRAME_INDEX                        0
 #define SFX_PAGE_FRAME_INDEX                        1
 #define WAD_PAGE_FRAME_INDEX                        2
+#define BSP_PAGE_FRAME_INDEX                        3
 
 
 // arg mult times size of int16

@@ -78,7 +78,7 @@ doomout.exe : $(GLOBOBJS)
  wcc $(CCOPTS) $[*
 
 .asm.obj :
- tasm /mx /m2 /w2 /q /zi B_HT18C.TA $[*
+ tasm /mx /m2 /w2 /q /zi @B_HT18C.TA $[*
 
 clean : .SYMBOLIC
  del *.obj
