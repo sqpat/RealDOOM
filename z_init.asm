@@ -227,16 +227,6 @@ IFDEF COMP_CH
     out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enabled page D000 as page frame
 
 
-    ;mov    al, 010h
-    ;out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
-    ;mov    al, 0FFh
-    ;out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable page D000 UMBs
-
-    ;mov    al, 011h
-    ;out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
-    ;mov    al, 0AFh
-    ;out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable page E000 UMBs. F000 read only.
-
 	;// set default pages
 	;for (i = 0xC; i < 0x24; i++){
 	;	// initialize pages..
@@ -256,11 +246,26 @@ IFDEF COMP_CH
     jl      loop_next_page_setup
 
 
-    mov    al, 7
+
+    mov    al, SCAMP_PAGE_D000 + MUS_PAGE_FRAME_INDEX
     out    SCAMP_PAGE_SELECT_REGISTER, al
-    mov    ax, EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE
-    out    SCAMP_PAGE_SET_REGISTER, ax  ; set default EMS page for bsp code?
-    sub    al, 3     ; undo plus 4, inc ax 1    
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
+    out    SCAMP_PAGE_SET_REGISTER, ax
+    
+    mov    al, SCAMP_PAGE_D000 + SFX_PAGE_FRAME_INDEX
+    out    SCAMP_PAGE_SELECT_REGISTER, al
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
+    out    SCAMP_PAGE_SET_REGISTER, ax
+
+    mov    al, SCAMP_PAGE_D000 + WAD_PAGE_FRAME_INDEX
+    out    SCAMP_PAGE_SELECT_REGISTER, al
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
+    out    SCAMP_PAGE_SET_REGISTER, ax
+
+    mov    al, SCAMP_PAGE_D000 + BSP_PAGE_FRAME_INDEX
+    out    SCAMP_PAGE_SELECT_REGISTER, al
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE)
+    out    SCAMP_PAGE_SET_REGISTER, ax
 
     ret
 
@@ -275,7 +280,48 @@ IFDEF COMP_CH
 
 
     mov    word ptr ds:[_EMS_PAGE], 0D000h   ; TODO unhardcode
-    ; todo configure
+    SCAT_CHIPSET_CONFIG_REGISTER_SELECT    = 022h
+    SCAT_CHIPSET_CONFIG_REGISTER_READWRITE = 023h
+
+    mov  al, 04Fh
+    out  SCAT_CHIPSET_CONFIG_REGISTER_SELECT, al
+    mul  al  ; nop
+    in   al, SCAT_CHIPSET_CONFIG_REGISTER_READWRITE
+    or   al, 040h   ; enable EMS i/o
+    nop
+    nop
+    out  SCAT_CHIPSET_CONFIG_REGISTER_READWRITE, al
+
+    ;   set d000 pages to working values
+    mov    dx, SCAT_PAGE_SELECT_REGISTER
+    mov    al, SCAT_PAGE_D000 + MUS_PAGE_FRAME_INDEX
+    out    dx, al
+    mov    dl, SCAT_PAGE_SET_REGISTER AND 0FFh
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
+    out    dx, ax
+    
+    mov    dl, SCAT_PAGE_SELECT_REGISTER AND 0FFh
+    mov    al, SCAT_PAGE_D000 + SFX_PAGE_FRAME_INDEX
+    out    dx, al
+    mov    dl, SCAT_PAGE_SET_REGISTER AND 0FFh
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
+    out    dx, ax
+
+    mov    dl, SCAT_PAGE_SELECT_REGISTER AND 0FFh
+    mov    al, SCAT_PAGE_D000 + WAD_PAGE_FRAME_INDEX
+    out    dx, al
+    mov    dl, SCAT_PAGE_SET_REGISTER AND 0FFh
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
+    out    dx, ax
+
+    mov    dl, SCAT_PAGE_SELECT_REGISTER AND 0FFh
+    mov    al, SCAT_PAGE_D000 + BSP_PAGE_FRAME_INDEX
+    out    dx, al
+    mov    dl, SCAT_PAGE_SET_REGISTER AND 0FFh
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE)
+    out    dx, ax
+
+
     ret
     ENDP
 
@@ -308,14 +354,14 @@ IFDEF COMP_CH
     mov    al, HT18_PAGE_D000 + SFX_PAGE_FRAME_INDEX
     out    dx, al
     mov    dl, HT18_PAGE_SET_REGISTER AND 0FFh
-    mov    ax, (EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE)
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
     out    dx, ax
 
     mov    dl, HT18_PAGE_SELECT_REGISTER AND 0FFh
     mov    al, HT18_PAGE_D000 + WAD_PAGE_FRAME_INDEX
     out    dx, al
     mov    dl, HT18_PAGE_SET_REGISTER AND 0FFh
-    mov    ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
     out    dx, ax
 
     mov    dl, HT18_PAGE_SELECT_REGISTER AND 0FFh

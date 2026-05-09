@@ -530,7 +530,7 @@ IFDEF COMP_CH
 
         mov  ds:[_currentpageframes], al
         mov  ah, al
-        mov  al, SCAMP_PAGE_FRAME_BASE_INDEX
+        mov  al, SCAMP_PAGE_D000
         cli
         out  SCAMP_PAGE_SELECT_REGISTER, al
         mov  al, ah

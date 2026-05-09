@@ -26,8 +26,6 @@ INCLUDE defs.inc
 SCAT_PAGE_D000 = 018h
 SCAT_PAGE_SELECT_REGISTER = 020Ah
 SCAT_PAGE_SET_REGISTER = 0208h
-;EMS_MEMORY_PAGE_OFFSET = 080h
-EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT = 08080h
 
 .CODE
 
@@ -260,7 +258,7 @@ mov  al, 0
 
 mov  dx, SCAT_PAGE_SET_REGISTER
 xchg al, ah	 ; ah becomes 0
-add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + MUS_DATA_PAGES)
+add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
 out  dx, ax
 sti
 
@@ -293,9 +291,9 @@ mov  dx, SCAT_PAGE_SET_REGISTER
 mov  al, 0
 xchg al, ah
 
-; adding EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT is a manual _EPR process normally handled by c preprocessor...
+; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
 ; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
-add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + SFX_DATA_PAGES)
+add  ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
 out  dx, ax
 sti
 
@@ -331,7 +329,7 @@ xor  ah, ah
 
 SHIFT_MACRO SHR AX 2
 
-add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + FIRST_LUMPINFO_LOGICAL_PAGE)
+add  ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
 out  dx, ax
 sti
 

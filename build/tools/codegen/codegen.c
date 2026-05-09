@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 994
+#define CONSTANTS_COUNT 995
 #define LOCALS_COUNT 31
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -1100,8 +1100,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"MAX_REJECT_SIZE",
 	"NIGHTMARE_SPAWN_SIZE",
 	"SIZE_SEG_LINEDEFS",
-	"SIZE_SEG_SIDES"
-
+	"SIZE_SEG_SIDES",
+	"EMS_BUILD_SETTING"
 
 
 
@@ -2197,7 +2197,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	MAX_REJECT_SIZE,
 	NIGHTMARE_SPAWN_SIZE,
 	size_seg_linedefs,
-	size_seg_sides
+	size_seg_sides,
+	EMS_BUILD_SETTING
 
 
 

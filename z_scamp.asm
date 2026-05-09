@@ -23,10 +23,7 @@ INCLUDE defs.inc
 
 .DATA
 
-SCAMP_PAGE_FRAME_BASE_INDEX = 4    ; todo ??? d000?
-SCAMP_PAGE_SELECT_REGISTER = 0E8h
-SCAMP_PAGE_SET_REGISTER = 0EAh
-EMS_MEMORY_PAGE_OFFSET = 050h
+
 
 
 .CODE
@@ -239,7 +236,7 @@ je   exit_page_frame
 
 mov  ds:[_currentpageframes], al
 mov  ah, al
-mov  al, SCAMP_PAGE_FRAME_BASE_INDEX
+mov  al, SCAMP_PAGE_D000
 cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  al, ah
@@ -265,7 +262,7 @@ je   exit_sfx_pageframe
 mov  byte ptr ds:[_currentpageframes + 1], al
 
 mov  ah, al
-mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + 1	; page D400
+mov  al, SCAMP_PAGE_D000 + 1	; page D400
 cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 
@@ -292,7 +289,7 @@ je   exit_wad_pageframe
 
 mov  byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX], ah
 
-mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + WAD_PAGE_FRAME_INDEX	; page D400
+mov  al, SCAMP_PAGE_D000 + WAD_PAGE_FRAME_INDEX	; page D400
 cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 
