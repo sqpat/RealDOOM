@@ -73,6 +73,8 @@ EXTRN locallib_strcmp_:NEAR
 ; related to spacing for printing title based on chipset name...
 NUMSPACES_27 = 27
 
+; todo: algorithmically based on string length?
+
 IFDEF COMP_CH
   IF COMP_CH EQ CHIPSET_SCAMP
     NUMSPACES_27 = NUMSPACES_27 - (17 / 2)
@@ -362,6 +364,74 @@ mov   bx, 0
 int   010h    ;  set video mode?
 
 call  D_DrawTitle_
+
+; cpu checks... collected from a variety of vcfed forum posts.
+; we just want to warn the user if they are using an unsupported build, but not be annoying and prevent running.
+; who knows if they have some oddball machine or have a reason to want to run.
+
+SCRATCH_PTR:
+
+mov   ax, OFFSET str_detected_platform
+call  DEBUG_PRINT_NOARG_CS_
+
+push  sp   
+pop   ax
+cmp   ax, sp
+jne   below_286  ; thanks Chuck(G)
+; determine 286, 386sx, 386dx, 486+ (?) here
+
+db 02Eh, 0Fh, 01h, 06 ;    sgdt word ptr cs:[SCRATCH_PTR]
+dw OFFSET SCRATCH_PTR
+
+cmp   byte ptr cs:[SCRATCH_PTR+5], 0
+mov   ax, OFFSET str_detected_286
+jnz   is_286  ; also thanks Chuck(G)
+; determine 386sx, 386dx, 486+ (?) here
+mov   ax, OFFSET str_detected_386
+jmp   detected_cpu
+
+; supposedly not safe
+COMMENT @
+db 0fh, 01h, 0e0h   ; smsw ax
+
+cmp ax,0fff0h
+mov   ax, OFFSET str_detected_286
+jae is_286  ; thanks dreNorteR
+; determine 386sx, 386dx, 486+ (?) here
+mov   ax, OFFSET str_detected_386
+jmp   detected_cpu
+@
+
+
+below_286:
+; determine 8088, 8086, 188, 186, v20, v30 here
+mov   ax, 0101h 
+db 0d5h, 010h  ; aad 16
+cmp   al, 11
+jne   cpu_type_not_NEC  ; thanks 640KB
+; determine v20, v30 here
+mov   ax, OFFSET str_detected_vx0
+jmp   detected_cpu
+
+cpu_type_not_NEC:
+; determine 8088, 8086, 188, 186 here
+push  ds
+mov   ax, 04000h
+mov   ds, ax
+mov   byte ptr ds:[00000h], 1
+mov   word ptr ds:[0FFFFh], 0
+cmp   byte ptr ds:[00000h], 1
+pop   ds
+jne   cpu_type_808x  ; thanks Chuck(G)
+; deterine 188, 186 here
+mov   ax, OFFSET str_detected_18x
+jmp   detected_cpu
+cpu_type_808x:
+; deterine 8088, 8086 here
+mov   ax, OFFSET str_detected_808x
+is_286:
+detected_cpu:
+call  DEBUG_PRINT_NOARG_CS_
 
 mov   ax, OFFSET str_P_Init
 call  DEBUG_PRINT_NOARG_CS_
@@ -1145,6 +1215,21 @@ str_mem_param:
 db 0Ah, "BYTES LEFT: %li (DS : %x to %x BASEMEM : %x)", 0Ah, 0
 str_not_enough_mem:
 db 0Ah, "ERROR! Not enough conventioal memory free! Need %li more bytes free!", 0Ah, 0
+
+
+str_detected_platform:
+db 0Ah, "Detected Platform: ", 0
+
+str_detected_386:
+db "386+", 0
+str_detected_286:
+db "286", 0
+str_detected_18x:
+db "188/186", 0
+str_detected_808x:
+db "8088/8086", 0
+str_detected_vx0:
+db "v20/v30", 0
 
 str_P_Init:
 db 0Ah, "P_Init: Checking cmd-line parameters...", 0Ah, 0
