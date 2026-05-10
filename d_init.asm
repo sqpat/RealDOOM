@@ -70,6 +70,34 @@ EXTRN locallib_strcmp_:NEAR
 
 .DATA
 
+; related to spacing for printing title based on chipset name...
+NUMSPACES_27 = 27
+
+IFDEF COMP_CH
+  IF COMP_CH EQ CHIPSET_SCAMP
+    NUMSPACES_27 = NUMSPACES_27 - (17 / 2)
+  ELSEIF COMP_CH EQ CHIPSET_SCAT
+    NUMSPACES_27 = NUMSPACES_27 - (16 / 2)
+  ELSEIF COMP_CH EQ CHIPSET_HT18
+    NUMSPACES_27 = NUMSPACES_27 - (16 / 2)
+  ENDIF
+ELSE
+  IF COMPISA GE COMPILE_386
+    NUMSPACES_27 = NUMSPACES_27 - (15 / 2)
+  ELSEIF COMPISA EQ COMPILE_286
+    NUMSPACES_27 = NUMSPACES_27 - (15 / 2)
+  ELSEIF COMPISA EQ COMPILE_186
+    NUMSPACES_27 = NUMSPACES_27 - (15 / 2)
+  ELSE ; 8088
+    NUMSPACES_27 = NUMSPACES_27 - (16 / 2)
+  ENDIF
+ENDIF
+
+NUMSPACES_24 = NUMSPACES_27 - 3
+NUMSPACES_25 = NUMSPACES_27 - 2
+NUMSPACES_26 = NUMSPACES_27 - 1
+
+
 
 
 
@@ -251,7 +279,7 @@ mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 cmp   byte ptr ds:[_commercial], 0
 jne   commercial_title
-mov   cx, 26
+mov   cx, NUMSPACES_26
 call  PrintSpaces_
 
 mov   si, OFFSET str_title_normal
@@ -276,7 +304,7 @@ mov   di, ax
 mov   ch, 3 ; enough to find what we're looking for
 repne scasb ; find end of string
 dec   di
-mov   cx, 24 
+mov   cx, NUMSPACES_24
 call  PrintSpaces_
 
 
@@ -315,12 +343,12 @@ commercial_title:
 push  cs
 pop   ds
 mov   si, OFFSET str_title_doom2
-mov   cx, 25
+mov   cx, NUMSPACES_25
 call  PrintSpaces_
 dec   di
 mov   cx, (OFFSET str_title_doom2_done - OFFSET str_title_doom2)
 rep   movsb
-mov   cl, 27
+mov   cl, NUMSPACES_27
 call  PrintSpaces_
 
 
@@ -1034,6 +1062,71 @@ ret
 ENDP
 
 
+IFDEF COMP_CH
+  IF COMP_CH EQ CHIPSET_SCAMP
+    str_title_ultimate:
+    db " The Ultimate DOOM Startup v1.9 (RealDOOM SCAMP)", 0
+    str_title_normal:
+    db " DOOM System Startup v1.9 (RealDOOM SCAMP)", 0
+    str_title_doom2: 
+    db "DOOM 2: Hell on Earth v1.9 (RealDOOM SCAMP)"
+    str_title_doom2_done:
+
+  ELSEIF COMP_CH EQ CHIPSET_SCAT
+    str_title_ultimate:
+    db " The Ultimate DOOM Startup v1.9 (RealDOOM SCAT)", 0
+    str_title_normal:
+    db " DOOM System Startup v1.9 (RealDOOM SCAT)", 0
+    str_title_doom2: 
+    db "DOOM 2: Hell on Earth v1.9 (RealDOOM SCAT)"
+    str_title_doom2_done:
+
+  ELSEIF COMP_CH EQ CHIPSET_HT18
+    str_title_ultimate:
+    db " The Ultimate DOOM Startup v1.9 (RealDOOM HT18)", 0
+    str_title_normal:
+    db " DOOM System Startup v1.9 (RealDOOM HT18)", 0
+    str_title_doom2: 
+    db "DOOM 2: Hell on Earth v1.9 (RealDOOM HT18)"
+    str_title_doom2_done:
+  ENDIF
+ELSE
+  IF COMPISA GE COMPILE_386
+    str_title_ultimate:
+    db " The Ultimate DOOM Startup v1.9 (RealDOOM 386)", 0
+    str_title_normal:
+    db " DOOM System Startup v1.9 (RealDOOM 386)", 0
+    str_title_doom2: 
+    db "DOOM 2: Hell on Earth v1.9 (RealDOOM 386)"
+    str_title_doom2_done:
+  ELSEIF COMPISA EQ COMPILE_286
+    str_title_ultimate:
+    db " The Ultimate DOOM Startup v1.9 (RealDOOM 286)", 0
+    str_title_normal:
+    db " DOOM System Startup v1.9 (RealDOOM 286)", 0
+    str_title_doom2: 
+    db "DOOM 2: Hell on Earth v1.9 (RealDOOM 286)"
+    str_title_doom2_done:
+  ELSEIF COMPISA EQ COMPILE_186
+    str_title_ultimate:
+    db " The Ultimate DOOM Startup v1.9 (RealDOOM 186)", 0
+    str_title_normal:
+    db " DOOM System Startup v1.9 (RealDOOM 186)", 0
+    str_title_doom2: 
+    db "DOOM 2: Hell on Earth v1.9 (RealDOOM 186)"
+    str_title_doom2_done:
+
+  ELSE ; 8088
+    str_title_ultimate:
+    db " The Ultimate DOOM Startup v1.9 (RealDOOM 8086)", 0
+    str_title_normal:
+    db " DOOM System Startup v1.9 (RealDOOM 8086)", 0
+    str_title_doom2: 
+    db "DOOM 2: Hell on Earth v1.9 (RealDOOM 8086)"
+    str_title_doom2_done:
+  ENDIF
+ENDIF
+
 
 
 
@@ -1058,13 +1151,6 @@ db 0Ah, "P_Init: Checking cmd-line parameters...", 0Ah, 0
 str_turbo_scale:
 db "turbo scale: %i%%", 0Ah, 0
 
-str_title_ultimate:
-db " The Ultimate DOOM Startup v1.9", 0
-str_title_normal:
-db "  DOOM System Startup v1.9  ", 0
-str_title_doom2: 
-db "DOOM 2: Hell on Earth v1.9"
-str_title_doom2_done:
 
 str_z_init_ems:
 db "Z_InitEMS: Initialize EMS memory.", 0Ah, 0
