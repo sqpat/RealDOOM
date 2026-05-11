@@ -80,26 +80,13 @@ EXTRN CopyString13_:NEAR
 
 
 
-SCAMP_PAGE_SELECT_REGISTER = 0E8h
-SCAMP_PAGE_SET_REGISTER = 0EAh
-SCAMP_PAGE_CHIPSET_SELECT_REGISTER = 0ECh
-SCAMP_PAGE_CHIPSET_SET_REGISTER = 0EDh
-HT18_PAGE_SELECT_REGISTER = 01EEh
-HT18_PAGE_SET_REGISTER = 01ECh
-
-HT18_CHIPSET_CONFIG_REGISTER_SELECT = 1EDh
-HT18_CHIPSET_CONFIG_REGISTER_READWRITE = 1EFh
-HT18_EMS_CONFIG_REGISTER = 00h
-HT18_PAGE_D000 = 01Ch
-
-
 
 
 
 .DATA
 
 
-
+ 
 
 .CODE
 
@@ -214,17 +201,17 @@ IFDEF COMP_CH
 
     mov    word ptr ds:[_EMS_PAGE], 0D000h   ; TODO unhardcode
     mov    al, 000h
-    out    0FBh, al  ;  dummy write configuration enable
+    out    SCAMP_CONFIGURATION_ENABLE_REGISTER, al  ;  dummy write configuration enable
 	
     mov    al, 00Bh
-    out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
+    out    SCAMP_CHIPSET_CONFIGURATION_REGISTER_SELECT, al
     mov    al, 0C0h
-    out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable EMS and backfill
+    out    SCAMP_CHIPSET_CONFIGURATION_REGISTER_READWRITE, al  ; enable EMS and backfill
 	
     mov    al, 00Ch
-    out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
+    out    SCAMP_CHIPSET_CONFIGURATION_REGISTER_SELECT, al
     mov    al, 0F0h
-    out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enabled page D000 as page frame
+    out    SCAMP_CHIPSET_CONFIGURATION_REGISTER_READWRITE, al  ; enabled page D000 as page frame
 
 
 	;// set default pages
@@ -280,17 +267,15 @@ IFDEF COMP_CH
 
 
     mov    word ptr ds:[_EMS_PAGE], 0D000h   ; TODO unhardcode
-    SCAT_CHIPSET_CONFIG_REGISTER_SELECT    = 022h
-    SCAT_CHIPSET_CONFIG_REGISTER_READWRITE = 023h
 
     mov  al, 04Fh
-    out  SCAT_CHIPSET_CONFIG_REGISTER_SELECT, al
+    out  SCAT_CHIPSET_CONFIGURATION_REGISTER_SELECT, al
     mul  al  ; nop
-    in   al, SCAT_CHIPSET_CONFIG_REGISTER_READWRITE
+    in   al, SCAT_CHIPSET_CONFIGURATION_REGISTER_READWRITE
     or   al, 040h   ; enable EMS i/o
     nop
     nop
-    out  SCAT_CHIPSET_CONFIG_REGISTER_READWRITE, al
+    out  SCAT_CHIPSET_CONFIGURATION_REGISTER_READWRITE, al
 
     ;   set d000 pages to working values
     mov    dx, SCAT_PAGE_SELECT_REGISTER
@@ -335,9 +320,9 @@ IFDEF COMP_CH
     mov    word ptr ds:[_EMS_PAGE], 0D000h   ; TODO unhardcode
 
     mov al, HT18_EMS_CONFIG_REGISTER
-    mov dx, HT18_CHIPSET_CONFIG_REGISTER_SELECT
+    mov dx, HT18_CHIPSET_CONFIGURATION_REGISTER_SELECT
     out dx, al
-    mov dx, HT18_CHIPSET_CONFIG_REGISTER_READWRITE
+    mov dx, HT18_CHIPSET_CONFIGURATION_REGISTER_READWRITE
     in  al, dx
     or  al, 02h                                        ; enable EMS flag on
     out dx, al

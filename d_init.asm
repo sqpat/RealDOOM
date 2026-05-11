@@ -371,7 +371,7 @@ call  D_DrawTitle_
 
 SCRATCH_PTR:
 
-mov   ax, OFFSET str_detected_platform
+mov   ax, OFFSET str_detected_cpu
 call  DEBUG_PRINT_NOARG_CS_
 
 push  sp   
@@ -432,6 +432,94 @@ mov   ax, OFFSET str_detected_808x
 is_286:
 detected_cpu:
 call  DEBUG_PRINT_NOARG_CS_
+
+IFDEF COMP_CH
+  
+  
+  mov   ax, OFFSET str_detected_chipset
+  call  DEBUG_PRINT_NOARG_CS_
+
+  IF COMP_CH EQ CHIPSET_SCAMP
+    out    SCAMP_CONFIGURATION_ENABLE_REGISTER, al  ;  dummy write configuration enable
+    xor    ax, ax
+    out    SCAMP_CHIPSET_CONFIGURATION_REGISTER_SELECT, al
+    in     al, SCAMP_CHIPSET_CONFIGURATION_REGISTER_SELECT  ; can we modify the configuration register index?
+    test   al, al
+    jne    chipset_fail
+    in     al, SCAMP_CHIPSET_CONFIGURATION_REGISTER_READWRITE   ; index 0 is the read only version register
+    mov    ah, al
+    not    al
+    out    SCAMP_CHIPSET_CONFIGURATION_REGISTER_READWRITE, al
+    in     al, SCAMP_CHIPSET_CONFIGURATION_REGISTER_READWRITE
+    cmp    al, ah
+    jne    chipset_fail                      ; not read only?
+    ; expressed as two bit values (half nibbles?) version should be
+    ; 310, 311, or 330?  D6, F2, F7... plus final nibble is version number.
+    not    al        ; reverse bits.. 
+    test   al, 0D0h  ; bits 11010000. those 3 bits should have been on (now off) regardless of 310, 311, 330.
+    jne    chipset_fail
+    jmp    chipset_pass
+
+  ELSEIF COMP_CH EQ CHIPSET_SCAT
+
+    mov    al, 040h   ; version index
+    out    SCAT_CHIPSET_CONFIGURATION_REGISTER_SELECT, al
+    ; note: 86box returns ff, real hw does not
+    in     al, SCAT_CHIPSET_CONFIGURATION_REGISTER_SELECT  ; should return FF.
+    inc    al
+    jnz    chipset_fail
+    in     al, SCAT_CHIPSET_CONFIGURATION_REGISTER_READWRITE   ; index 40h is the read only version register
+    mov    ah, al     ; backip version
+    mov    al, 040h   ; version index
+    out    SCAT_CHIPSET_CONFIGURATION_REGISTER_SELECT, al
+    mov    al, 0FFh
+    out    SCAT_CHIPSET_CONFIGURATION_REGISTER_READWRITE, al ; write to readonly
+    
+    mov    al, 040h   ; version index
+    out    SCAT_CHIPSET_CONFIGURATION_REGISTER_SELECT, al
+    in     al, SCAT_CHIPSET_CONFIGURATION_REGISTER_READWRITE    
+    cmp    al, ah
+    jne    chipset_fail                      ; not read only?
+    
+    test   al, 0F8h   ; hi 5 bits should all be zero
+    jne    chipset_fail 
+    ; todo i feel like this one isnt a good enough test...
+    jmp    chipset_pass
+
+  ELSEIF COMP_CH EQ CHIPSET_HT18
+
+    ; notes: we want to fail HT12, which uses these configuration registers but with different indices.
+
+    mov    al, 4   ; version index
+    mov    dx,  HT18_CHIPSET_CONFIGURATION_REGISTER_SELECT
+    out    dx, al
+    in     al, dx  ; can we modify the configuration register index?
+    cmp    al, 4
+    jne    chipset_fail
+    mov    al, 0FFh
+    out    dx, al
+    in     al, dx
+    cmp    al, 7
+    jne    chipset_fail  ; tested on ht21
+    ; todo double check ht12
+    jmp    chipset_pass
+
+  ENDIF
+
+
+
+  chipset_fail:
+  mov     ax, OFFSET str_detected_chipset_fail
+  jmp     print_chipset
+  
+  chipset_pass:
+  mov     ax, OFFSET str_detected_chipset_pass
+  print_chipset:
+  call  DEBUG_PRINT_NOARG_CS_
+
+
+ENDIF
+
 
 mov   ax, OFFSET str_P_Init
 call  DEBUG_PRINT_NOARG_CS_
@@ -1217,9 +1305,8 @@ str_not_enough_mem:
 db 0Ah, "ERROR! Not enough conventioal memory free! Need %li more bytes free!", 0Ah, 0
 
 
-str_detected_platform:
-db 0Ah, "Detected Platform: ", 0
-
+str_detected_cpu:
+db 0Ah, "Detected CPU: ", 0
 str_detected_386:
 db "386+", 0
 str_detected_286:
@@ -1230,6 +1317,21 @@ str_detected_808x:
 db "8088/8086", 0
 str_detected_vx0:
 db "v20/v30", 0
+
+IFDEF COMP_CH
+str_detected_chipset:
+  IF COMP_CH EQ CHIPSET_SCAMP
+    db 0Ah, "VLSI Chipset Detection: ", 0
+  ELSEIF COMP_CH EQ CHIPSET_SCAT
+    db 0Ah, "SCAT Chipset Detection: ", 0
+  ELSEIF COMP_CH EQ CHIPSET_HT18
+    db 0Ah, "Headland Chipset Detection: ", 0
+  ENDIF
+  str_detected_chipset_pass:
+  db "OK!", 0 
+  str_detected_chipset_fail:
+  db "FAIL!!", 0
+ENDIF
 
 str_P_Init:
 db 0Ah, "P_Init: Checking cmd-line parameters...", 0Ah, 0
