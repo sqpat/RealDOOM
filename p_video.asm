@@ -263,7 +263,15 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 
+PROC   V_DrawPatchDirectFar_ FAR
+PUBLIC V_DrawPatchDirectFar_ 
+
+call   V_DrawPatchDirect_
+retf
+
+ENDP
 
 ALIGN_MACRO
 PROC   V_DrawPatchDirect_ NEAR

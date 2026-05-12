@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/05/11 04:24:40
+Created on:       26/05/12 03:14:30
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          061f:0000            000012a0
+DGROUP                          062f:0000            000012a0
 
 
 
@@ -25,35 +25,35 @@ Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
 I_START_TEXT           CODE           AUTO           0000:0000       000000de
-D_INIT_TEXT            CODE           AUTO           0000:00de       00000d74
-ST_INIT_TEXT           CODE           AUTO           0000:0e52       00000207
-R_INIT_TEXT            CODE           AUTO           0000:105a       000007b9
-W_INIT_TEXT            CODE           AUTO           0000:1814       0000016e
-I_INIT_TEXT            CODE           AUTO           0000:1982       000001e4
-Z_INIT_TEXT            CODE           AUTO           0000:1b66       00000811
-S_SBINIT_TEXT          CODE           AUTO           0000:2378       000002e5
-P_INIT_TEXT            CODE           AUTO           0000:265e       0000026b
-I_QUIT_TEXT            CODE           AUTO           0000:28ca       00000209
-D_NET_TEXT             CODE           AUTO           0000:2ad4       000000e1
-G_GAME_TEXT            CODE           AUTO           0000:2bb6       000002f5
-G_DEMO_TEXT            CODE           AUTO           0000:2eac       00000226
-M_MISC_TEXT            CODE           AUTO           0000:30d2       0000005c
-D_DMX_TEXT             CODE           AUTO           0000:312e       000000d3
-D_INT_TEXT             CODE           AUTO           0000:3202       00000142
-MEMORY_TEXT            CODE           AUTO           0000:3344       00000000
-MATH_TEXT              CODE           AUTO           0000:3344       00000080
-MAIN_TEXT              CODE           AUTO           0000:33c4       00001209
-G_SETUP_TEXT           CODE           AUTO           0000:45ce       00000217
-R_SETUP_TEXT           CODE           AUTO           0000:47e6       000002d2
-S_SBSFX_TEXT           CODE           AUTO           0000:4ab8       00000d2b
-F_FILE_TEXT            CODE           AUTO           0000:57e4       000003f1
-W_WAD_TEXT             CODE           AUTO           0000:5bd6       00000247
-V_VIDEO_TEXT           CODE           AUTO           0000:5e1e       000000f8
-Z_ZONE_TEXT            CODE           AUTO           0000:5f16       000002d4
-_NULL                  BEGDATA        DGROUP         061f:0000       00000010
-_FIXEDDATA             DATA           DGROUP         0620:0000       00000e90
-_DATA                  DATA           DGROUP         0709:0000       00000000
-STACK                  STACK          DGROUP         0709:0000       00000400
+D_INIT_TEXT            CODE           AUTO           0000:00de       00000dbc
+ST_INIT_TEXT           CODE           AUTO           0000:0e9a       00000207
+R_INIT_TEXT            CODE           AUTO           0000:10a2       000007b9
+W_INIT_TEXT            CODE           AUTO           0000:185c       0000016e
+I_INIT_TEXT            CODE           AUTO           0000:19ca       000001e4
+Z_INIT_TEXT            CODE           AUTO           0000:1bae       00000811
+S_SBINIT_TEXT          CODE           AUTO           0000:23c0       000002e5
+P_INIT_TEXT            CODE           AUTO           0000:26a6       0000026b
+I_QUIT_TEXT            CODE           AUTO           0000:2912       00000209
+D_NET_TEXT             CODE           AUTO           0000:2b1c       000000e1
+G_GAME_TEXT            CODE           AUTO           0000:2bfe       000002f5
+G_DEMO_TEXT            CODE           AUTO           0000:2ef4       00000226
+M_MISC_TEXT            CODE           AUTO           0000:311a       0000005c
+D_DMX_TEXT             CODE           AUTO           0000:3176       000000d3
+D_INT_TEXT             CODE           AUTO           0000:324a       00000142
+MEMORY_TEXT            CODE           AUTO           0000:338c       00000000
+MATH_TEXT              CODE           AUTO           0000:338c       00000080
+MAIN_TEXT              CODE           AUTO           0000:340c       00001209
+G_SETUP_TEXT           CODE           AUTO           0000:4616       00000217
+R_SETUP_TEXT           CODE           AUTO           0000:482e       000002d2
+S_SBSFX_TEXT           CODE           AUTO           0000:4b00       00000d2b
+F_FILE_TEXT            CODE           AUTO           0000:582c       000003f1
+W_WAD_TEXT             CODE           AUTO           0000:5c1e       00000306
+V_VIDEO_TEXT           CODE           AUTO           0000:5f24       000000f8
+Z_ZONE_TEXT            CODE           AUTO           0000:601c       000002d4
+_NULL                  BEGDATA        DGROUP         062f:0000       00000010
+_FIXEDDATA             DATA           DGROUP         0630:0000       00000e90
+_DATA                  DATA           DGROUP         0719:0000       00000000
+STACK                  STACK          DGROUP         0719:0000       00000400
 
 
                         +----------------+
@@ -67,289 +67,292 @@ Address        Symbol
 =======        ======
 
 Module: i_start.obj(i_start.ASM)
-061f:0000*     __nullarea
+062f:0000*     __nullarea
 0000:0000      _realdoomstart_
 0000:00de*     I_START_ENDMARKER_
 0000:0000*     I_START_STARTMARKER_
 Module: d_init.obj(d_init.ASM)
-0000:0d26      I_InitGraphics_
-0000:0e52*     D_INIT_ENDMARKER_
+0000:0d6a      I_InitGraphics_
+0000:0e9a*     D_INIT_ENDMARKER_
 0000:0cab*     D_DrawTitle_
 0000:00de*     D_INIT_STARTMARKER_
-0000:0e13*     M_CheckParm_CS_
-0000:0dad      G_BeginRecording_
+0000:0e5b*     M_CheckParm_CS_
+0000:0df5      G_BeginRecording_
 0000:013d      D_DoomMain2_
 0000:0a22*     M_LoadDefaults_
 0000:0bd2*     M_ScanTranslateDefaults_
-0000:0de4      D_DoomMain_
-0000:0e15      M_CheckParm_
-0000:0df7*     locallib_strlwr_
+0000:0e2c      D_DoomMain_
+0000:0d2d*     I_InitDiskFlash_
+0000:0e5d      M_CheckParm_
+0000:0e3f*     locallib_strlwr_
 Module: st_init.obj(st_init.ASM)
-0000:0e52*     ST_INIT_STARTMARKER_
-0000:1059*     ST_INIT_ENDMARKER_
-0000:0efa      ST_Init_
+0000:0e9a*     ST_INIT_STARTMARKER_
+0000:10a1*     ST_INIT_ENDMARKER_
+0000:0f42      ST_Init_
 Module: r_init.obj(r_init.ASM)
-0000:13c2*     R_InitTextures_
-0000:164c      R_Init_
-0000:10e4*     R_GenerateLookup_
-0000:17d1*     W_CacheLumpNumDirectSmall_
+0000:140a*     R_InitTextures_
+0000:1694      R_Init_
+0000:112c*     R_GenerateLookup_
+0000:1819*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
-0000:1814*     W_INIT_STARTMARKER_
-0000:1982*     W_INIT_ENDMARKER_
-0000:1840      W_AddFile_
+0000:185c*     W_INIT_STARTMARKER_
+0000:19ca*     W_INIT_ENDMARKER_
+0000:1888      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-0000:1b66*     I_INIT_ENDMARKER_
-0000:19fe      I_Init_
-0000:1982*     I_INIT_STARTMARKER_
+0000:1bae*     I_INIT_ENDMARKER_
+0000:1a46      I_Init_
+0000:19ca*     I_INIT_STARTMARKER_
 Module: z_init.obj(z_init.ASM)
-0000:1ee8*     Z_ReadFileRegionWithIndex_
-0000:1b66      _doomdata_bin_string
-0000:2377*     Z_INIT_ENDMARKER_
-0000:21a3      Z_LoadBinaries_
-0000:1e67      Z_GetEMSPageMap_
-0000:1fb7*     Z_DoRenderCodeLoad_
-0000:1b66*     Z_INIT_STARTMARKER_
-0000:1dbb      Z_InitEMS_
-0000:1f40*     Z_QuickMapRender4000_
-0000:1f2a      Z_QuickMapMaskedExtraData_
-0000:1f56*     Z_QuickMapVisplanePage_
+0000:1f30*     Z_ReadFileRegionWithIndex_
+0000:1bae      _doomdata_bin_string
+0000:23bf*     Z_INIT_ENDMARKER_
+0000:21eb      Z_LoadBinaries_
+0000:1eaf      Z_GetEMSPageMap_
+0000:1fff*     Z_DoRenderCodeLoad_
+0000:1bae*     Z_INIT_STARTMARKER_
+0000:1e03      Z_InitEMS_
+0000:1f88*     Z_QuickMapRender4000_
+0000:1f72      Z_QuickMapMaskedExtraData_
+0000:1f9e*     Z_QuickMapVisplanePage_
 Module: s_sbinit.obj(s_sbinit.ASM)
-0000:24ec      SB_SetPlaybackRate_
-0000:2634      SB_StartInit_
-0000:23dd      _SB_DSP_Version
-0000:265d*     S_SBINIT_ENDMARKER_
-0000:25c6*     SB_InitCard_
-0000:2378*     S_SBINIT_STARTMARKER_
-0000:23ef*     SB_SaveVoiceVolume_
-0000:23e0*     SB_ReadMixer_
-0000:2587*     SB_GetDSPVersion_
-0000:2417      SB_DSP1xx_BeginPlayback_
-0000:241e*     SB_DSP2xx_BeginPlayback_
-0000:2433*     SB_DSP4xx_BeginPlayback_
-0000:23df      _SB_CardActive
-0000:252a*     SB_SetupPlayback_
-0000:2448*     DMA_SetupTransfer_
-0000:24c9*     SB_EnableInterrupt_
+0000:2534      SB_SetPlaybackRate_
+0000:267c      SB_StartInit_
+0000:2425      _SB_DSP_Version
+0000:26a5*     S_SBINIT_ENDMARKER_
+0000:260e*     SB_InitCard_
+0000:23c0*     S_SBINIT_STARTMARKER_
+0000:2437*     SB_SaveVoiceVolume_
+0000:2428*     SB_ReadMixer_
+0000:25cf*     SB_GetDSPVersion_
+0000:245f      SB_DSP1xx_BeginPlayback_
+0000:2466*     SB_DSP2xx_BeginPlayback_
+0000:247b*     SB_DSP4xx_BeginPlayback_
+0000:2427      _SB_CardActive
+0000:2572*     SB_SetupPlayback_
+0000:2490*     DMA_SetupTransfer_
+0000:2511*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-0000:28c9*     P_INIT_ENDMARKER_
-0000:26af      P_Init_
-0000:265e*     P_INIT_STARTMARKER_
-0000:265f*     R_InstallSpriteLump_
+0000:2911*     P_INIT_ENDMARKER_
+0000:26f7      P_Init_
+0000:26a6*     P_INIT_STARTMARKER_
+0000:26a7*     R_InstallSpriteLump_
 Module: i_quit.obj(i_quit.ASM)
-0000:292a*     I_ShutdownWads_
-0000:2ad3*     I_QUIT_ENDMARKER_
-0000:28ca*     I_QUIT_STARTMARKER_
-0000:2a83      exit_
-0000:2aa3*     __exit_with_msg_
-0000:2a2a      I_Quit_
-0000:2aa3*     __do_exit_with_msg_
-0000:28d1*     Z_ShutdownEMS_
-0000:2a46      I_Error_
+0000:2972*     I_ShutdownWads_
+0000:2b1b*     I_QUIT_ENDMARKER_
+0000:2912*     I_QUIT_STARTMARKER_
+0000:2acb      exit_
+0000:2aeb*     __exit_with_msg_
+0000:2a72      I_Quit_
+0000:2aeb*     __do_exit_with_msg_
+0000:2919*     Z_ShutdownEMS_
+0000:2a8e      I_Error_
 Module: d_net.obj(d_net.ASM)
-0000:2ad4      NetUpdateFromPhysics_
-0000:2b22      TryRunTics_
-0000:2adc      NetUpdateFromRender_
-0000:2ad4*     D_NET_STARTMARKER_
-0000:2bb5*     D_NET_ENDMARKER_
+0000:2b1c      NetUpdateFromPhysics_
+0000:2b6a      TryRunTics_
+0000:2b24      NetUpdateFromRender_
+0000:2b1c*     D_NET_STARTMARKER_
+0000:2bfd*     D_NET_ENDMARKER_
 Module: g_game.obj(g_game.ASM)
-0000:2bb6      _wianimfilepos
-0000:2bc0      R_FlatNumForName_
-0000:2bba      _wianimcodesize
-0000:2d16      G_Ticker_
-0000:2eab*     G_GAME_ENDMARKER_
-0000:2bbc      R_FlatNumForName_FAR_
-0000:2bb6*     G_GAME_STARTMARKER_
+0000:2bfe      _wianimfilepos
+0000:2c08      R_FlatNumForName_
+0000:2c02      _wianimcodesize
+0000:2d5e      G_Ticker_
+0000:2ef3*     G_GAME_ENDMARKER_
+0000:2c04      R_FlatNumForName_FAR_
+0000:2bfe*     G_GAME_STARTMARKER_
 Module: g_demo.obj(g_demo.ASM)
-0000:3024      G_WriteDemoTiccmd_
-0000:30d2*     G_DEMO_ENDMARKER_
-0000:3082      G_CheckDemoStatus_
-0000:2f3b      D_DoAdvanceDemo_
-0000:2f20*     G_DeferedPlayDemo_
-0000:2ff6      G_ReadDemoTiccmd_
-0000:2eac*     G_DEMO_STARTMARKER_
+0000:306c      G_WriteDemoTiccmd_
+0000:311a*     G_DEMO_ENDMARKER_
+0000:30ca      G_CheckDemoStatus_
+0000:2f83      D_DoAdvanceDemo_
+0000:2f68*     G_DeferedPlayDemo_
+0000:303e      G_ReadDemoTiccmd_
+0000:2ef4*     G_DEMO_STARTMARKER_
 Module: m_misc.obj(m_misc.ASM)
-0000:30d2      M_WriteFile_
-0000:30fa      M_ReadFile_
-0000:312e*     M_MISC_ENDMARKER_
-0000:30d2*     M_MISC_STARTMARKER_
+0000:311a      M_WriteFile_
+0000:3142      M_ReadFile_
+0000:3176*     M_MISC_ENDMARKER_
+0000:311a*     M_MISC_STARTMARKER_
 Module: d_dmx.obj(d_dmx.ASM)
-0000:3130      _TS_Installed
-0000:312e*     D_DMX_STARTMARKER_
-0000:3156      TS_ServiceScheduleIntEnabled_
-0000:3131      _OldInt8
-0000:3196      _SELFMODIFY_enable_mus_task
-0000:3201*     D_DMX_ENDMARKER_
+0000:3178      _TS_Installed
+0000:3176*     D_DMX_STARTMARKER_
+0000:319e      TS_ServiceScheduleIntEnabled_
+0000:3179      _OldInt8
+0000:31de      _SELFMODIFY_enable_mus_task
+0000:3249*     D_DMX_ENDMARKER_
 Module: d_int.obj(d_int.ASM)
-0000:3212      MUS_ServiceRoutine_
-0000:3344*     D_INTERRUPT_ENDMARKER_
-0000:3202*     D_INTERRUPT_STARTMARKER_
+0000:325a      MUS_ServiceRoutine_
+0000:338c*     D_INTERRUPT_ENDMARKER_
+0000:324a*     D_INTERRUPT_STARTMARKER_
 Module: math.obj(math.ASM)
-0000:3372      FastDiv32u16u_
-0000:3360*     ENSUREALIGN_906
-0000:338a*     FastDiv3216u_
-0000:3344      FixedMul_
+0000:33ba      FastDiv32u16u_
+0000:33a8*     ENSUREALIGN_906
+0000:33d2*     FastDiv3216u_
+0000:338c      FixedMul_
 Module: main.obj(main.ASM)
-0000:40d5      DEBUG_PRINT_NOARG_
-0000:43dc      D_ProcessEvents_Render_
-0000:3f53      locallib_strcpy_
-0000:40c1*     locallib_printstringfar_
-0000:3f84      locallib_toupper_
-0000:438d      DEBUG_PRINT_
-0000:3a71      _used_defaultfile
-0000:3f0d      combine_strings_
-0000:34b0      _oldkeyboardisr
-0000:34ac      _sidemove
-0000:3e85*     I_UpdateNoBlit_
-0000:45cd*     D_MAIN_ENDMARKER_
-0000:34a8      _forwardmove
-0000:36d2      _scantokey
-0000:3d70      I_SetPalette_
-0000:3ddd*     I_UpdateBox_
-0000:40c3*     locallib_printstringnear_
-0000:426e      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
-0000:4526*     D_DoomLoop_
-0000:3bef      _defaults
-0000:33c4*     D_MAIN_STARTMARKER_
-0000:3fe3*     locallib_printhex_
-0000:3458      BASE_CHEAT_ADDRESS
-0000:3f79*     locallib_tolower_
-0000:3d68      I_SetPalette_FromMenu_
-0000:41ba*     D_Display_
-0000:351a      I_KeyboardISR_
-0000:43ea      D_ProcessEvents_
-0000:3a30      CopyString13_
-0000:3f67*     locallib_strlen_
-0000:3752      G_BuildTiccmd_
-0000:364c      _localcmds
-0000:34b6      cht_CheckCheat_Far_
-0000:458f      Z_ClearDeadCode_
-0000:3fc2      putchar_stdout_
-0000:40d3      DEBUG_PRINT_NOARG_CS_
-0000:4188      locallib_dos_setvect_
-0000:3f31      locallib_strcmp_
-0000:417e      locallib_dos_getvect_
-0000:404a*     locallib_printdecimal_
-0000:3f8f      copystr8_
-0000:3cc8      M_SaveDefaults_
-0000:44f3      getStringByIndex_
-0000:3fa8*     locallib_createhexnibble_
-0000:40d5      locallib_printf_
-0000:3544      I_StartTic_
-0000:43a1      S_ResumeSound_
+0000:411d      DEBUG_PRINT_NOARG_
+0000:4424      D_ProcessEvents_Render_
+0000:3f9b      locallib_strcpy_
+0000:4109*     locallib_printstringfar_
+0000:3fcc      locallib_toupper_
+0000:43d5      DEBUG_PRINT_
+0000:3ab9      _used_defaultfile
+0000:3f55      combine_strings_
+0000:34f8      _oldkeyboardisr
+0000:34f4      _sidemove
+0000:3ecd*     I_UpdateNoBlit_
+0000:4615*     D_MAIN_ENDMARKER_
+0000:34f0      _forwardmove
+0000:371a      _scantokey
+0000:3db8      I_SetPalette_
+0000:3e25*     I_UpdateBox_
+0000:410b*     locallib_printstringnear_
+0000:42b6      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
+0000:456e*     D_DoomLoop_
+0000:3c37      _defaults
+0000:340c*     D_MAIN_STARTMARKER_
+0000:402b*     locallib_printhex_
+0000:34a0      BASE_CHEAT_ADDRESS
+0000:3fc1*     locallib_tolower_
+0000:3db0      I_SetPalette_FromMenu_
+0000:4202*     D_Display_
+0000:3562      I_KeyboardISR_
+0000:4432      D_ProcessEvents_
+0000:3a78      CopyString13_
+0000:3faf*     locallib_strlen_
+0000:379a      G_BuildTiccmd_
+0000:3694      _localcmds
+0000:34fe      cht_CheckCheat_Far_
+0000:45d7      Z_ClearDeadCode_
+0000:400a      putchar_stdout_
+0000:411b      DEBUG_PRINT_NOARG_CS_
+0000:41d0      locallib_dos_setvect_
+0000:3f79      locallib_strcmp_
+0000:41c6      locallib_dos_getvect_
+0000:4092*     locallib_printdecimal_
+0000:3fd7      copystr8_
+0000:3d10      M_SaveDefaults_
+0000:453b      getStringByIndex_
+0000:3ff0*     locallib_createhexnibble_
+0000:411d      locallib_printf_
+0000:358c      I_StartTic_
+0000:43e9      S_ResumeSound_
 Module: g_setup.obj(g_setup.ASM)
-0000:45f2      R_CheckTextureNumForName_
-0000:47e5*     G_SETUP_ENDMARKER_
-0000:4638      R_TextureNumForName_FAR_
-0000:45ce*     G_SETUP_STARTMARKER_
-0000:463c      R_TextureNumForName_
-0000:465a      G_InitNew_
-0000:4772      G_DoLoadLevel_
+0000:463a      R_CheckTextureNumForName_
+0000:482d*     G_SETUP_ENDMARKER_
+0000:4680      R_TextureNumForName_FAR_
+0000:4616*     G_SETUP_STARTMARKER_
+0000:4684      R_TextureNumForName_
+0000:46a2      G_InitNew_
+0000:47ba      G_DoLoadLevel_
 Module: r_setup.obj(r_setup.ASM)
-0000:4a9d      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTS
-0000:47e6*     R_InitTextureMapping_
-0000:4aad      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSMASKEDCALL
-0000:4ab8*     R_SETUP_ENDMARKER_
-0000:49ea      R_ExecuteSetViewSize_
-0000:47e6*     R_SETUP_STARTMARKER_
-0000:4aa5      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL
+0000:4ae5      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTS
+0000:482e*     R_InitTextureMapping_
+0000:4af5      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSMASKEDCALL
+0000:4b00*     R_SETUP_ENDMARKER_
+0000:4a32      R_ExecuteSetViewSize_
+0000:482e*     R_SETUP_STARTMARKER_
+0000:4aed      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL
 Module: s_sbsfx.obj(s_sbsfx.ASM)
-0000:57bf      SB_Shutdown_
-0000:506c      SFX_PlayPatch_
-0000:5781*     SB_WriteMixer_
-0000:5705*     out_21_and_exit
-0000:4add      _SB_OldInt
-0000:4ae4      _SB_OriginalVoiceVolumeLeft
-0000:4e56*     S_UpdateLRUCache_
-0000:5588      SB_ServiceInterrupt_
-0000:4adc      _sb_dma_8
-0000:4d3f      S_DecreaseRefCountFar_
-0000:544e*     SB_Service_Mix11Khz_
-0000:4cec      _IRQ_TO_INTERRUPT_MAP
-0000:52b4*     SB_Service_Mix22Khz_
-0000:5792*     SB_RestoreVoiceVolume_
-0000:4d43*     S_DecreaseRefCount_
-0000:575c      SB_ResetDSP_
-0000:4ae2*     _SB_IntController1Mask
-0000:5741      SB_StopPlayback_
-0000:4ae1      _SB_IntController2Mask
-0000:4ae5      _SB_OriginalVoiceVolumeRight
-0000:528c*     S_NormalizeSfxVolume_
-0000:57e3*     S_SBFX_ENDMARKER_
-0000:571d*     SB_DMA_EndTransfer_
-0000:4cfc*     S_IncreaseRefCount_
-0000:4ae3      _SB_MixerType
-0000:570d      SB_DMA_VerifyChannel_
-0000:5654      SB_WriteDSP_
-0000:4ab8*     S_SBFX_STARTMARKER_
-0000:5107*     S_LoadSoundIntoCache_
-0000:4f99*     S_EvictSFXPage_
-0000:5672      S_InitSFXCache_
-0000:4dcb*     S_MoveCacheItemBackOne_
-0000:5636      SB_ReadDSP_
-0000:4e9e*     S_MarkSFXPageMRU_
-0000:56c5*     SB_DisableInterrupt_
+0000:5807      SB_Shutdown_
+0000:50b4      SFX_PlayPatch_
+0000:57c9*     SB_WriteMixer_
+0000:574d*     out_21_and_exit
+0000:4b25      _SB_OldInt
+0000:4b2c      _SB_OriginalVoiceVolumeLeft
+0000:4e9e*     S_UpdateLRUCache_
+0000:55d0      SB_ServiceInterrupt_
+0000:4b24      _sb_dma_8
+0000:4d87      S_DecreaseRefCountFar_
+0000:5496*     SB_Service_Mix11Khz_
+0000:4d34      _IRQ_TO_INTERRUPT_MAP
+0000:52fc*     SB_Service_Mix22Khz_
+0000:57da*     SB_RestoreVoiceVolume_
+0000:4d8b*     S_DecreaseRefCount_
+0000:57a4      SB_ResetDSP_
+0000:4b2a*     _SB_IntController1Mask
+0000:5789      SB_StopPlayback_
+0000:4b29      _SB_IntController2Mask
+0000:4b2d      _SB_OriginalVoiceVolumeRight
+0000:52d4*     S_NormalizeSfxVolume_
+0000:582b*     S_SBFX_ENDMARKER_
+0000:5765*     SB_DMA_EndTransfer_
+0000:4d44*     S_IncreaseRefCount_
+0000:4b2b      _SB_MixerType
+0000:5755      SB_DMA_VerifyChannel_
+0000:569c      SB_WriteDSP_
+0000:4b00*     S_SBFX_STARTMARKER_
+0000:514f*     S_LoadSoundIntoCache_
+0000:4fe1*     S_EvictSFXPage_
+0000:56ba      S_InitSFXCache_
+0000:4e13*     S_MoveCacheItemBackOne_
+0000:567e      SB_ReadDSP_
+0000:4ee6*     S_MarkSFXPageMRU_
+0000:570d*     SB_DisableInterrupt_
 Module: f_file.obj(f_file.ASM)
-0000:5a05      locallib_fclosefromfar_
-0000:5a2b      locallib_fclose_
-0000:5944      locallib_fopenfromfar_nobuffer_
-0000:5a2b      doclose_
-0000:5948      locallib_fopen_nobuffering_
-0000:5a98*     locallib_reset_buffer_
-0000:58c0      locallib_fread_
-0000:58be      locallib_fread_nearsegment_
-0000:5a6d*     locallib_update_buffer_
-0000:58b0      locallib_freadfromfar_
-0000:587c      locallib_fwrite_
-0000:57e4*     F_FILE_STARTMARKER_
-0000:5b6c      locallib_ftell_
-0000:595a      locallib_fopen_
-0000:5b44      locallib_fseekfromfar_
-0000:5aa6      locallib_fseek_
-0000:5bd5*     F_FILE_ENDMARKER_
+0000:5a4d      locallib_fclosefromfar_
+0000:5a73      locallib_fclose_
+0000:598c      locallib_fopenfromfar_nobuffer_
+0000:5a73      doclose_
+0000:5990      locallib_fopen_nobuffering_
+0000:5ae0*     locallib_reset_buffer_
+0000:5908      locallib_fread_
+0000:5906      locallib_fread_nearsegment_
+0000:5ab5*     locallib_update_buffer_
+0000:58f8      locallib_freadfromfar_
+0000:58c4      locallib_fwrite_
+0000:582c*     F_FILE_STARTMARKER_
+0000:5bb4      locallib_ftell_
+0000:59a2      locallib_fopen_
+0000:5b8c      locallib_fseekfromfar_
+0000:5aee      locallib_fseek_
+0000:5c1d*     F_FILE_ENDMARKER_
 Module: w_wad.obj(w_wad.ASM)
-0000:5dd2      W_CacheLumpNumDirect_
-0000:5cea      W_GetNumForNameFarString_
-0000:5d5a      W_ReadLump_
-0000:5d18      W_LumpLength_
-0000:5dd6      W_CacheLumpNumDirectWithOffset_
-0000:5bfc      W_CheckNumForName_
-0000:5d00      W_GetNumForName_
-0000:5e1d*     W_WAD_ENDMARKER_
-0000:5dc6      W_CacheLumpNameDirectFarString_
-0000:5dee      W_CacheLumpNumDirectFragment_
-0000:5c90      SELFMODIFY_start_lump_for_search
-0000:5bd6*     W_WAD_STARTMARKER_
-0000:5cb0      SELFMODIFY_end_lump_for_search
-0000:5bfa      W_CheckNumForNameFarString_
-0000:5dce      W_CacheLumpNameDirect_
-0000:5bf6      W_CheckNumForNameFar_
+0000:5e20      W_CacheLumpNumDirect_
+0000:5d32      W_GetNumForNameFarString_
+0000:5da2      W_ReadLump_
+0000:5d60      W_LumpLength_
+0000:5e24      W_CacheLumpNumDirectWithOffset_
+0000:5c44      W_CheckNumForName_
+0000:5d48      W_GetNumForName_
+0000:5f24*     W_WAD_ENDMARKER_
+0000:5e14      W_CacheLumpNameDirectFarString_
+0000:5e3c      W_CacheLumpNumDirectFragment_
+0000:5cd8      SELFMODIFY_start_lump_for_search
+0000:5c1e*     W_WAD_STARTMARKER_
+0000:5cf8      SELFMODIFY_end_lump_for_search
+0000:5e6c*     I_BeginRead_
+0000:5c42      W_CheckNumForNameFarString_
+0000:5e1c      W_CacheLumpNameDirect_
+0000:5edc*     I_EndRead_
+0000:5c3e      W_CheckNumForNameFar_
 Module: v_video.obj(v_video.ASM)
-0000:5e4e      V_DrawFullscreenPatch_
-0000:5e2e      V_DrawFullscreenPatch_FromIntermission_
-0000:5e44      V_DrawFullscreenPatch_FromMenu_
-0000:5e1e      R_FillBackScreen_ForceBufferRedraw_
+0000:5f54      V_DrawFullscreenPatch_
+0000:5f34      V_DrawFullscreenPatch_FromIntermission_
+0000:5f4a      V_DrawFullscreenPatch_FromMenu_
+0000:5f24      R_FillBackScreen_ForceBufferRedraw_
 Module: z_zone.obj(z_zone.ASM)
-0000:5f16      _codestartposition
-0000:5f94      Z_QuickMapPhysics_
-0000:5f32      Z_QuickMapMusicPageFrame_
-0000:5f2e      _musdriverstartposition
-0000:612c      Z_QuickMapUnmapAll_
-0000:5f6a      Z_QuickMapWADPageFrame_
-0000:604e      Z_QuickMapRenderPlanes_
-0000:5f4a      Z_QuickMapSFXPageFrame_
-0000:600c      Z_QuickMapStatus_
-0000:5fe6      Z_QuickMapRender_
-0000:6038      Z_QuickMapScratch_5000_
-0000:61be*     CopyString13_Zonelocal_
-0000:60d4      Z_QuickMapMenu_
-0000:60be      Z_QuickMapPalette_
-0000:5f2e      _codestartposition_END
-0000:6176      Z_SetOverlay_
-0000:5fba      Z_QuickMapPhysics_FunctionAreaOnly_
-0000:6169      _doomcode_filename
-0000:6086      Z_QuickMapUndoFlatCache_
-0000:5fd0      Z_QuickMapDemo_
-0000:60f6      Z_QuickMapIntermission_
+0000:601c      _codestartposition
+0000:609a      Z_QuickMapPhysics_
+0000:6038      Z_QuickMapMusicPageFrame_
+0000:6034      _musdriverstartposition
+0000:6232      Z_QuickMapUnmapAll_
+0000:6070      Z_QuickMapWADPageFrame_
+0000:6154      Z_QuickMapRenderPlanes_
+0000:6050      Z_QuickMapSFXPageFrame_
+0000:6112      Z_QuickMapStatus_
+0000:60ec      Z_QuickMapRender_
+0000:613e      Z_QuickMapScratch_5000_
+0000:62c4*     CopyString13_Zonelocal_
+0000:61da      Z_QuickMapMenu_
+0000:61c4      Z_QuickMapPalette_
+0000:6034      _codestartposition_END
+0000:627c      Z_SetOverlay_
+0000:60c0      Z_QuickMapPhysics_FunctionAreaOnly_
+0000:626f      _doomcode_filename
+0000:618c      Z_QuickMapUndoFlatCache_
+0000:60d6      Z_QuickMapDemo_
+0000:61fc      Z_QuickMapIntermission_
 
 
                         +-----------------------+
@@ -357,6 +360,6 @@ Module: z_zone.obj(z_zone.ASM)
                         +-----------------------+
 
 Stack size:  0400 (1024.)
-Memory size:  7490 (29840.)
+Memory size:  7590 (30096.)
 Entry point address: 0000:0000
 Link time: 00:00.10

@@ -377,6 +377,7 @@ push      dx
 push      si
 push      di
 
+call      I_BeginRead_
 
 mov       si, ax
 push      cx  ; [MATCH A] store dest segment
@@ -474,6 +475,9 @@ mov       cx, si   ; fp
 
 call      locallib_fread_ ; FAR_fread(dest, size ? size : (lumpsize - start), 1, wadfiles[fileindex]);
 
+
+call      I_EndRead_
+
 pop       cx ; todo why is this necessary ? bad things happen.. 
 
 pop       di
@@ -562,6 +566,204 @@ mov       word ptr cs:[SELFMODIFY_add_start_offset_high + 2], ax
 
 pop       bp
 retf      4
+
+ENDP
+
+ret_early:
+ret
+
+GC_MODE = 5
+
+ALIGN_MACRO
+PROC    I_BeginRead_ NEAR
+PUBLIC  I_BeginRead_
+
+cmp   byte ptr ds:[_grmode], 0
+je    ret_early
+push  ax
+push  dx
+push  si
+push  di
+push  cx
+
+;// write through all planes
+;    outp(SC_INDEX, SC_MAPMASK);
+mov   dx, SC_INDEX
+
+mov   al, SC_MAPMASK
+out   dx, al
+
+;    outp(SC_INDEX + 1, 15);
+inc   dx ; SC_INDEX + 1
+mov   al, 15
+out   dx, al
+
+;    // set write mode 1
+;    outp(GC_INDEX, GC_MODE);
+mov   dx, GC_INDEX
+mov   al, GC_MODE
+out   dx, al
+
+; outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
+inc   dx ; GC_INDEX + 1
+in    al, dx
+or    al, 1
+out   dx, al
+
+;    // copy to backup
+;    src = currentscreen + 0x39CC; // 184 * 80 + 304 / 4;
+;	dest = ((byte __far*)0xac0039C8); //+ 0x39C8; // 184 * 80 + 288 / 4;
+mov   ax, 80 - 4
+
+lds   si, dword ptr ds:[_currentscreen]
+add   si, 039CCh 
+mov   di, 0AC00h
+mov   es, di
+mov   di, 039C8h
+mov   cx, 16
+;    for (y = 0; y<16; y++) {
+;		dest[0] = src[0];
+;        dest[1] = src[1];
+;        dest[2] = src[2];
+;        dest[3] = src[3];
+;        src += 80;
+;        dest += 80;
+;    }
+do_next_dword_1:
+movsb
+movsb
+movsb
+movsb
+add   si, ax
+add   di, ax
+loop  do_next_dword_1
+
+
+
+;    // copy disk over
+;    dest = currentscreen + 0x39CC;// + 184 * 80 + 304 / 4;
+;	src = ((byte __far*)0xac0039CC);// + 184 * 80 + 304 / 4;
+; note: 304 / 4 instead of 284 / 4 this time..
+push  ds ; swap
+push  es
+pop   ds
+pop   es
+
+
+sub   si, (16 * 80)
+sub   di, ((16 * 80) - ((304 - 288) / 4))
+xchg  di, si  ; swap
+mov   cx, 16
+
+do_next_dword_2:
+movsb
+movsb
+movsb
+movsb
+add   si, ax
+add   di, ax
+loop  do_next_dword_2
+
+push  ss
+pop   ds
+
+
+
+
+;    // set write mode 0
+;    outp(GC_INDEX, GC_MODE);
+;    outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
+mov   dx, GC_INDEX
+mov   al, GC_MODE
+out   dx, al
+inc   dx ; GC_INDEX + 1
+in    al, dx    
+and   al, 0FEh
+out   dx, al
+
+
+pop   cx
+pop   di
+pop   si
+pop   dx
+pop   ax
+ret_early_2:
+ret
+
+ENDP
+
+
+ALIGN_MACRO
+PROC    I_EndRead_ NEAR
+PUBLIC  I_EndRead_
+
+cmp   byte ptr ds:[_grmode], 0
+je    ret_early_2
+
+; outer scope push/pops
+
+;// write through all planes
+;    outp(SC_INDEX, SC_MAPMASK);
+mov   dx, SC_INDEX
+
+mov   al, SC_MAPMASK
+out   dx, al
+
+;    outp(SC_INDEX + 1, 15);
+inc   dx ; SC_INDEX + 1
+mov   al, 15
+out   dx, al
+
+;    // set write mode 1
+;    outp(GC_INDEX, GC_MODE);
+mov   dx, GC_INDEX
+mov   al, GC_MODE
+out   dx, al
+
+; outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
+inc   dx ; GC_INDEX + 1
+in    al, dx
+or    al, 1
+out   dx, al
+dec   dx
+
+mov   ax, 80 - 4
+
+les   di, dword ptr ds:[_currentscreen]
+add   di, 039CCh 
+mov   si, 0AC00h
+mov   ds, si
+mov   si, 039C8h
+mov   cx, 16
+;    for (y = 0; y<16; y++) {
+;		dest[0] = src[0];
+;        dest[1] = src[1];
+;        dest[2] = src[2];
+;        dest[3] = src[3];
+;        src += 80;
+;        dest += 80;
+;    }
+do_next_dword_3:
+movsb
+movsb
+movsb
+movsb
+add   si, ax
+add   di, ax
+loop  do_next_dword_3
+
+push  ss
+pop   ds
+
+; dx already set
+mov   al, GC_MODE
+out   dx, al
+inc   dx ; GC_INDEX + 1
+in    al, dx    
+and   al, 0FEh
+out   dx, al
+
+ret
 
 ENDP
 

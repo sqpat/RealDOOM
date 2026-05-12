@@ -230,6 +230,7 @@ void __far HU_Drawer();
 void __far HU_Erase();
 void __far R_DrawViewBorder();
 void __far V_DrawPatchDirect();
+void __far V_DrawPatchDirectFar();
 void __far R_FillBackScreen();
 void __far V_CopyRect();
 void __far P_SetupLevel();
@@ -650,7 +651,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "HU_ERASE_OFFSET          = 0%Xh\n",                   FP_OFF(HU_Erase)                           - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "HU_RESPONDER_OFFSET      = 0%Xh\n",                   FP_OFF(HU_Responder)                       - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "R_DRAWVIEWBORDER_OFFSET  = 0%Xh\n",                   FP_OFF(R_DrawViewBorder)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "V_DRAWPATCHDIRECT_OFFSET = 0%Xh\n",                   FP_OFF(V_DrawPatchDirect)                  - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "V_DRAWPATCHDIRECTFAR_OFFSET = 0%Xh\n",                FP_OFF(V_DrawPatchDirectFar)               - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "R_FILLBACKSCREEN_OFFSET  = 0%Xh\n",                   FP_OFF(R_FillBackScreen)                   - FP_OFF(P_SIGHT_STARTMARKER));
 
 
