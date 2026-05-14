@@ -502,7 +502,7 @@ IFDEF COMP_CH
     mov    al, 0FFh
     out    dx, al
     in     al, dx
-    cmp    al, 7
+    cmp    al, 7  ; ht12 gets FF
     jne    chipset_fail  ; tested on ht21
     ; todo double check ht12
     jmp    chipset_pass
@@ -519,6 +519,24 @@ IFDEF COMP_CH
   mov     ax, OFFSET str_detected_chipset_pass
   print_chipset:
   call  DEBUG_PRINT_NOARG_CS_
+
+  ; check if ems drier installed in the case of a chipset build. there should not be one.
+    ; open file
+    mov    ax, 03D00h
+    mov    dx, OFFSET _EMM_DRIVER_NAME
+    push   cs
+    pop    ds
+    int    021h ; try to open EMMXXXX0 file
+
+    push   ss
+    pop    ds
+
+    jc      no_ems_driver_found  ; EMMXXXX0 file not found
+
+    mov   ax, OFFSET str_ems_driver_found
+    call  DEBUG_PRINT_NOARG_CS_
+
+    no_ems_driver_found:
 
 
 ENDIF
@@ -1322,6 +1340,11 @@ str_detected_vx0:
 db "v20/v30", 0
 
 IFDEF COMP_CH
+_EMM_DRIVER_NAME:
+db "EMMXXXX0", 0
+str_ems_driver_found:
+db 0Ah, "WARNING: EMS driver found installed for chipset build", 0
+
 str_detected_chipset:
   IF COMP_CH EQ CHIPSET_SCAMP
     db 0Ah, "VLSI Chipset Detection: ", 0
