@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/05/13 07:46:52
+Created on:       26/05/13 22:51:08
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          062f:0000            000012a0
+DGROUP                          0631:0000            000012a0
 
 
 
@@ -47,13 +47,13 @@ G_SETUP_TEXT           CODE           AUTO           0000:4616       00000217
 R_SETUP_TEXT           CODE           AUTO           0000:482e       000002d2
 S_SBSFX_TEXT           CODE           AUTO           0000:4b00       00000d2b
 F_FILE_TEXT            CODE           AUTO           0000:582c       000003f1
-W_WAD_TEXT             CODE           AUTO           0000:5c1e       00000306
-V_VIDEO_TEXT           CODE           AUTO           0000:5f24       000000f8
-Z_ZONE_TEXT            CODE           AUTO           0000:601c       000002d4
-_NULL                  BEGDATA        DGROUP         062f:0000       00000010
-_FIXEDDATA             DATA           DGROUP         0630:0000       00000e90
-_DATA                  DATA           DGROUP         0719:0000       00000000
-STACK                  STACK          DGROUP         0719:0000       00000400
+W_WAD_TEXT             CODE           AUTO           0000:5c1e       0000031b
+V_VIDEO_TEXT           CODE           AUTO           0000:5f3a       000000f8
+Z_ZONE_TEXT            CODE           AUTO           0000:6032       000002d4
+_NULL                  BEGDATA        DGROUP         0631:0000       00000010
+_FIXEDDATA             DATA           DGROUP         0632:0000       00000e90
+_DATA                  DATA           DGROUP         071b:0000       00000000
+STACK                  STACK          DGROUP         071b:0000       00000400
 
 
                         +----------------+
@@ -67,7 +67,7 @@ Address        Symbol
 =======        ======
 
 Module: i_start.obj(i_start.ASM)
-062f:0000*     __nullarea
+0631:0000*     __nullarea
 0000:0000      _realdoomstart_
 0000:00de*     I_START_ENDMARKER_
 0000:0000*     I_START_STARTMARKER_
@@ -315,7 +315,7 @@ Module: w_wad.obj(w_wad.ASM)
 0000:5e24      W_CacheLumpNumDirectWithOffset_
 0000:5c44      W_CheckNumForName_
 0000:5d48      W_GetNumForName_
-0000:5f24*     W_WAD_ENDMARKER_
+0000:5f39*     W_WAD_ENDMARKER_
 0000:5e14      W_CacheLumpNameDirectFarString_
 0000:5e3c      W_CacheLumpNumDirectFragment_
 0000:5cd8      SELFMODIFY_start_lump_for_search
@@ -324,35 +324,35 @@ Module: w_wad.obj(w_wad.ASM)
 0000:5e6c*     I_BeginRead_
 0000:5c42      W_CheckNumForNameFarString_
 0000:5e1c      W_CacheLumpNameDirect_
-0000:5edc*     I_EndRead_
+0000:5ee6*     I_EndRead_
 0000:5c3e      W_CheckNumForNameFar_
 Module: v_video.obj(v_video.ASM)
-0000:5f54      V_DrawFullscreenPatch_
-0000:5f34      V_DrawFullscreenPatch_FromIntermission_
-0000:5f4a      V_DrawFullscreenPatch_FromMenu_
-0000:5f24      R_FillBackScreen_ForceBufferRedraw_
+0000:5f6a      V_DrawFullscreenPatch_
+0000:5f4a      V_DrawFullscreenPatch_FromIntermission_
+0000:5f60      V_DrawFullscreenPatch_FromMenu_
+0000:5f3a      R_FillBackScreen_ForceBufferRedraw_
 Module: z_zone.obj(z_zone.ASM)
-0000:601c      _codestartposition
-0000:609a      Z_QuickMapPhysics_
-0000:6038      Z_QuickMapMusicPageFrame_
-0000:6034      _musdriverstartposition
-0000:6232      Z_QuickMapUnmapAll_
-0000:6070      Z_QuickMapWADPageFrame_
-0000:6154      Z_QuickMapRenderPlanes_
-0000:6050      Z_QuickMapSFXPageFrame_
-0000:6112      Z_QuickMapStatus_
-0000:60ec      Z_QuickMapRender_
-0000:613e      Z_QuickMapScratch_5000_
-0000:62c4*     CopyString13_Zonelocal_
-0000:61da      Z_QuickMapMenu_
-0000:61c4      Z_QuickMapPalette_
-0000:6034      _codestartposition_END
-0000:627c      Z_SetOverlay_
-0000:60c0      Z_QuickMapPhysics_FunctionAreaOnly_
-0000:626f      _doomcode_filename
-0000:618c      Z_QuickMapUndoFlatCache_
-0000:60d6      Z_QuickMapDemo_
-0000:61fc      Z_QuickMapIntermission_
+0000:6032      _codestartposition
+0000:60b0      Z_QuickMapPhysics_
+0000:604e      Z_QuickMapMusicPageFrame_
+0000:604a      _musdriverstartposition
+0000:6248      Z_QuickMapUnmapAll_
+0000:6086      Z_QuickMapWADPageFrame_
+0000:616a      Z_QuickMapRenderPlanes_
+0000:6066      Z_QuickMapSFXPageFrame_
+0000:6128      Z_QuickMapStatus_
+0000:6102      Z_QuickMapRender_
+0000:6154      Z_QuickMapScratch_5000_
+0000:62da*     CopyString13_Zonelocal_
+0000:61f0      Z_QuickMapMenu_
+0000:61da      Z_QuickMapPalette_
+0000:604a      _codestartposition_END
+0000:6292      Z_SetOverlay_
+0000:60d6      Z_QuickMapPhysics_FunctionAreaOnly_
+0000:6285      _doomcode_filename
+0000:61a2      Z_QuickMapUndoFlatCache_
+0000:60ec      Z_QuickMapDemo_
+0000:6212      Z_QuickMapIntermission_
 
 
                         +-----------------------+
@@ -360,6 +360,6 @@ Module: z_zone.obj(z_zone.ASM)
                         +-----------------------+
 
 Stack size:  0400 (1024.)
-Memory size:  7590 (30096.)
+Memory size:  75b0 (30128.)
 Entry point address: 0000:0000
 Link time: 00:00.10

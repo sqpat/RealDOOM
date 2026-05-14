@@ -2152,7 +2152,7 @@ out    dx, al
 inc    dx
 in     al, dx
 and    al, NOT 13
-out    dx, al   ; GC_INDEX + 1, inp(GC_INDEX + 1)&~0x13);
+out    dx, al   ; GC_INDEX + 1, inp(GC_INDEX + 1)&~0x1);
 
 dec    dx
 mov    al , 6; GC_MISCELLANEOUS

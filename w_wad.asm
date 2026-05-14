@@ -595,6 +595,9 @@ out   dx, al
 
 ;    outp(SC_INDEX + 1, 15);
 inc   dx ; SC_INDEX + 1
+in    al, dx
+push  ax    ; store to restore later
+
 mov   al, 15
 out   dx, al
 
@@ -681,6 +684,13 @@ in    al, dx
 and   al, 0FEh
 out   dx, al
 
+mov   dx, SC_INDEX
+mov   al, SC_MAPMASK
+out   dx, al
+inc   dx ; SC_INDEX + 1
+pop   ax
+out   dx, al
+
 
 pop   cx
 pop   di
@@ -705,12 +715,14 @@ je    ret_early_2
 ;// write through all planes
 ;    outp(SC_INDEX, SC_MAPMASK);
 mov   dx, SC_INDEX
-
 mov   al, SC_MAPMASK
 out   dx, al
 
 ;    outp(SC_INDEX + 1, 15);
 inc   dx ; SC_INDEX + 1
+in    al, dx
+push  ax    ; store to restore later
+
 mov   al, 15
 out   dx, al
 
@@ -761,6 +773,13 @@ out   dx, al
 inc   dx ; GC_INDEX + 1
 in    al, dx    
 and   al, 0FEh
+out   dx, al
+
+mov   dx, SC_INDEX
+mov   al, SC_MAPMASK
+out   dx, al
+inc   dx ; SC_INDEX + 1
+pop   ax
 out   dx, al
 
 ret
