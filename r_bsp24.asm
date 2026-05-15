@@ -26,6 +26,13 @@ PROC   R_BSP24_STARTMARKER_
 PUBLIC R_BSP24_STARTMARKER_
 ENDP
 
+;EXTRN R_SetupColfuncsForBSP_:FAR
+;EXTRN R_SetupColfuncsForMasked_:FAR
+; todo constant-ize
+R_SetupColfuncsForBSP_ = 0236Ch
+R_SetupColfuncsForMasked_ = 2388h
+
+
 ANG90_HIGHBITS =		04000h
 ANG180_HIGHBITS =    08000h
 
@@ -275,9 +282,13 @@ dw ((SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED - SELFMODIFY_BSP_markceiling_1
 db 0B8h, 0   ; mov ax, imm16
 dw 001B2h
 
-; 0AAh
 
-; shoving some small functions in here since w ehave to pad to 0100h for the next jump table
+; MEGA JANK. manually update the offset of this in r_col 
+; todo constant-ize
+_CURRENT_LINE_TEXTURE_HEIGHT:
+PUBLIC _CURRENT_LINE_TEXTURE_HEIGHT
+dw 128  ; only use first byte
+
 
 
 PUSHA_NO_AX_OR_BP_OR_DX_MACRO MACRO
@@ -4054,6 +4065,7 @@ got_texture:
    xchg      ax, di
 
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
+   mov       byte ptr cs:[_CURRENT_LINE_TEXTURE_HEIGHT], al  ; todo would have been better as a push?
    cbw
    sal       di, 1  ; word lookup
    inc       ax
@@ -6395,7 +6407,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta_TWOSIDED], dl
 
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    cbw
-   ;mov       byte ptr cs:[SELFMODIFY_BSP_and_textureheight+2], al
+   mov       byte ptr cs:[SELFMODIFY_BSP_set_textureheight_top+4], al  ; before top draws, set tex height in case necessary in r_col
    sal       di, 1
    inc       ax
    mov       word ptr cs:[SELFMODIFY_add_texturetopheight_plus_one+2], ax
@@ -6407,7 +6419,9 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta_TWOSIDED], dl
    skip_toptex_selfmodify:
    lodsw     ; side bottexture  ; faster to just do it than branch?
    xchg      ax, di
-   cmp       byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION], 127
+   mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
+   mov       byte ptr cs:[SELFMODIFY_BSP_set_textureheight_bottom+4], al  ; before bot draws, set tex height in case necessary in r_col
+   cmp       al, 127
 
    
    ; if bottom tex is 128 pixels we must do full checks, but if less then we know it doesnt loop.
@@ -9244,6 +9258,8 @@ xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above registe
 ; START TOP DRAW??
 
 
+SELFMODIFY_BSP_set_textureheight_top:
+mov   word ptr ds:[_CURRENT_LINE_TEXTURE_HEIGHT], 0080h  ; only modify first byte
 
 
 
@@ -9452,6 +9468,8 @@ xchg   ax, si
 
 
 
+SELFMODIFY_BSP_set_textureheight_bottom:
+mov   word ptr ds:[_CURRENT_LINE_TEXTURE_HEIGHT], 0080h  ; only modify first byte
 
 
 push  bx ; dc_x
@@ -10235,9 +10253,6 @@ les   di, dword ptr cs:[_frontsector]
 ;	if (backsector->ceilingheight <= frontsector->floorheight
 ;		|| backsector->floorheight >= frontsector->ceilingheight) 
 
-
-
-; weird. this kills performance on pentium by 3%.
 xchg  ax, bx   ; store x1 in bx
 
 lods  word ptr es:[si]        ; backsector  floor
@@ -14391,11 +14406,19 @@ mov       dx, SC_DATA
 mov       al, 15
 out       dx, al  ; for the potato case, which will skip OUTs later
 
+db        09Ah
+dw        R_SetupColfuncsForBSP_, COLFUNC_SEGMENT
+
 mov       ax, word ptr ds:[_numnodes]
 dec       ax
 
 call      R_RenderBSPNode_
 call      dword ptr ds:[_NetUpdate_addr]
+
+db        09Ah
+dw        R_SetupColfuncsForMasked_, COLFUNC_SEGMENT
+
+
 call      R_PrepareMaskedPSprites_  ; todo inline
 
 ;call      Z_QuickMapRenderPlanes_

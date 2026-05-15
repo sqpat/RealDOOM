@@ -28,6 +28,10 @@ PROC R_COLUMN24_STARTMARKER_
 PUBLIC R_COLUMN24_STARTMARKER_
 ENDP 
 
+; MEGA JANK.
+; tasm wont link this. manually set to linker val
+;EXTRN _CURRENT_LINE_TEXTURE_HEIGHT:BYTE
+_CURRENT_LINE_TEXTURE_HEIGHT = 0384h
 
 
 ;
@@ -35,10 +39,14 @@ ENDP
 ;
 	
 
-
-hack_fix_texel_1:
 ALIGN_MACRO
-xor  cl, cl
+hack_fix_texel_1:
+; this is a rare occurrence and we are allowed to be sloppy.
+
+; fetch tex height and add to the negative tex lookup to "mod" it.
+mov  es, word ptr ss:[_BSP_CODE_SEGMENT_PTR]
+add  cl, byte ptr es:[_CURRENT_LINE_TEXTURE_HEIGHT]
+
 jmp  done_fixing_texel_1
 
 ALIGN 16
@@ -84,10 +92,7 @@ PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_noloop_
    mov     ax, 01000h   
    mov     es, ax; ready the viewscreen segment
 
-   ;  prep our loop variables
-   
    cli 
-   ;lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and bp to 004Fh (hardcoded)
 
    mov     ss, sp
    mov     sp, 04Fh
@@ -140,9 +145,11 @@ ENDP
 
 ; NOTE r_mask cannot reach this function. it only maps one EMS page including colormaps instead of also the one after it.
 
-hack_fix_texel_2:
 ALIGN_MACRO
-xor  cx, cx
+hack_fix_texel_2:
+mov  es, word ptr ss:[_BSP_CODE_SEGMENT_PTR]
+add  cl, byte ptr es:[_CURRENT_LINE_TEXTURE_HEIGHT]
+
 jmp  done_fixing_texel_2
 
 ALIGN 16
@@ -179,11 +186,10 @@ PUBLIC  R_DrawColumn24NoLoopStretch_
 
    ;  prep our loop variables
    
-   ;lds  dx, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and dx to 004Fh (hardcoded)
    mov  dx, 04Fh
    js   hack_fix_texel_2
-   mov  ch, dh   ; ch gets 0
    done_fixing_texel_2:
+   mov  ch, dh   ; ch gets 0
    xchg si, cx   ; si gets hi texel, cx gets low texel 
 
 
@@ -319,7 +325,6 @@ PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_
 
 
    cli 
-   ;lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and ax to 004Fh (hardcoded) to mvoe into sp
    mov     ss, sp
    mov     sp, 04Fh
 
@@ -487,6 +492,30 @@ loop_done_normalstretch:
 
 
 ENDP
+
+; unsure if these should be called around bsp.
+ALIGN_MACRO
+PROC   R_SetupColfuncsForBSP_ FAR
+PUBLIC R_SetupColfuncsForBSP_
+mov  word ptr cs:[hack_fix_texel_1+0], 08E36h  ; es, word ptr ss:[_BSP_CODE_SEGMENT_PTR]
+mov  word ptr cs:[hack_fix_texel_1+2], 006h + ( (OFFSET _BSP_CODE_SEGMENT_PTR AND 0FFH) SHL 8)
+mov  word ptr cs:[hack_fix_texel_2+0], 08E36h  ; es, word ptr ss:[_BSP_CODE_SEGMENT_PTR]
+mov  word ptr cs:[hack_fix_texel_2+2], 006h + ( (OFFSET _BSP_CODE_SEGMENT_PTR AND 0FFH) SHL 8)
+retf
+ENDP
+
+ALIGN_MACRO
+PROC   R_SetupColfuncsForMasked_ FAR
+PUBLIC R_SetupColfuncsForMasked_
+mov  word ptr cs:[hack_fix_texel_1+0], 0C930h  ; xor cl, cl
+mov  word ptr cs:[hack_fix_texel_1+2], 0EBh + ( ((OFFSET done_fixing_texel_1) - (OFFSET hack_fix_texel_1 + 4)) SHL 8)
+mov  word ptr cs:[hack_fix_texel_2+0], 0C930h  ; xor cl, cl
+mov  word ptr cs:[hack_fix_texel_2+2], 0EBh + ( ((OFFSET done_fixing_texel_2) - (OFFSET hack_fix_texel_2 + 4)) SHL 8)
+retf
+
+ENDP
+
+
 public ENSUREALIGN_201
 public ENSUREALIGN_202
 public ENSUREALIGN_203
@@ -496,6 +525,9 @@ public ENSUREALIGN_204
 PROC R_COLUMN24_ENDMARKER_ 
 PUBLIC R_COLUMN24_ENDMARKER_ 
 ENDP
+public hack_fix_texel_2
+public hack_fix_texel_3
+public hack_fix_texel_1
 
 ENDS
 
