@@ -2059,51 +2059,16 @@ mov     word ptr ds:[bx], ax
 mov     word ptr ds:[bx+2], dx      
 pop     bx
 
-ret
-ENDP
 
 
-stdisk_str:
-db "STDISK", 0
-
-; todo inline
-PROC   I_InitDiskFlash_ NEAR_
-PUBLIC I_InitDiskFlash_
-
-mov    ax, OFFSET stdisk_str
-mov    dx, cs
-call   W_GetNumForNameFarString_
-mov    cx, DISKGRAPHICBYTES_SEGMENT
-xor    bx, bx
-call   W_CacheLumpNumDirect_
-
-;	temp = destscreen;
-push   word ptr ds:[_destscreen]
-push   word ptr ds:[_destscreen+2]
-
-; V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16,  (patch_t __far*) diskgraphicbytes);
-mov    ax, SCREENWIDTH - 16
-mov    dx, SCREENHEIGHT - 16
-mov    cx, DISKGRAPHICBYTES_SEGMENT
-xor    bx, bx
-
-;	destscreen.w = 0xac000000;
-mov   word ptr ds:[_destscreen+0], bx  ; zero
-mov   word ptr ds:[_destscreen+2], 0AC00h
-
-;call   V_DrawPatchDirect_
-db    09Ah
-dw    V_DRAWPATCHDIRECTFAR_OFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-
-;	destscreen = temp;
-pop   word ptr ds:[_destscreen+2]
-pop   word ptr ds:[_destscreen+0]
 
 return_early_near:
 
 ret
 ENDP
+
+stdisk_str:
+db "STDISK", 0
 
 
 PROC   I_InitGraphics_ NEAR
@@ -2200,7 +2165,37 @@ out    dx, al
 xor    ax, ax
 call   I_SetPalette_
 
-call I_InitDiskFlash_  
+;   I_InitDiskFlash_ 
+
+mov    ax, OFFSET stdisk_str
+mov    dx, cs
+call   W_GetNumForNameFarString_
+mov    cx, DISKGRAPHICBYTES_SEGMENT
+xor    bx, bx
+call   W_CacheLumpNumDirect_
+
+;	temp = destscreen;
+push   word ptr ds:[_destscreen]
+push   word ptr ds:[_destscreen+2]
+
+; V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16,  (patch_t __far*) diskgraphicbytes);
+mov    ax, SCREENWIDTH - 16
+mov    dx, SCREENHEIGHT - 16
+mov    cx, DISKGRAPHICBYTES_SEGMENT
+xor    bx, bx
+
+;	destscreen.w = 0xac000000;
+mov   word ptr ds:[_destscreen+0], bx  ; zero
+mov   word ptr ds:[_destscreen+2], 0AC00h
+
+;call   V_DrawPatchDirect_
+db    09Ah
+dw    V_DRAWPATCHDIRECTFAR_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
+;	destscreen = temp;
+pop   word ptr ds:[_destscreen+2]
+pop   word ptr ds:[_destscreen+0]
 
 pop    di
 pop    dx
