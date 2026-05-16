@@ -1472,6 +1472,13 @@ call   FixedDivWholeA_MapLocal_
 retf
 ENDP
 
+PROC   FixedDiv_MapLocal_FAR_  FAR
+PUBLIC FixedDiv_MapLocal_FAR_
+call   FixedDiv_MapLocal_
+retf
+ENDP
+
+
 
 ; AX:00 / CX:BX
 ; return in DX:AX

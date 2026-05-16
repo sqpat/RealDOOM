@@ -222,6 +222,7 @@ void __far M_Drawer();
 void __far M_LoadFromSaveGame();
 void __far M_DrawPause();
 void __far FixedDivWholeA_MapLocal_FAR();
+void __far FixedDiv_MapLocal_FAR();
 void __far R_PointToAngle2_FAR();
 
 void __far HU_Ticker();
@@ -644,6 +645,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     
     fprintf(fp, "P_REMOVETHINKEROFFSET  = 0%Xh\n",                   FP_OFF(P_RemoveThinker)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "FIXEDDIVWHOLEA_ML      = 0%Xh\n",                   FP_OFF(FixedDivWholeA_MapLocal_FAR)       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "FIXEDDIV_ML            = 0%Xh\n",                   FP_OFF(FixedDiv_MapLocal_FAR)             - FP_OFF(P_SIGHT_STARTMARKER));
 
 
     fprintf(fp, "HU_TICKER_OFFSET         = 0%Xh\n",                   FP_OFF(HU_Ticker)                          - FP_OFF(P_SIGHT_STARTMARKER));

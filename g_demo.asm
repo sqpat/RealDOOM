@@ -64,7 +64,7 @@ db "HELP2", 0
 
 
 str_timed_tics:
-db 0Ah, "timed %li gametics in %li realtics ", 0Ah, " prnd index %i ", 0
+db 0Ah, "timed %li gametics in %li realtics ", 0Ah, " prnd index %i  FPS: %i.%i", 0
 str_demo_recorded:
 db "Demo %s recorded", 0
 
@@ -320,23 +320,7 @@ PUBLIC G_CheckDemoStatus_
 
 xor    ax, ax
 cmp    byte ptr ds:[_timingdemo], al ; 0
-je     dont_end_playback
-les    ax, dword ptr ds:[_ticcount]
-mov    dx, es
-sub    ax, word ptr ds:[_starttime + 0]
-sbb    dx, word ptr ds:[_starttime + 2]
-push   word ptr ds:[_prndindex]
-push   dx
-push   ax
-push   word ptr ds:[_gametic+2]
-push   word ptr ds:[_gametic+0]
-
-
-push   cs
-mov    ax, OFFSET str_timed_tics
-push   ax
-call   I_Error_
-
+jne    end_playback
 dont_end_playback:
 
 cmp    byte ptr ds:[_demoplayback], al ; 0
@@ -354,6 +338,70 @@ inc     ax
 mov     byte ptr ds:[_advancedemo], al ; true
 
 ret
+
+
+end_playback:
+public end_playback
+les    ax, dword ptr ds:[_ticcount]
+mov    dx, es
+sub    ax, word ptr ds:[_starttime + 0]
+sbb    dx, word ptr ds:[_starttime + 2]
+
+mov    cx, dx
+xchg   ax, bx   ; store in cx:bx
+mov    ax, 35
+mul    word ptr ds:[_gametic+0]
+
+push   cx ; store these
+push   bx
+; todo may need to page
+
+
+db    09Ah
+dw    FIXEDDIV_ML, PHYSICS_HIGHCODE_SEGMENT
+
+pop    bx ; retrieve these 
+pop    di
+
+; di:bx realtics
+
+mov    cx, 25000
+xor    si, si
+
+next_frac:
+shl    ax, 1
+jnc    skip_add
+add    si, cx
+skip_add:
+shr    cx, 1
+jnz   next_frac
+
+; precision is not perfect, so lets reduce to 3 digits.
+xchg   ax, si
+mov    si, dx
+xor    dx, dx
+mov    cl, 50
+div    cx  ; result wont fit in al.
+
+
+
+si_frac_precision_set:
+push   ax  ; push fps frac
+push   si  ; push fps whole
+
+push   word ptr ds:[_prndindex]
+
+push   di ; push realtics
+push   bx
+push   word ptr ds:[_gametic+2]  ; push gametics
+push   word ptr ds:[_gametic+0]
+
+
+push   cs
+mov    ax, OFFSET str_timed_tics
+push   ax
+call   I_Error_
+
 
 
 
