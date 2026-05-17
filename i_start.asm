@@ -276,7 +276,17 @@ mov ss, cx
 
 
 sti
-; finit ; if using FPU
+COMMENT @
+
+; if using FPU
+
+finit 
+mov   ax, 02FFh
+push  ax
+mov   bx, sp
+FLDCW WORD PTR DS:[BX]
+@
+
 jmp   D_DoomMain_
 
 
