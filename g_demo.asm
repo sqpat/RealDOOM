@@ -376,7 +376,7 @@ skip_add:
 shr    cx, 1
 jnz   next_frac
 
-; precision is not perfect, so lets reduce to 3 digits.
+; precision is not perfect, so lets reduce this to 3 fractional digits.
 xchg   ax, si
 mov    si, dx
 xor    dx, dx

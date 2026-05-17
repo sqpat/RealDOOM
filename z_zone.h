@@ -332,53 +332,52 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define PHYSICS_RENDER_9C00_PAGE                    12
 //#define PHYSICS_RENDER_6C00_PAGE                    15
 //#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
+
+
+
 #define FIRST_VISPLANE_PAGE							5
 
 #define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         PHYSICS_RENDER_9C00_PAGE
 
-//#define EMS_VISPLANE_EXTRA_PAGE                     NUM_EMS4_SWAP_PAGES + 1
-// 12
-
 // 13
-#define FIRST_STATUS_LOGICAL_PAGE                   LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
-// 17
-#define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
-// todo almost 6k free here..
-// 18
-#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            PALETTE_LOGICAL_PAGE + 1
+#define FIRST_LUMPINFO_LOGICAL_PAGE                 LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
+// 16
+#define MUS_DATA_PAGES                              FIRST_LUMPINFO_LOGICAL_PAGE + 3
+
 // 20
-#define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2
-// 24
-#define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
+#define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)
 // 27
-#define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_LUMPINFO_LOGICAL_PAGE + 3
-// 33
+#define PALETTE_LOGICAL_PAGE                        SFX_DATA_PAGES + NUM_SFX_PAGES
+// 28
+#define FIRST_STATUS_LOGICAL_PAGE                   PALETTE_LOGICAL_PAGE + 1
+// 32
+#define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_STATUS_LOGICAL_PAGE + 4
+// 36
+#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            FIRST_SCRATCH_LOGICAL_PAGE + 4
+// 38
+#define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2
+// 44
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 59  overlap one page (code page). other 7 pages do dual duty as visplane backups and demo pages.
+// 46  overlap one page (code page). other 7 pages do dual duty as visplane backups and demo pages.
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_TEXTURE_LOGICAL_PAGE + (NUM_TEXTURE_PAGES - 1) // one page overlap
-// 67
+// 78
 #define FIRST_EXTRA_MASKED_DATA_PAGE                FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 69
+// 80
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_EXTRA_MASKED_DATA_PAGE + 2
 
-// 77
+// 88
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 81
+// 92
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 85
+// 96
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 
-// 89
+// 100
 #define FLAT_DATA_PAGES                             (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
 
-// 92
-#define MUS_DATA_PAGES                              FLAT_DATA_PAGES + 3
-
-// 96
-#define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)
 
 // 103
-#define BSP_CODE_PAGE                               SFX_DATA_PAGES + NUM_SFX_PAGES
+#define BSP_CODE_PAGE                               FLAT_DATA_PAGES + 3
 
 
 // 104 (103 because of 0 index)
