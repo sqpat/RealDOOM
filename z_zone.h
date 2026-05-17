@@ -326,69 +326,68 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define STRINGS_LOGICAL_PAGE                        -1
 //#define FIRST_RENDER_LOGICAL_PAGE                   20
 
-#define RENDER_7800_PAGE                            9
-#define RENDER_7C00_PAGE                            10
-#define PHYSICS_RENDER_9800_PAGE                    11
-#define PHYSICS_RENDER_9C00_PAGE                    12
-//#define PHYSICS_RENDER_6C00_PAGE                    15
-//#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
 
 
-
-#define FIRST_VISPLANE_PAGE							5
-
-#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         PHYSICS_RENDER_9C00_PAGE
-
-// 13
-#define FIRST_LUMPINFO_LOGICAL_PAGE                 LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
-// 16
+// 0
+#define FIRST_LUMPINFO_LOGICAL_PAGE                 0
+// 3
 #define MUS_DATA_PAGES                              FIRST_LUMPINFO_LOGICAL_PAGE + 3
 
-// 20
+// 7
 #define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)
-// 27
-#define PALETTE_LOGICAL_PAGE                        SFX_DATA_PAGES + NUM_SFX_PAGES
+// 14
+#define BSP_CODE_PAGE                               SFX_DATA_PAGES + NUM_SFX_PAGES
+// 15
+#define RENDER_4000_PAGE                            (int16_t) BSP_CODE_PAGE + 1
+#define RENDER_7800_PAGE                            RENDER_4000_PAGE+9
+#define RENDER_7C00_PAGE                            RENDER_4000_PAGE+10
+#define PHYSICS_RENDER_9800_PAGE                    RENDER_4000_PAGE+11
+#define PHYSICS_RENDER_9C00_PAGE                    RENDER_4000_PAGE+12
+//#define PHYSICS_RENDER_6C00_PAGE                    15
+//#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
+#define FIRST_VISPLANE_PAGE							RENDER_4000_PAGE+5
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         PHYSICS_RENDER_9C00_PAGE
+
 // 28
+#define PALETTE_LOGICAL_PAGE                        LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
+// 29
 #define FIRST_STATUS_LOGICAL_PAGE                   PALETTE_LOGICAL_PAGE + 1
-// 32
+// 33
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_STATUS_LOGICAL_PAGE + 4
-// 36
+// 37
 #define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 38
+// 39
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2
-// 44
+// 45
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 46  overlap one page (code page). other 7 pages do dual duty as visplane backups and demo pages.
+// 47  overlap one page (code page). other 7 pages do dual duty as visplane backups and demo pages.
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_TEXTURE_LOGICAL_PAGE + (NUM_TEXTURE_PAGES - 1) // one page overlap
-// 78
+// 79
 #define FIRST_EXTRA_MASKED_DATA_PAGE                FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 80
+// 81
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_EXTRA_MASKED_DATA_PAGE + 2
 
-// 88
+// 89
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 92
+// 93
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 96
+// 97
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 
-// 100
+// 101
 #define FLAT_DATA_PAGES                             (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
 
 
-// 103
-#define BSP_CODE_PAGE                               FLAT_DATA_PAGES + 3
-
-
 // 104 (103 because of 0 index)
-#define NUM_EMS4_SWAP_PAGES                         (int16_t) BSP_CODE_PAGE + 1
+#define NUM_EMS4_SWAP_PAGES                         FLAT_DATA_PAGES + 3
 
 
 
 // NUM_EMS4_SWAP_PAGES needs to be 104 to fit in 256 k + (2 MB EMS - 384k)
 
-// 32
+// 72
 #define FIRST_DEMO_LOGICAL_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 1
+// 77
 #define EMS_VISPLANE_EXTRA_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5
 
 #define OVERLAY_ID_UNMAPPED 0
