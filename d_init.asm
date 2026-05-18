@@ -127,6 +127,8 @@ str_doomfilename_:
 db "doom.wad", 0
 str_doom1filename_:
 db "doom1.wad", 0
+str_nodraw_option:
+db "-nodraw", 0
 
 ; first 512 bytes of the binary will almost immediately be replaced with a 512 byte file cache for the wad once the wad is loaded. so 512 bytes are frontloaded with code that runs super early.
 
@@ -184,6 +186,11 @@ sub     sp, 280
 ; title will go in SECTORS_SEGMENT: 0 for now (since thats not used during init...)
 
 mov     byte ptr [bp - 276], 0  ; file[0] = 0
+
+mov  ax, OFFSET str_nodraw_option
+mov  dx, cs
+call M_CheckParm_
+mov  byte ptr ds:[_novideo], al
 
 
 mov     ax, OFFSET str_doom2filename_
@@ -901,16 +908,23 @@ je      skip_commercial
 
 skip_commercial:
 
+cmp   byte ptr ds:[_novideo], 0
+jne   skip_r_init_menu
+
 mov   ax, M_INIT_TEXT_STR
 call  DoPrintChain_
-
 
 
 call  Z_QuickMapMenu_
 db    09Ah
 dw    M_INITOFFSET, MENU_CODE_AREA_SEGMENT
-call  Z_QuickMapPhysics_
 
+skip_r_init_menu: ; todo figure out how t o skip r_init
+; problem is pic anims, switch list use texturenumforname
+; eventually p_setup render page uses must be bypassed too.
+
+
+call  Z_QuickMapPhysics_
 
 mov   ax, R_INIT_TEXT_STR
 call  DoPrintChain_
@@ -975,6 +989,10 @@ js    map31_doesnt_exist
 mov   byte ptr ds:[_map31_exists], 1
 map31_doesnt_exist:
 
+cmp   byte ptr ds:[_novideo], 0
+je    dont_skip_status_init
+jmp   skip_status_init
+dont_skip_status_init:
 
 call  Z_QuickMapStatus_
 
@@ -1066,6 +1084,7 @@ inc   byte ptr cs:[str_ammonamebuf+6]
 cmp   byte ptr cs:[str_ammonamebuf+6], '9'
 jbe   do_next_patch
 
+skip_status_init:
 
 mov   di, word ptr ds:[_myargc]
 dec   di                        ; myargc - 1

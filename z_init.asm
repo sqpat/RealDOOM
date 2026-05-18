@@ -404,7 +404,7 @@ db "EMS Iniitaliation Successful!", 0Ah, 0
 
 
     PROC   Z_CheckEMSDriverPresence_ NEAR
-
+    PUBLIC Z_CheckEMSDriverPresence_
 
     push   cs
     pop    ds
@@ -468,6 +468,12 @@ db "EMS Iniitaliation Successful!", 0Ah, 0
 
     handle_ems_error_page_count:
     mov    ax, NUM_EMS4_SWAP_PAGES
+    cmp    byte ptr ds:[_novideo], 0
+    je     skip_low_page_count_check
+    cmp    bx, ax ; todo NUM_WAD_PAGES
+    mov    bx, ax ; todo NUM_WAD_PAGES
+    jae    enough_pages_after_all
+    skip_low_page_count_check:
     push   ax
     mov    ax, OFFSET str_ems_page_count
     jmp    print_ems_error
@@ -534,12 +540,12 @@ db "EMS Iniitaliation Successful!", 0Ah, 0
     jnz     handle_ems_error
     cmp     bx, NUM_EMS4_SWAP_PAGES
     jl      handle_ems_error_page_count
-
+    mov     bx, NUM_EMS4_SWAP_PAGES
+    enough_pages_after_all:
 
     ; Allocate pages
     mov     ax, 04300h
     mov     cx, ax
-    mov     bx, NUM_EMS4_SWAP_PAGES
     int     067h
     or      ah, ah
     jnz     handle_ems_error
@@ -588,7 +594,14 @@ db "EMS Iniitaliation Successful!", 0Ah, 0
     
     ret
     ENDP
+    novideo_alternate_capabilities_check:
+    ; todo do this differently
+    cmp     cx, 4  ; minimum number of pages necessary
+    jl      insufficient_page_count  ; todo update string?
 
+    ;       in theory here we would modify quickmap logic to never do  FUNCTION 17   MAP/UNAMP MULTIPLE HANDLE PAGES
+
+    jmp     sufficient_pages
 
     do_5801_error:
     mov    cx, 05801h
@@ -615,11 +628,13 @@ db "EMS Iniitaliation Successful!", 0Ah, 0
     mov     ax, 05801h
     int     067h
 
-    cmp     cx, 28  ; minimum number of pages necessary
-    jl      insufficient_page_count
+
+
     or      ah, ah
     jnz     do_5801_error
-
+    cmp     cx, 28  ; minimum number of pages necessary
+    jl      insufficient_page_count
+    sufficient_pages:
     mov     ax, 05800h
     push    ss
     pop     es
@@ -1311,13 +1326,24 @@ call  locallib_fread_
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
 
+mov   bx, 4 * 2048
 
+cmp   byte ptr ds:[_novideo], 0
+je    do_render_loads_1
+
+mov   ax, di
+mov   dx, 1  ; SEEK_CUR
+xor   cx, cx  ; bx has value
+call  locallib_fseek_  ; skip these bytes
+
+jmp   done_with_render_binary_load_1
+
+do_render_loads_1:
 call    Z_QuickMapRender_
 
 ;	locallib_far_fread(finetangentinner, 4 * 2048, fp);
 xor   ax, ax
 mov   dx, FINETANGENTINNER_SEGMENT
-mov   bx, 4 * 2048
 mov   cx, di
 call  locallib_fread_
 
@@ -1351,7 +1377,7 @@ xchg  dx, di  ; store fp
 rep   stosw
 xchg  dx, di  ; put fp back
 
-
+done_with_render_binary_load_1:
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
 
@@ -1365,6 +1391,18 @@ mov   cx, di
 call  locallib_fread_
 
 ; quickmap render 4000 to 9000
+
+cmp   byte ptr ds:[_novideo], 0
+je    do_render_loads_2
+
+mov   ax, di
+mov   dx, 1  ; SEEK_CUR
+mov   bx, 2048
+xor   cx, cx  ; bx has value
+call  locallib_fseek_  ; skip these bytes
+jmp   done_with_render_binary_load_2
+
+do_render_loads_2:
 
 Z_QUICKMAPAI4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
 
@@ -1399,6 +1437,7 @@ mov   bx, 2048
 mov   cx, di
 call  locallib_fread_
 
+done_with_render_binary_load_2:
 xchg  ax, di
 call  locallib_fclose_
 

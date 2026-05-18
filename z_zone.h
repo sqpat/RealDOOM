@@ -305,6 +305,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 #endif
 
+// enough for 3000 plus lumps and all commercial wads
 #define NUM_WAD_PAGES                               3
 #define MUS_PAGE_FRAME_INDEX                        0
 #define SFX_PAGE_FRAME_INDEX                        1
@@ -327,11 +328,10 @@ void __far Z_SetOverlay(int8_t wipeId);
 //#define FIRST_RENDER_LOGICAL_PAGE                   20
 
 
-
 // 0
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 0
 // 3
-#define MUS_DATA_PAGES                              FIRST_LUMPINFO_LOGICAL_PAGE + 3
+#define MUS_DATA_PAGES                              FIRST_LUMPINFO_LOGICAL_PAGE + NUM_WAD_PAGES
 
 // 7
 #define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)

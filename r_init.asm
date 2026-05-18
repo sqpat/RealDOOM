@@ -1070,6 +1070,9 @@ stosb
 xchg    ax, cx
 ; cx gets patchcount
 
+cmp   	  byte ptr ds:[_novideo], 0
+jne    	  skip_novideo_render_stuff_1
+
 
 loop_next_patch:
 
@@ -1093,6 +1096,7 @@ stosw                   ; patch->patch = patchlookup[(mpatch->patch)] + (mpatch-
 add     si, 4            ; skip a couple unused int16_t fields..
 loop    loop_next_patch
 
+skip_novideo_render_stuff_1:
 pop       dx            ; [STACK A] textureheightval
 pop       cx            ; [STACK B] texturewidth
 pop       di            ; [STACK C] di
@@ -1109,6 +1113,8 @@ or        al, ah
 SHIFT_MACRO shr       al 4
 or        al, ah
 
+cmp   	  byte ptr ds:[_novideo], 0
+jne    	  skip_novideo_render_stuff_2
 
 push      es    ; [STACK A] es
 
@@ -1132,7 +1138,7 @@ SHIFT_MACRO  shr al, 4
 stosb
 
 pop       es   ; [STACK A] es
-
+skip_novideo_render_stuff_2:
 
 add       bx, 4
 ; di incremented by last stosb...
@@ -1157,6 +1163,8 @@ Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
 
 pop   si
 
+cmp   	  byte ptr ds:[_novideo], 0
+jne    	  skip_novideo_render_stuff_3
 
 
 mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
@@ -1204,10 +1212,13 @@ loop_next_texture:
 stosw
 inc       ax
 loop      loop_next_texture
+skip_novideo_render_stuff_3:
 
 mov       cx, dx
 
 mov       di, TEXTUREDEFS_BYTES_SEGMENT   
+
+; todo novideo skip this.
 
 loop_next_lookup:
 mov       ax, dx
@@ -1231,7 +1242,6 @@ loop      loop_next_lookup
 
 
 call      Z_QuickMapRender_
-
 LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
 ret
@@ -1258,10 +1268,7 @@ PUSHA_NO_AX_MACRO
 
 call      Z_QuickMapRender_
 
-mov       cx, COLORMAPS_SEGMENT
 xor       bx, bx
-push      cx
-
 mov     word ptr cs:[SELFMODIFY_set_currentlumpindex+1], bx   ; zero this
 mov     word ptr cs:[SELFMODIFY_set_currentpostoffset+1], bx  ; zero this
 mov     word ptr cs:[SELFMODIFY_set_currentpixeloffset+1], bx  ; zero this
@@ -1270,11 +1277,19 @@ mov     ax, TEXTUREDEFS_BYTES_SEGMENT
 mov     es, ax
 mov     word ptr es:[TEXTUREDEFS_OFFSET_OFFSET], bx  ; zero this
 
+mov       cx, COLORMAPS_SEGMENT
+push      cx
+
+cmp   	  byte ptr ds:[_novideo], bl ; 0
+jne    	  skip_colormaps
 
 
 mov       ax, COLORMAP_LUMP
 
 call      W_CacheLumpNumDirect_
+
+skip_colormaps:
+
 
 ; copy to 0Fh offset 
 
@@ -1289,8 +1304,12 @@ push      ss
 pop       ds
 
 
-
 call      R_InitTextures_
+
+cmp   	  byte ptr ds:[_novideo], 0
+je    	  dont_skip_rest_of_render_init
+jmp		  skip_rest_of_render_init
+dont_skip_rest_of_render_init:
 
 mov       ax, OFFSET str_double_dot
 call      DEBUG_PRINT_NOARG_CS_
@@ -1533,7 +1552,8 @@ mov       byte ptr ds:[_skyflatnum], al
 
 mov       ax, OFFSET str_single_dot
 call      DEBUG_PRINT_NOARG_CS_
-
+skip_rest_of_render_init:
+call      Z_QuickMapPhysics_
 
 POPA_NO_AX_MACRO
 ret     

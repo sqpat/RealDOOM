@@ -58,8 +58,6 @@ str_mousenotpresent:
 db "Mouse: not present", 0Ah, 0
 str_mousedetected:
 db "Mouse: detected", 0Ah, 0
-str_nodraw_option:
-db "-nodraw", 0
 str_startup_mouse:
 db "I_StartupMouse", 0Ah, 0
 str_startup_keyboard:
@@ -85,11 +83,6 @@ mov     bp, sp
 sub     sp, 4  ; bp - 4 is codesize
 
 
-
-mov  ax, OFFSET str_nodraw_option
-mov  dx, cs
-call M_CheckParm_
-mov  byte ptr ds:[_novideo], al
 
 
 mov  ax,  OFFSET str_startup_mouse

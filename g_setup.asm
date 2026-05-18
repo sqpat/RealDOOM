@@ -321,7 +321,9 @@ mov   byte ptr ds:[_viewactive], al		; true
 
 xchg  ax, dx ; dx gets 0001
 
-call	Z_QuickMapRender_
+cmp   byte ptr ds:[_novideo], 0
+jne   skip_graphics_setup
+call  Z_QuickMapRender_
 
 
 ; todo this stuff
@@ -369,7 +371,7 @@ mov     word ptr ds:[_skytexture], ax
 
 ;ret
 
-
+skip_graphics_setup:
 ENDP
 
 ALIGN_MACRO
