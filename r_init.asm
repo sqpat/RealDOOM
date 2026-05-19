@@ -1522,6 +1522,7 @@ exit_r_initspritelumps:
 
 call      Z_QuickMapRender_  ; undo flat cache stuff. 
 
+skip_rest_of_render_init:
 
 mov       ax, OFFSET str_single_dot
 call      DEBUG_PRINT_NOARG_CS_
@@ -1552,8 +1553,6 @@ mov       byte ptr ds:[_skyflatnum], al
 
 mov       ax, OFFSET str_single_dot
 call      DEBUG_PRINT_NOARG_CS_
-skip_rest_of_render_init:
-call      Z_QuickMapPhysics_
 
 POPA_NO_AX_MACRO
 ret     

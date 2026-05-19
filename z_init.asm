@@ -470,8 +470,9 @@ db "EMS Iniitaliation Successful!", 0Ah, 0
     mov    ax, NUM_EMS4_SWAP_PAGES
     cmp    byte ptr ds:[_novideo], 0
     je     skip_low_page_count_check
-    cmp    bx, ax ; todo NUM_WAD_PAGES
-    mov    bx, ax ; todo NUM_WAD_PAGES
+    mov    ax, BSP_CODE_PAGE ; todo NUM_WAD_PAGES
+    cmp    bx, ax 
+    mov    bx, ax 
     jae    enough_pages_after_all
     skip_low_page_count_check:
     push   ax

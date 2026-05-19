@@ -331,31 +331,28 @@ void __far Z_SetOverlay(int8_t wipeId);
 // 0
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 0
 // 3
-#define MUS_DATA_PAGES                              FIRST_LUMPINFO_LOGICAL_PAGE + NUM_WAD_PAGES
-
+#define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_LUMPINFO_LOGICAL_PAGE + NUM_WAD_PAGES
 // 7
+#define MUS_DATA_PAGES                              FIRST_SCRATCH_LOGICAL_PAGE + 4
+// 11
 #define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)
-// 14
+// 18
 #define BSP_CODE_PAGE                               SFX_DATA_PAGES + NUM_SFX_PAGES
-// 15
-#define RENDER_4000_PAGE                            (int16_t) BSP_CODE_PAGE + 1
+// 19
+#define RENDER_4000_PAGE                            BSP_CODE_PAGE + 1
 #define RENDER_7800_PAGE                            RENDER_4000_PAGE+9
 #define RENDER_7C00_PAGE                            RENDER_4000_PAGE+10
 #define PHYSICS_RENDER_9800_PAGE                    RENDER_4000_PAGE+11
 #define PHYSICS_RENDER_9C00_PAGE                    RENDER_4000_PAGE+12
-//#define PHYSICS_RENDER_6C00_PAGE                    15
-//#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
 #define FIRST_VISPLANE_PAGE							RENDER_4000_PAGE+5
 #define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         PHYSICS_RENDER_9C00_PAGE
 
-// 28
+// 32
 #define PALETTE_LOGICAL_PAGE                        LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
-// 29
-#define FIRST_STATUS_LOGICAL_PAGE                   PALETTE_LOGICAL_PAGE + 1
 // 33
-#define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_STATUS_LOGICAL_PAGE + 4
+#define FIRST_STATUS_LOGICAL_PAGE                   PALETTE_LOGICAL_PAGE + 1
 // 37
-#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            FIRST_SCRATCH_LOGICAL_PAGE + 4
+#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            FIRST_STATUS_LOGICAL_PAGE + 4
 // 39
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2
 // 45

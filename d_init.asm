@@ -947,7 +947,11 @@ loop  loop_do_next_lookup
 
 mov   ax, P_INIT_TEXT_STR
 call  DoPrintChain_
+cmp   byte ptr ds:[_novideo], 0
+jne   skip_p_init
 call  P_Init_
+
+skip_p_init:
 
 mov   ax, I_INIT_TEXT_STR
 call  DoPrintChain_
