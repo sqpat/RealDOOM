@@ -12622,11 +12622,10 @@ PROC R_GetNextTextureBlock_ NEAR
 
 ; bp - 2  cachetype
 ; bp - 1  blocksize
-; bp - 4  tex_index
+
 
 PUSHA_NO_AX_MACRO
-push      bp
-mov       bp, sp
+
 
 ;	if (size & 0xFF) {
 ;		blocksize++;
@@ -12636,7 +12635,7 @@ add       dx, 0FFh  ; only use of dl, so just inc into blocksize
 mov       bh, dh ; blocksize  hi byte
 push      bx  ; cachetype/blocksize.. push both at once
 
-xchg      ax, di ; di has tex_index for now
+xchg      ax, bp ; bp has tex_index 
 
 ;	numpages = blocksize >> 6; // num EMS pages needed
 mov       al, dh
@@ -12684,7 +12683,8 @@ jnb       foundonepage
 inc       bx
 cmp       bl, NUM_TEXTURE_PAGES
 jl        check_next_texture_page_for_space
-mov       dl, byte ptr [bp - 2]
+pop       dx ; dl gets cachetype
+push      dx
 mov       al, 1
 call      R_EvictL2CacheEMSPage_
 mov       bl, al
@@ -12694,36 +12694,38 @@ foundonepage:
 ;		texpage = i << 2;
 ;		texoffset = usedtexturepagemem[i];
 ;		usedtexturepagemem[i] += blocksize;
-
+pop       cx  ; cl has cachetype, ch has blocksize.
 mov       al, byte ptr ds:[bx + si] ; todo is bh known zero
-mov       ah, byte ptr [bp - 1]
-add       byte ptr ds:[bx + si], ah
+
+add       byte ptr ds:[bx + si], ch
 
 SHIFT_MACRO shl       bl 2
 mov       dh, bl  ; todo remove?
 
 
 done_finding_open_page:
-; di has texpage
-cmp       byte ptr [bp - 2], CACHETYPE_PATCH
+; bp has texpage.
+; cl has cachetype
+
+cmp       cl, CACHETYPE_PATCH ; make this 1, and dec cl
 jne       set_non_patch_pages
 set_patch_pages:
-mov       bx, PATCHOFFSET_SEGMENT
-mov       es, bx
-mov       byte ptr es:[di], dh
-mov       byte ptr es:[di + PATCHOFFSET_OFFSET], al
-LEAVE_MACRO     
+mov       si, PATCHOFFSET_SEGMENT
+mov       es, si
+mov       byte ptr es:[bp], dh
+mov       byte ptr es:[bp + PATCHOFFSET_OFFSET], al
+
 POPA_NO_AX_MACRO
 ret       
 ALIGN_MACRO
 set_non_patch_pages:
 
 set_tex_pages:
-mov       bx, COMPOSITETEXTUREOFFSET_SEGMENT
-mov       es, bx
-mov       byte ptr es:[di], dh
-mov       byte ptr es:[di + COMPOSITETEXTUREOFFSET_OFFSET], al
-LEAVE_MACRO     
+mov       si, COMPOSITETEXTUREOFFSET_SEGMENT
+mov       es, si
+mov       byte ptr es:[bp], dh
+mov       byte ptr es:[bp + COMPOSITETEXTUREOFFSET_OFFSET], al
+  
 POPA_NO_AX_MACRO
 ret       
 
@@ -12731,7 +12733,7 @@ ret
 ALIGN_MACRO
 multipage_textureblock:
 
-push     di  ; store texpage
+
 mov      di, OFFSET _texturecache_nodes
 
 ;		uint8_t numpagesminus1 = numpages - 1;
@@ -12831,7 +12833,8 @@ done_with_textureblock_multipage_loop:
 
 ;		i = R_EvictL2CacheEMSPage(numpages, cachetype);
 
-mov       dl, byte ptr [bp - 2]
+pop       dx ; dl has cachetype
+push      dx
 mov       al, ch
 call      R_EvictL2CacheEMSPage_
 mov       dh, al
@@ -12876,11 +12879,11 @@ mov       byte ptr ds:[bx + di + 2], 1
 mov       byte ptr ds:[bx + di + 3], ch
 mov       bl, al
 
-mov       al, byte ptr [bp - 1]
+pop       ax ;ah has blocksize...
 
 ;	if (blocksize & 0x3F) {
 
-test      al, 03Fh
+test      ah, 03Fh
 jne        dont_set_used_all_memory_for_page
 ;			usedtexturepagemem[j] = blocksize & 0x3F;
 set_used_all_memory_for_page:
@@ -12893,16 +12896,17 @@ set_used_all_memory_for_page:
 
 
 mov       byte ptr ds:[bx + si], cl
+mov       cl, al  ; cl gets cachetype
 SHIFT_MACRO shl       dh 2
 xor       al, al
 add       dh, ch  ; use numpages instead of numpagesminus1
 dec       dh 
-pop       di ; restore texpage
 jmp       done_finding_open_page
 ALIGN_MACRO
 dont_set_used_all_memory_for_page:
-and       al, 03Fh
-mov       byte ptr ds:[bx + si], al
+and       ah, 03Fh
+mov       byte ptr ds:[bx + si], ah
+mov       cl, al  ; cl gets cachetype
 
 ;		texpage = (i << 2) + (numpagesminus1);
 ;		texoffset = 0; // if multipage then its always aligned to start of its block
@@ -12911,7 +12915,6 @@ SHIFT_MACRO shl       dh 2
 xor       al, al
 add       dh, ch    ; use numpages instead of numpagesminus1. need the dec
 dec       dh
-pop       di ; restore texpage
 jmp       done_finding_open_page
 ALIGN_MACRO
 
