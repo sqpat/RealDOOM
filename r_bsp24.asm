@@ -12083,7 +12083,7 @@ ENDP
 
 ; assumes ah 0
 ALIGN_MACRO
-PROC R_MarkL2TextureCacheMRU_ NEAR
+PROC R_MarkL2TextureCacheMRU_ NEAR    ; could use a little bit more work
 
 
 cmp  al, byte ptr ds:[_texturecache_l2_head]
@@ -12304,7 +12304,7 @@ ENDP
 
 
 ALIGN_MACRO
-PROC R_EvictL2CacheEMSPage_ NEAR
+PROC R_EvictL2CacheEMSPage_ NEAR   ; could use a little bit more work
 
 ; bp - 2    used for ds first, used for es first
 ; bp - 4    second offset used for si
@@ -12620,7 +12620,7 @@ COLUMN_IN_CACHE_WAD_LUMP_SEGMENT = 07000h
 
 
 
-PROC R_GetNextTextureBlock_ NEAR
+PROC R_GetNextTextureBlock_ NEAR  ; pretty optimized now
 
 ; bp - 2  cachetype
 ; bp - 1  blocksize
@@ -12919,7 +12919,7 @@ ret
 
 
 ALIGN_MACRO
-PROC   R_GetTexturePage_ NEAR
+PROC   R_GetTexturePage_ NEAR  ; could use a little bit more work
 PUBLIC R_GetTexturePage_
 
 ;uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset){
@@ -13426,9 +13426,9 @@ COMPOSITE_TEXTURE_SEGMENT = 05000h
 
 PROC R_GetPatchTexture_Far24_ FAR
 PUBLIC R_GetPatchTexture_Far24_
-push si
-call R_GetPatchTexture_
-pop si
+push  si
+call  R_GetPatchTexture_
+pop   si
 retf
 ENDP
 
@@ -13474,16 +13474,15 @@ ret
 ALIGN_MACRO
 patch_not_in_l1_cache:
 ; we use bx/cx in here..
-push  bx
-push  ax  ; bp - 2 store lump
-
+PUSHA_NO_AX_MACRO
+xchg  ax, bp ; store lump
+xor   di, di ; masked flag
 
 cmp   dl, dh
 jne   set_masked_true
 set_masked_false:
-xor   ax, ax
-push  ax  ; bp - 4
-mov   bx, si
+; di is masked flag.
+mov   bx, si ; word lookup
 mov   dx, word ptr ds:[bx + si + _patch_sizes]
 
 done_doing_lookup:
@@ -13493,36 +13492,37 @@ call  R_GetNextTextureBlock_
 mov   ax, PATCHPAGE_SEGMENT
 mov   es, ax
 xor   ah, ah
-mov   al, byte ptr es:[si + PATCHOFFSET_OFFSET]
-push  ax     ; bp - 6
-mov   al, byte ptr es:[si]
+push  word ptr es:[si + PATCHOFFSET_OFFSET] ; patch offset
+lods  byte ptr es:[si]
 
 call  R_GetTexturePage_
-cbw
-xchg  al, ah
-xchg  ax, si
-SHIFT_MACRO shl si 2 ; * 400h
-pop   ax     ; bp - 6
+
+xor   dx, dx
+mov   dh, al
+SHIFT_MACRO shl dx 2 ; * 400h
+pop   ax  ; patch offset was a byte... 
+xor   ah, ah
 SHIFT_MACRO   shl ax 4
-add   si, PATCH_TEXTURE_SEGMENT
-add   si, ax
-pop   bx     ; bp - 4
-mov   dx, si
-pop   ax     ; bp - 2
+add   dh, (PATCH_TEXTURE_SEGMENT SHR 8)
+add   dx, ax
+mov   word ptr cs:[SELFMODIFY_BSP_set_patch_return_value+1], dx
+xchg  ax, bp  ; restore lump
 call  R_LoadPatchColumns_
-xchg  ax, si
-pop   bx
+pop   es      ; return value
+POPA_NO_AX_MACRO
+SELFMODIFY_BSP_set_patch_return_value:
+mov   ax, 01000h
 
 ret   
 
 ALIGN_MACRO
 set_masked_true:
-mov   ax, 1
-push  ax
-xor   dh, dh
-mov   bx, dx
+inc   di
+
+xor   bx, bx
+mov   bl, dl
 SHIFT_MACRO shl   bx 3
-mov   dx, word ptr ds:[bx + _masked_headers + 4] ; texturesize field is + 4
+mov   dx, word ptr ds:[bx + _masked_headers + MASKED_HEADER_T.mh_texturesize] 
 jmp   done_doing_lookup
 ALIGN_MACRO
 
@@ -14120,17 +14120,13 @@ mov       di, ((SELFMODIFY_loadpatchcolumn_masked_check2_TARGET - SELFMODIFY_loa
 jmp       ready_selfmodify_loadpatch
 ALIGN_MACRO
 
-PROC R_LoadPatchColumns_ NEAR
+PROC   R_LoadPatchColumns_ NEAR ; todo inline only use?
 
 
-push      cx
-push      si
-push      di
-push      bp
 
 mov       si, ax
 
-test      bl, bl
+test      di, di
 jne       do_masked_jump
 mov       ax, ((SELFMODIFY_loadpatchcolumn_masked_check1_TARGET - SELFMODIFY_loadpatchcolumn_masked_check1_AFTER) SHL 8) + 0EBh
 mov       di, 0c089h   ; 2 byte nop
@@ -14234,14 +14230,11 @@ jns       do_next_column
 done_drawing_texture:
 mov       ax, ss
 mov       ds, ax
-pop       bp
+
 ;call      Z_QuickMapRender4000_
 Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 
 
-pop       di
-pop       si
-pop       cx
 ret       
 
 
