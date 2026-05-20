@@ -12627,7 +12627,7 @@ PROC R_GetNextTextureBlock_ NEAR
 
 
 PUSHA_NO_AX_MACRO
-
+; si has lump
 
 ;	if (size & 0xFF) {
 ;		blocksize++;
@@ -12637,7 +12637,7 @@ add       dx, 0FFh  ; only use of dl, so its okay to clobber..
 mov       bh, dh ; blocksize  hi byte
 push      bx  ; cachetype/blocksize.. push both at once
 
-xchg      ax, bp ; bp has tex_index 
+mov       bp, si
 
 mov       si, OFFSET _usedtexturepagemem
 
@@ -12877,11 +12877,10 @@ sub       dh, cl  ; minus one. cl known 1.
 pop       cx ;ch has blocksize...
 
 ;	if (blocksize & 0x3F) {
-and      ch, 03Fh
-jz       set_used_all_memory_for_page
-mov       dl, ch     ;			usedtexturepagemem[j] = blocksize & 0x3F;
-set_used_all_memory_for_page:
-mov       byte ptr ds:[bx + si], dl ; 64 or & 3Fh
+DEC CH
+AND CH, 03Fh
+INC CH
+mov       byte ptr ds:[bx + si], ch ; 64 or & 3Fh
 jmp       done_finding_open_page
 
 
@@ -12931,14 +12930,13 @@ PUBLIC R_GetTexturePage_
 
 
 
-; bp - 2 pageoffset
-; bp - 4 realtexpage
-; bp - 6 startpage in multi-area
 
-; todo todo remove
+; bp - 2 realtexpage
+; bp - 4 startpage in multi-area
 
+; todo push/pop less?
 PUSHA_NO_AX_MACRO
-push  bp
+push  bp 
 mov   bp, sp
 
 
@@ -12946,21 +12944,19 @@ mov   bp, sp
 mov   si, OFFSET _activetexturepages
 mov   di, OFFSET _activenumpages
 mov   cx, NUM_TEXTURE_L1_CACHE_PAGES
-xor   dh, dh
-continue_get_page:
 
-push  dx        ; bp - 2   dh 0 pageoffset
+xor   dx, dx
 
 ;	uint8_t realtexpage = texpage >> 2;
 mov   dl, al
 SHIFT_MACRO sar   dx 2
-push  dx        ; bp - 4   dh 0 realtexpage
+push  dx        ; bp - 2   dh 0 realtexpage
 
 ;	uint8_t numpages = (texpage& 0x03);
 
 
+and   ax, 3    ; zero dh here
 xchg  ax, dx   ; ax has realtexpage
-and   dx, 3    ; zero dh here
 ;	if (!numpages) {                ; todo push less stuff if we get the zero case?
 jne   get_multipage
 
@@ -13145,7 +13141,7 @@ jns   mark_all_pages_mru_loop
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 ;    return i;
 
-pop   ax;   word ptr [bp - 4]
+pop   ax;   word ptr [bp - 2]
 call  R_MarkL2TextureCacheMRU_
 mov   al, dh
 mov   es, ax
@@ -13191,14 +13187,14 @@ found_start_page_single:
 ;  cl/cx is startpage
 ;  bl/bx is startpage 
 
-pop   dx  ; bp - 4, get realtexpage
+pop   dx  ; bp - 2, get realtexpage
 ; dx has realtexpage
 ; bx already ok
 
 mov   byte ptr ds:[bx + di], bh  ; zero
 mov   byte ptr ds:[bx + si], dl
 shl   bx, 1                      ; startpage word offset.
-pop   ax                         ; mov   ax, word ptr [bp - 2]
+mov   ax, FIRST_TEXTURE_LOGICAL_PAGE
 
 add   ax, dx                     ; _EPR(pageoffset + realtexpage);
 EPR_MACRO ax
@@ -13267,7 +13263,7 @@ found_startpage_multi:
 
 ; al already set to startpage
 mov   bx, ax    ; ah/bh is 0
-push  ax  ; bp - 6
+; push  ax  ; bp - 4
 mov   dh, al ; dh gets startpage..
 mov   cx, -1
 
@@ -13362,7 +13358,8 @@ mov   ch, dl
 
 ;	for (i = 0; i <= numpages; i++) {
 ; es gets currentpage
-mov   es, word ptr [bp - 4]
+pop   es ; bp - 2
+push  es ; bp - 2
 
 ;    for (i = 0; i <= numpages; i++) {
 ;        R_MarkL1TextureCacheMRU(startpage+i);
@@ -13389,7 +13386,7 @@ mov   byte ptr ds:[bx + di], ch   ;   activenumpages[startpage + i] = numpages-i
 mov   byte ptr ds:[bx + si], al   ;	activetexturepages[startpage + i]  = currentpage;
 sal   bx, 1             ; word lookup
 
-add   ax, word ptr [bp - 2]  ; pageoffset
+add   ax, FIRST_TEXTURE_LOGICAL_PAGE
 EPR_MACRO ax
 
 
@@ -13418,8 +13415,8 @@ jns   loop_mark_next_page_mru_multi
 ;    Z_QuickMapRenderTexture();
 
 		
+pop   ax ; bp - 2
 
-mov   ax, word ptr [bp - 4]
 call  R_MarkL2TextureCacheMRU_
 call  Z_QuickMapRenderTexture_BSPLocal_
 
@@ -13475,7 +13472,7 @@ mov   al, dh
 mov   dl, byte ptr es:[si + PATCHOFFSET_OFFSET] ; texoffset
 xor   dh, dh
 mov   si, dx   ; back up texpage
-mov   dl, FIRST_TEXTURE_LOGICAL_PAGE
+
 call  R_GetTexturePage_
 SHIFT_MACRO shl   si 4  ; shift texpage 4. 
 cbw
@@ -13503,8 +13500,8 @@ mov   bx, si
 mov   dx, word ptr ds:[bx + si + _patch_sizes]
 
 done_doing_lookup:
-mov   bx, CACHETYPE_PATCH
-mov   ax, si
+mov   bl, CACHETYPE_PATCH ; todo 0/1
+
 call  R_GetNextTextureBlock_
 mov   ax, PATCHPAGE_SEGMENT
 mov   es, ax
@@ -13512,7 +13509,7 @@ xor   ah, ah
 mov   al, byte ptr es:[si + PATCHOFFSET_OFFSET]
 push  ax     ; bp - 6
 mov   al, byte ptr es:[si]
-mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+
 call  R_GetTexturePage_
 cbw
 xchg  al, ah
@@ -13575,7 +13572,6 @@ mov   dl, byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET]
 xor   dh, dh
 mov   si, dx
 
-mov   dl, FIRST_TEXTURE_LOGICAL_PAGE
 
 call  R_GetTexturePage_
 SHIFT_MACRO shl   si 4
@@ -13592,17 +13588,17 @@ ret
 
 ALIGN_MACRO
 composite_not_in_cache:
-push  bx
+PUSHA_NO_AX_MACRO
 push  es
 mov   dx, TEXTURECOMPOSITESIZES_SEGMENT
 mov   es, dx
 mov   bx, si
-mov   ax, si
+
 mov   dx, word ptr es:[si + bx]
-mov   bx, CACHETYPE_COMPOSITE
+mov   bl, CACHETYPE_COMPOSITE ; todo 0/1
 call  R_GetNextTextureBlock_
 pop   es
-mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+
 mov   al, byte ptr es:[si]
 mov   bl, byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET]
 call  R_GetTexturePage_
@@ -13618,12 +13614,8 @@ add   bh, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
 add   bx, ax
 mov   dx, bx
 mov   ax, si
-call  R_GenerateComposite_
-xchg  ax, bx
-pop   bx
-ret  
+; fall thru
 
-ENDP
 
 
 
@@ -13631,11 +13623,11 @@ WAD_PATCH_7000_SEGMENT = 07000h
 
 
 
+; inlined
 
 
-
-ALIGN_MACRO
-PROC R_GenerateComposite_ NEAR
+;ALIGN_MACRO
+;PROC R_GenerateComposite_ NEAR
 
 ; void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
@@ -13656,7 +13648,7 @@ PROC R_GenerateComposite_ NEAR
 ; bp - 01Eh  (innerloop) columnofs[x - x1] 
 
 ; todo most of this doesnt need push/pop? but runs really rarely so who cares...
-PUSHA_NO_AX_MACRO
+
 push      bp
 mov       bp, sp
 ; ah should already be 0
@@ -14123,7 +14115,6 @@ position_under_zero:
 add       cx, di
 xor       di, di
 jmp       done_with_position_check
-ALIGN_MACRO
 
 ENDP
 
