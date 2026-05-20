@@ -12911,7 +12911,6 @@ call  R_MarkL2TextureCacheMRU_
 ;    return i;
 
 mov   es, bx            ; return i
-LEAVE_MACRO 
 POPA_NO_AX_MACRO
 mov   ax, es
 ret   
@@ -12920,7 +12919,7 @@ ret
 
 
 ALIGN_MACRO
-PROC R_GetTexturePage_ NEAR
+PROC   R_GetTexturePage_ NEAR
 PUBLIC R_GetTexturePage_
 
 ;uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset){
@@ -12935,17 +12934,17 @@ mov   si, OFFSET _activetexturepages
 mov   di, OFFSET _activenumpages
 mov   cx, NUM_TEXTURE_L1_CACHE_PAGES
 
-xor   dx, dx
+xor   ah, ah
 
 ;	uint8_t realtexpage = texpage >> 2;
-mov   dl, al
+mov   dx, ax
 SHIFT_MACRO sar   dx 2
 mov   bp, dx ; backup realtexpage
 
 ;	uint8_t numpages = (texpage& 0x03);
 
 
-and   ax, 3    ; zero dh here
+and   al, 3    ; zero dh here
 xchg  ax, dx   ; ax has realtexpage
 ;	if (!numpages) {                ; todo push less stuff if we get the zero case?
 jne   get_multipage
@@ -12965,14 +12964,14 @@ jne   get_multipage
 mov   bx, dx ; zero
 
 ; al is realtexpage
+; ah = 0
 ; bx is i
 
 loop_next_active_page_single:
 cmp   al, byte ptr ds:[bx + si]
 je    found_active_single_page
 inc   bx
-cmp   bx, cx
-jb    loop_next_active_page_single
+loop   loop_next_active_page_single
 
 ; cache miss...
 
@@ -12980,9 +12979,9 @@ jb    loop_next_active_page_single
 ;		R_MarkL1TextureCacheMRU7(startpage);
 
 ;   ah is 0. al is dirty but gets fixed...
-cwd
+
 dec   dx ; dx = -1, ah is 0
-mov   bx, cx    ; NUM_TEXTURE_L1_CACHE_PAGES
+add   bx, cx  ;  = NUM_TEXTURE_L1_CACHE_PAGES 
 dec   bx        ; NUM_TEXTURE_L1_CACHE_PAGES - 1
 mov   al, byte ptr ds:[bx + _textureL1LRU]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
 mov   cx, ax
@@ -13033,7 +13032,7 @@ cmp   al, byte ptr ds:[bx + di]
 ja    found_start_page_single
 
 add   bl, al
-mov   byte ptr ds:[bx + di], 0
+mov   byte ptr ds:[bx + di], ah  ; still zero
 
 
 ; bx is currently startpage+i as a byte lookup
@@ -13069,7 +13068,7 @@ ELSE
 
 ENDIF
 
-inc   al
+inc   ax
 
 
 mov   bx, cx    ; zero out bh
@@ -13113,7 +13112,7 @@ jne   grab_next_page_loop_multi_continue
 ;    for (j = 0; j <= numpages; j++) {
 ;        R_MarkL1TextureCacheMRU(i+j);
 ;    }
-mov   dh, bl
+mov   si, bx  ; si low holds i
 ; bl is i
 ; bl/bx will be i+j   
 ; dl is numpages but we dec it till < 0
@@ -13122,7 +13121,7 @@ mark_all_pages_mru_loop:
 mov   ax, bx
 
 call  R_MarkL1TextureCacheMRU_
-inc   bl
+inc   bx
 dec   dl
 jns   mark_all_pages_mru_loop
  
@@ -13133,8 +13132,8 @@ jns   mark_all_pages_mru_loop
 
 xchg  ax, bp ; realtexpage
 call  R_MarkL2TextureCacheMRU_
-mov   al, dh
-mov   es, ax
+
+mov   es, si ; previous i
 
 POPA_NO_AX_MACRO
 mov   ax, es
@@ -13148,8 +13147,8 @@ ret
 ALIGN_MACRO
 evict_and_find_startpage_multi:
 xor   ax, ax ; set ah to 0. 
-mov   bx, NUM_TEXTURE_L1_CACHE_PAGES
-dec   bx
+mov   bx, NUM_TEXTURE_L1_CACHE_PAGES-1
+
 mov   cx, bx
 sub   cl, dl
 ; dl is numpages
@@ -13324,9 +13323,9 @@ ELSE
 
 ENDIF
 
-inc   al
+inc   ax
 
-xor   bh, bh
+xor   bx, bx
 jmp   loop_next_invalidate_page_multi
 ALIGN_MACRO
 
@@ -13414,7 +13413,7 @@ call  Z_QuickMapRenderTexture_BSPLocal_
 
 
 
-mov   dl, dh  ; numpages in cl
+mov   dl, dh  ; numpages in dl
 jmp   do_tex_eviction
 ALIGN_MACRO
 
@@ -13604,7 +13603,7 @@ mov   dx, bx
 mov   ax, si
 ; fall thru
 
-
+push  bx ; eventual return value in ax
 
 
 WAD_PATCH_7000_SEGMENT = 07000h
@@ -13777,7 +13776,9 @@ Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
 
 
 LEAVE_MACRO     
+pop   es ; return value
 POPA_NO_AX_MACRO
+mov   ax, es
 ret       
 ALIGN_MACRO
 set_x_to_x1:
