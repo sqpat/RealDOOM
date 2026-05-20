@@ -12678,12 +12678,12 @@ foundonepage:
 ;		texoffset = usedtexturepagemem[i];
 ;		usedtexturepagemem[i] += blocksize;
 pop       cx  ; cl has cachetype, ch has blocksize.
-mov       al, byte ptr ds:[bx + si] ; todo is bh known zero
+mov       ah, byte ptr ds:[bx + si]
 
 add       byte ptr ds:[bx + si], ch
 
 SHIFT_MACRO shl       bl 2
-mov       dh, bl  ; todo remove?
+mov       dh, bl
 
 
 done_finding_open_page:
@@ -12696,7 +12696,7 @@ set_patch_pages:
 mov       si, PATCHOFFSET_SEGMENT
 mov       es, si
 mov       byte ptr es:[bp], dh
-mov       byte ptr es:[bp + PATCHOFFSET_OFFSET], al
+mov       byte ptr es:[bp + PATCHOFFSET_OFFSET], ah
 
 POPA_NO_AX_MACRO
 ret       
@@ -12707,7 +12707,7 @@ set_tex_pages:
 mov       si, COMPOSITETEXTUREOFFSET_SEGMENT
 mov       es, si
 mov       byte ptr es:[bp], dh
-mov       byte ptr es:[bp + COMPOSITETEXTUREOFFSET_OFFSET], al
+mov       byte ptr es:[bp + COMPOSITETEXTUREOFFSET_OFFSET], ah
   
 POPA_NO_AX_MACRO
 ret       
@@ -12827,80 +12827,62 @@ mov       dh, al
 found_multipage:
 ;		foundmultipage:
 ;        usedtexturepagemem[i] = 64;
-mov       cl, 64
+; dh is i, the first page.
+; bx is currently shifted end of the allocation. 
+
+mov       dl, 64
 mov       bl, dh
-mov       byte ptr ds:[bx + si], cl
+mov       byte ptr ds:[bx + si], dl ; 64
+SHIFT_MACRO shl       bl 2
+mov       dh, bl
 
 ;		texturecache_nodes[i].numpages = numpages;
 ;		texturecache_nodes[i].pagecount = numpages;
+; cl is equal to ch
 
-SHIFT_MACRO shl       bl 2
-mov       byte ptr ds:[bx + di + 3], ch
-mov       byte ptr ds:[bx + di + 2], ch
-mov       dl, dh
+mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx
+mov       bl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+shr       cl, 1  ; dec cl. if 3, then carry is set.
+
 ;		if (numpages >= 3) {
-cmp       ch, 3
-jl        numpages_not_3_or_more
-mov       dl, byte ptr ds:[bx + di]
-mov       bl, dl
-mov       al, ch
-dec       al
-mov       byte ptr ds:[bx + si], cl
+jnc       numpages_not_3_or_more
+inc       cx ; cx was 3. add back the over-shoot from shl
+
+mov       byte ptr ds:[bx + si], dl ; 64
 SHIFT_MACRO shl       bl 2
-mov       byte ptr ds:[bx + di + 3], ch
-mov       byte ptr ds:[bx + di + 2], al
+
+mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx
+dec       cx ; cl --
 numpages_not_3_or_more:
-mov       bl, dl
+
+; cx is 1. note, 4 pages is unimplemented i guess
+
+mov       ax, bx  ; ah 0. unshifted. retrieve soon
 SHIFT_MACRO shl       bl 2
-mov       al, byte ptr ds:[bx + di]
-mov       bl, al
-SHIFT_MACRO shl       bl 2
+
 
 ;		texturecache_nodes[j].numpages = numpages;
 ;		texturecache_nodes[j].pagecount = 1;
 
-mov       byte ptr ds:[bx + di + 2], 1
-mov       byte ptr ds:[bx + di + 3], ch
-mov       bl, al
+mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx
+xchg      ax, bx ; bx unshifted again. ah still zero
 
-pop       ax ;ah has blocksize...
+
+;		texpage = (i << 2) + (numpagesminus1);
+;		texoffset = 0; // if multipage then its always aligned to start of its block
+; ah is 0 already for texoffset
+add       dh, ch  ; use numpages instead of numpagesminus1
+sub       dh, cl  ; minus one. cl known 1. 
+; texoffset is ah
+pop       cx ;ch has blocksize...
 
 ;	if (blocksize & 0x3F) {
-
-test      ah, 03Fh
-jne        dont_set_used_all_memory_for_page
-;			usedtexturepagemem[j] = blocksize & 0x3F;
+and      ch, 03Fh
+jz       set_used_all_memory_for_page
+mov       dl, ch     ;			usedtexturepagemem[j] = blocksize & 0x3F;
 set_used_all_memory_for_page:
-
-;			usedtexturepagemem[j] = 64;
-
-
-;		texpage = (i << 2) + (numpagesminus1);
-;		texoffset = 0; // if multipage then its always aligned to start of its block
-
-
-mov       byte ptr ds:[bx + si], cl
-mov       cl, al  ; cl gets cachetype
-SHIFT_MACRO shl       dh 2
-xor       al, al
-add       dh, ch  ; use numpages instead of numpagesminus1
-dec       dh 
+mov       byte ptr ds:[bx + si], dl ; 64 or & 3Fh
 jmp       done_finding_open_page
-ALIGN_MACRO
-dont_set_used_all_memory_for_page:
-and       ah, 03Fh
-mov       byte ptr ds:[bx + si], ah
-mov       cl, al  ; cl gets cachetype
-
-;		texpage = (i << 2) + (numpagesminus1);
-;		texoffset = 0; // if multipage then its always aligned to start of its block
-
-SHIFT_MACRO shl       dh 2
-xor       al, al
-add       dh, ch    ; use numpages instead of numpagesminus1. need the dec
-dec       dh
-jmp       done_finding_open_page
-ALIGN_MACRO
 
 
 
