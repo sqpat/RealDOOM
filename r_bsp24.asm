@@ -12643,11 +12643,11 @@ mov       si, OFFSET _usedtexturepagemem
 
 xor       bx, bx
 
+;		uint8_t freethreshold = 64 - blocksize;
 mov      al, 64
 sub      al, dh
 jb       multipage_textureblock ; didnt fit in 64.
 
-;		uint8_t freethreshold = 64 - blocksize;
 
 
 ;		for (i = 0; i < NUM_TEXTURE_PAGES; i++) {
@@ -12725,17 +12725,17 @@ SHIFT_MACRO rol       cl 2
 and       cl, 3     ; page count
 mov       ch, cl
 
-mov       dh, byte ptr ds:[_texturecache_l2_head]
+mov       bl, byte ptr ds:[_texturecache_l2_head]
 mov       ah, 0FFh
-mov       cl, 040h
+
 ; al is free, in use a lot
 ; ah is 0FFh
 ; bh is 000h
 ; bl is active offset
 ; ch is numpages
-; cl is 040h
-; dh is head
-; dl is nextpage
+; cl is pagecount
+; dh is unused..?
+; dl is unused in first loop, 64 later.
 
 
 ;		for (i = texturecache_l2_head;
@@ -12747,77 +12747,75 @@ mov       cl, 040h
 ;				int8_t nextpage = texturecache_nodes[i].prev;
 ;				if ((nextpage != -1 &&!usedtexturepagemem[nextpage])) {
 ;					nextpage = texturecache_nodes[nextpage].prev;
-
 ;				}
 ;			}
 ;		}
 
-cmp       dh, ah  ; dh is texturecache_l2_head
-je        done_with_textureblock_multipage_loop
+cmp       bl, ah  ; bl is texturecache_l2_head, ah = -1
+je        done_looping_l2_cache_miss ; hit the end
 
 do_texture_multipage_loop:
-mov       bl, dh
-cmp       byte ptr ds:[bx + si], bh
-jne       do_next_texture_multipage_loop_iter
+mov       dh, bl  ; back up iterator start in case this is the right offset.
+cmp       byte ptr ds:[bx + si], bh ; 0
+jne       do_next_texture_multipage_loop_iter ; page full
 
-page_has_space:
+first_page_has_space:
 SHIFT_MACRO shl       bl 2
-mov       al, byte ptr ds:[bx + di]
-cmp       al, ah
-je        do_next_texture_multipage_loop_iter
+mov       bl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+cmp       bl, ah ; -1
+je        done_looping_l2_cache_miss ; hit the end
 ; has next page
-mov       bl, al
-cmp       byte ptr ds:[bx + si], bh
+cmp       byte ptr ds:[bx + si], bh ; 0
 jne       do_next_texture_multipage_loop_iter
-SHIFT_MACRO shl       bl 2
-mov       dl, byte ptr ds:[bx + di]
 
 ;					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedtexturepagemem[nextpage]))) {
 
 
 cmp       ch, 3   ; use numpages instead of numpagesminus1
-jb        less_than_2_pages_or_next_page_good
-not_less_than_2_pages_check_next_page_good:
-cmp       dl, ah
-je        do_next_texture_multipage_loop_iter
-mov       bl, dl
-cmp       byte ptr ds:[bx + si], bh
+jb        found_multipage ; found enough
+SHIFT_MACRO shl       bl 2
+mov       bl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+
+; continue checking for 3 pager.
+cmp       bl, ah ; -1
+je        done_looping_l2_cache_miss ; hit the end
+cmp       byte ptr ds:[bx + si], bh ; 0
 jne       do_next_texture_multipage_loop_iter
 
-less_than_2_pages_or_next_page_good:
 
 ;						nextpage = texturecache_nodes[nextpage].prev;
 
-mov       bl, dl
-SHIFT_MACRO shl       bl 2
-mov       dl, byte ptr ds:[bx + di]
 
 ;						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedtexturepagemem[nextpage]))) {
 ;							goto foundmultipage;
 ;						}
 
+; todo unsure if this case can happen. textures max out under 48k right...?
+
 cmp       ch, 4  ; use numpages instead of numpagesminus1
-jb        found_multipage
+jb        found_multipage ; found enough
 
+SHIFT_MACRO shl       bl 2
+mov       bl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 
-check_for_next_multipage_loop_iter:
 
 ; (nextpage != -1 &&(!usedtexturepagemem[nextpage])
-cmp       dl, ah
-je        do_next_texture_multipage_loop_iter
-mov       bl, dl
-cmp       byte ptr ds:[bx + si], bh
-jne       do_next_texture_multipage_loop_iter
+cmp       bl, ah ; -1
+je        done_looping_l2_cache_miss ; hit the end
+cmp       byte ptr ds:[bx + si], bh ; 0
+je        found_multipage  ; todo whats up with this...
+
+
 
 do_next_texture_multipage_loop_iter:
-mov       bl, dh
+
 SHIFT_MACRO shl       bl 2
-mov       dh, byte ptr ds:[bx + di]
-cmp       dh, ah
+mov       bl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+cmp       bl, ah ; -1
 jne       do_texture_multipage_loop
 
-done_with_textureblock_multipage_loop:
-
+done_looping_l2_cache_miss:
+ ; hit the end
 ;		i = R_EvictL2CacheEMSPage(numpages, cachetype);
 
 pop       dx ; dl has cachetype
@@ -12826,11 +12824,10 @@ mov       al, ch
 call      R_EvictL2CacheEMSPage_
 mov       dh, al
 
-less_than_3_pages_or_next_page_good:
 found_multipage:
 ;		foundmultipage:
 ;        usedtexturepagemem[i] = 64;
-
+mov       cl, 64
 mov       bl, dh
 mov       byte ptr ds:[bx + si], cl
 
