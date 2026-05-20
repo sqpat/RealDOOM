@@ -12312,6 +12312,8 @@ PROC R_EvictL2CacheEMSPage_ NEAR
 ; bp - 8    secondarymaxitersize
 ; bp - 0Ch currentpage
 
+; todo some of these dont have to push/pop? di, si...
+
 push      bx
 push      cx
 push      si
@@ -12630,42 +12632,23 @@ PUSHA_NO_AX_MACRO
 ;	if (size & 0xFF) {
 ;		blocksize++;
 ;	}
-add       dx, 0FFh  ; only use of dl, so just inc into blocksize
+add       dx, 0FFh  ; only use of dl, so its okay to clobber..
 
 mov       bh, dh ; blocksize  hi byte
 push      bx  ; cachetype/blocksize.. push both at once
 
 xchg      ax, bp ; bp has tex_index 
 
-;	numpages = blocksize >> 6; // num EMS pages needed
-mov       al, dh
-
-SHIFT_MACRO rol       al 2
-and       al, 3
-
-;	if (blocksize & 0x3F) {
-;		numpages++;
-;	}
-
-mov       ch, al
-test      dh, 03Fh
-je        dont_increment_numpages
-inc       ch
-dont_increment_numpages:
-
-;	if (numpages == 1) {
 mov       si, OFFSET _usedtexturepagemem
 
 xor       bx, bx
-cmp       ch, 1
-jne       multipage_textureblock
+
+mov      al, 64
+sub      al, dh
+jb       multipage_textureblock ; didnt fit in 64.
 
 ;		uint8_t freethreshold = 64 - blocksize;
-neg       dh  ; dh already blocksize...
-add       dh, 64
 
-
-; dl zeroed 
 
 ;		for (i = 0; i < NUM_TEXTURE_PAGES; i++) {
 ;			if (freethreshold >= usedtexturepagemem[i]) {
@@ -12675,7 +12658,7 @@ add       dh, 64
 
 check_next_texture_page_for_space:
 
-cmp       dh, byte ptr ds:[bx + si]
+cmp       al, byte ptr ds:[bx + si]
 jnb       foundonepage
 
 ;		i = R_EvictL2CacheEMSPage(1, cachetype);
@@ -12734,9 +12717,13 @@ ALIGN_MACRO
 multipage_textureblock:
 
 
-mov      di, OFFSET _texturecache_nodes
+mov       di, OFFSET _texturecache_nodes
 
-;		uint8_t numpagesminus1 = numpages - 1;
+mov       cl, 03Fh  ; round up page
+add       cl, dh
+SHIFT_MACRO rol       cl 2
+and       cl, 3     ; page count
+mov       ch, cl
 
 mov       dh, byte ptr ds:[_texturecache_l2_head]
 mov       ah, 0FFh
