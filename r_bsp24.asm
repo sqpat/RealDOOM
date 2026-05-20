@@ -12928,17 +12928,7 @@ PUBLIC R_GetTexturePage_
 ; dl pageoffset
 
 
-
-
-
-; bp - 2 realtexpage
-; bp - 4 startpage in multi-area
-
-; todo push/pop less?
 PUSHA_NO_AX_MACRO
-push  bp 
-mov   bp, sp
-
 
 
 mov   si, OFFSET _activetexturepages
@@ -12950,7 +12940,7 @@ xor   dx, dx
 ;	uint8_t realtexpage = texpage >> 2;
 mov   dl, al
 SHIFT_MACRO sar   dx 2
-push  dx        ; bp - 2   dh 0 realtexpage
+mov   bp, dx ; backup realtexpage
 
 ;	uint8_t numpages = (texpage& 0x03);
 
@@ -13141,11 +13131,11 @@ jns   mark_all_pages_mru_loop
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 ;    return i;
 
-pop   ax;   word ptr [bp - 2]
+xchg  ax, bp ; realtexpage
 call  R_MarkL2TextureCacheMRU_
 mov   al, dh
 mov   es, ax
-LEAVE_MACRO 
+
 POPA_NO_AX_MACRO
 mov   ax, es
 ret   
@@ -13187,7 +13177,7 @@ found_start_page_single:
 ;  cl/cx is startpage
 ;  bl/bx is startpage 
 
-pop   dx  ; bp - 2, get realtexpage
+
 ; dx has realtexpage
 ; bx already ok
 
@@ -13196,7 +13186,7 @@ mov   byte ptr ds:[bx + si], dl
 shl   bx, 1                      ; startpage word offset.
 mov   ax, FIRST_TEXTURE_LOGICAL_PAGE
 
-add   ax, dx                     ; _EPR(pageoffset + realtexpage);
+add   ax, bp                     ; _EPR(pageoffset + realtexpage);
 EPR_MACRO ax
 
 ; pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT]
@@ -13204,8 +13194,8 @@ EPR_MACRO ax
 SHIFT_PAGESWAP_ARGS bx
 mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_REND_TEXTURE_OFFSET * 2)], ax        ; = _EPR(pageoffset + realtexpage);
 
-; dx should be realtexpage???
-xchg  ax, dx
+
+xchg  ax, bp
 
 call  R_MarkL2TextureCacheMRU_
 call  Z_QuickMapRenderTexture_BSPLocal_
@@ -13250,7 +13240,7 @@ mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL  ; todo do this in masked sc
 
 
 mov   es, dx ; dl/dx is start page
-LEAVE_MACRO 
+
 POPA_NO_AX_MACRO
 mov   ax, es
 ret
@@ -13263,7 +13253,7 @@ found_startpage_multi:
 
 ; al already set to startpage
 mov   bx, ax    ; ah/bh is 0
-; push  ax  ; bp - 4
+
 mov   dh, al ; dh gets startpage..
 mov   cx, -1
 
@@ -13358,9 +13348,7 @@ mov   ch, dl
 
 ;	for (i = 0; i <= numpages; i++) {
 ; es gets currentpage
-pop   es ; bp - 2
-push  es ; bp - 2
-
+ mov  es, bp ; realtexpage
 ;    for (i = 0; i <= numpages; i++) {
 ;        R_MarkL1TextureCacheMRU(startpage+i);
 ;        activetexturepages[startpage + i]  = currentpage;
@@ -13415,7 +13403,7 @@ jns   loop_mark_next_page_mru_multi
 ;    Z_QuickMapRenderTexture();
 
 		
-pop   ax ; bp - 2
+xchg  ax, bp  ; realtexpage
 
 call  R_MarkL2TextureCacheMRU_
 call  Z_QuickMapRenderTexture_BSPLocal_

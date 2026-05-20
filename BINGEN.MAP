@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/05/19 17:22:38
+Created on:       26/05/19 17:56:56
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -340,10 +340,10 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079c:0000      SM_MPUMD_STARTMARKER_
 079c:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-081a:3942      R_WriteBackViewConstants24_
+081a:393e      R_WriteBackViewConstants24_
 081a:0d93*     tx_already_positive
 081a:26cd*     R_AddLine_
-081a:33ca      R_GetPatchTexture_Far24_
+081a:33c6      R_GetPatchTexture_Far24_
 081a:3eb0      R_BSP24_ENDMARKER_
 081a:09b8*     FixedMulTrigNoShiftSine_BSPLocal_
 081a:1084*     handle_closed_door_top
@@ -367,12 +367,12 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:25ca*     R_Subsector_
 081a:23d4*     just_do_draw_top
 081a:2393*     do_top_texture_draw
-081a:38e0*     R_WriteBackLevelConstants24_
+081a:38dc*     R_WriteBackLevelConstants24_
 081a:0000      R_BSP24_STARTMARKER_
 081a:0200*     OFFSET_CEILINGCLIP
 081a:1538*     exit_rendersegloop
 081a:12f0*     scales_set
-081a:3764      R_RenderPlayerView24_
+081a:3760      R_RenderPlayerView24_
 081a:0968*     FixedDivBSPLocal_
 081a:1559*     increment_loop_values
 081a:0384*     _CURRENT_LINE_TEXTURE_HEIGHT
@@ -382,7 +382,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:0080*     BEOFRE_COLFUNC_LOOKUP
 081a:2462*     SELFMODIFY_set_pixel_count_shift_mul_bot
 081a:3274*     R_GetTexturePage_
-081a:3ad2*     R_WriteBackFrameConstants_
+081a:3ace*     R_WriteBackFrameConstants_
 081a:09e2*     FixedMulTrigNoShiftCosine_BSPLocal_
 081a:0056*     _cachedsegmentlumpsBSPLocal
 081a:0a0c*     R_ClearPlanes_
@@ -402,7 +402,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:15a8*     SELFMODIFY_BSP_markceiling_1
 081a:1868*     R_StoreWallRangeWithBackSector_
 081a:1856*     adjust_row_offset_TWOSIDED
-081a:345a      R_GetCompositeTexture_Far24_
+081a:3456      R_GetCompositeTexture_Far24_
 081a:004a*     _segloopnextlookup
 081a:24c8*     R_RenderSegLoop_exit_TWOSIDED
 081a:0098*     _basexscale
@@ -719,8 +719,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 2446:4000*     A_Light0_
 2446:3d14*     A_Saw_
 2446:4012*     A_OpenShotgun2_
-2446:3ef8*     A_FirePistol_
 2446:39fc*     P_CheckAmmo_
+2446:3ef8*     A_FirePistol_
 2446:3bd8*     A_ReFire_
 2446:402a      A_BFGSpray_
 2446:3e0c*     A_FireMissile_
@@ -1633,4 +1633,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e450 (255056.)
 Entry point address: 2fdc:7f5e
-Link time: 00:00.04
+Link time: 00:00.05
