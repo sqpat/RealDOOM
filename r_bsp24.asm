@@ -12326,61 +12326,29 @@ mov       dh, al
 cmp       dl, CACHETYPE_COMPOSITE
 jne       not_composite
 
-IF COMPISA GE COMPILE_186
-    push      COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 2
-    push      MAX_TEXTURES                      ; bp - 4
-    push      PATCHOFFSET_SEGMENT               ; bp - 6
-    push      MAX_PATCHES                       ; bp - 8
-ELSE
-    mov       ax, COMPOSITETEXTUREPAGE_SEGMENT      ; bp - 2
-    push      ax
-    mov       ax, MAX_PATCHES                       ; bp - 4
-    push      ax
-    mov       ax, PATCHOFFSET_SEGMENT               ; bp - 6
-    push      ax
-    mov       ax, MAX_PATCHES                       ; bp - 8
-    push      ax
-
-ENDIF
-mov       bx, OFFSET _texturecache_l2_tail
-mov       di, OFFSET _texturecache_nodes
-
+PUSH_MACRO_WITH_REG AX COMPOSITETEXTUREPAGE_SEGMENT
+PUSH_MACRO_WITH_REG AX MAX_TEXTURES
+PUSH_MACRO_WITH_REG AX PATCHOFFSET_SEGMENT
+PUSH_MACRO_WITH_REG AX MAX_PATCHES
 
 jmp       done_with_switchblock
+
 ALIGN_MACRO
 not_composite:
 
-
-is_patch:
-IF COMPISA GE COMPILE_186
-    push      PATCHPAGE_SEGMENT                 ; bp - 2
-    push      MAX_PATCHES                       ; bp - 4
-    push      COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 6
-    push      MAX_TEXTURES                      ; bp - 8
-ELSE
-    mov       ax, PATCHPAGE_SEGMENT                 ; bp - 2
-    push      ax
-    mov       ax, MAX_PATCHES                       ; bp - 4
-    push      ax
-    mov       ax, COMPOSITETEXTUREOFFSET_SEGMENT    ; bp - 6
-    push      ax
-    mov       ax, MAX_TEXTURES                      ; bp - 8
-    push      ax
-
-ENDIF
-mov       bx, OFFSET _texturecache_l2_tail
-mov       di, OFFSET _texturecache_nodes
-
-
-
+PUSH_MACRO_WITH_REG AX PATCHPAGE_SEGMENT
+PUSH_MACRO_WITH_REG AX MAX_PATCHES
+PUSH_MACRO_WITH_REG AX COMPOSITETEXTUREOFFSET_SEGMENT
+PUSH_MACRO_WITH_REG AX MAX_TEXTURES
 
 done_with_switchblock:
 
+mov       di, OFFSET _texturecache_nodes
+
 ;	currentpage = *nodetail;
 
-mov       al, byte ptr ds:[bx]
+mov       al, byte ptr ds:[_texturecache_l2_tail]
 cbw      
-xor       dl, dl
 
 ;	// go back enough pages to allocate them all.
 ;	for (j = 0; j < numpages-1; j++){
@@ -12392,19 +12360,18 @@ xor       dl, dl
 ; dl has j
 dec       dh  ; numpages - 1
 
+jz       found_enough_pages
+
 go_back_next_page:
-cmp       dl, dh
-jge       found_enough_pages
 mov       bx, ax
 SHIFT_MACRO shl       bx, 2
-mov       al, byte ptr ds:[bx + di + 1]  ; get next
-inc       dl
-jmp       go_back_next_page
-ALIGN_MACRO
+mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]  ; get next
+dec       dh
+jnz       go_back_next_page
 
 
 found_enough_pages:
-
+; put in bp
 push ax   ; bp - 0Ah store currentpage
 
 ;	evictedpage = currentpage;
@@ -12419,23 +12386,19 @@ mov       cx, ax
 find_first_evictable_page:
 mov       bx, cx
 SHIFT_MACRO shl       bx, 2
-mov       ax, word ptr ds:[bx + di + 2]
-cmp       al, ah
+mov       ax, word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+cmp       al, ah ; pagecount == numpages?
 je        found_first_evictable_page
-mov       al, byte ptr ds:[bx + di + 1]
-cbw      
-mov       cx, ax
+mov       cl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
 jmp       find_first_evictable_page
 ALIGN_MACRO
 
 found_first_evictable_page:
 
-
-
-
-
 ;	while (evictedpage != -1){
 mov       dx, 000FFh      ; dh gets 0, dl gets ff
+
+; todo set up registers... pop stuff
 
 check_next_evicted_page:
 cmp       cl, dl
@@ -12449,14 +12412,14 @@ do_next_evicted_page:
 mov       bx, cx
 SHIFT_MACRO shl       bx 2
 
-xor       ax, ax
+xor       si, si
 
 
 ;		nodelist[evictedpage].pagecount = 0;
 ;		nodelist[evictedpage].numpages = 0;
 
-mov       word ptr ss:[bx + di + 2], ax    ; set both at once
-mov       si, ax                   ; zero
+mov       word ptr ss:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], si    ; set both at once
+; si is zero...
 ; ds!
 lds       bx, dword ptr [bp - 4] ; both an index and a loop limit
 
@@ -12470,7 +12433,7 @@ dec       bx   ; lodsw makes this off by one so we offset here...
 
 continue_first_cache_erase_loop:
 lodsb     ; increments si...
-SHIFT_MACRO shr       ax, 2
+SHIFT_MACRO shr       al, 2
 cmp       al, cl
 je        erase_this_page
 done_erasing_page:
@@ -12488,8 +12451,7 @@ done_with_first_cache_erase_loop:
 ;    }
 
 lds       bx, dword ptr [bp - 8] 
-test      bx, bx
-jle       skip_secondary_loop
+
 
 
 xor       si, si                     ; offset and loop ctr
@@ -12497,7 +12459,7 @@ dec       bx
 continue_second_cache_erase_loop:
 lodsb
 
-SHIFT_MACRO sar       ax 2
+SHIFT_MACRO sar       al 2
 cmp       al, cl
 je        erase_second_page
 done_erasing_second_page:
@@ -12511,14 +12473,13 @@ skip_secondary_loop:
 
 
 
-mov       si, OFFSET _usedtexturepagemem
 mov       bx, cx
-mov       byte ptr ss:[bx + si], dh    ; 0
+mov       byte ptr ss:[bx + _usedtexturepagemem], dh    ; 0
 
 ;		evictedpage = nodelist[evictedpage].prev;
 
 SHIFT_MACRO shl       bx 2
-mov       cl, byte ptr ss:[bx + di]     ; get prev
+mov       cl, byte ptr ss:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]     ; get prev
 cmp       cl, dl                   ; dl is -1
 jne       do_next_evicted_page
 
@@ -12529,22 +12490,21 @@ cleared_all_cache_data:
 ;	nodelist[*nodetail].prev = *nodehead;
 
 
-
 mov      ax, ss
 mov      ds, ax
 
 
-mov       si, OFFSET _texturecache_l2_tail
-lodsb
+mov       al, byte ptr ds:[_texturecache_l2_tail]
 cbw      
 mov       cx, ax            ; cx stores nodetail
 
 SHIFT_MACRO shl       ax 2
 xchg      ax, bx            ; bx has nodelist nodetail lookup
 
+
 mov       si, OFFSET _texturecache_l2_head
-mov       al, byte ptr ds:[si]
-mov       byte ptr ds:[bx + di], al
+lodsb     ; head
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al
 mov       bl, al
 
 
@@ -12552,39 +12512,33 @@ mov       bl, al
 
 SHIFT_MACRO shl       bx 2
 
-
-mov       byte ptr ds:[bx + di + 1], cl  ; write nodetail to next
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl  ; write nodetail to next
 
 ;	previous_next = nodelist[currentpage].next;
-
 ;	*nodehead = currentpage;
-
-mov       bx, word ptr [bp - 0Ah]
-mov       byte ptr ds:[si], bl
-SHIFT_MACRO shl       bx 2
-mov       al, byte ptr ds:[bx + di + 1]    ; previous_next
-cbw
-
-
 ;	nodelist[currentpage].next = -1;
 
-mov       byte ptr ds:[bx + di + 1], dl   ; still 0FFh
+pop       bx ; bp - 0Ah ; currentpage
+mov       byte ptr ds:[_texturecache_l2_head], bl ; todo this is the return value.
+SHIFT_MACRO shl       bx 2
+mov       ax, 00FFh
+xchg      al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]    ; previous_next
+
 
 ;	*nodetail = previous_next;
 
-
-mov       bx, OFFSET _texturecache_l2_tail
-mov       byte ptr ds:[bx], al
+mov       byte ptr ds:[si], al  ;   si = _texturecache_l2_head + 1, _texturecache_l2_tail
 
 
 ;	// new tail
 ;	nodelist[previous_next].prev = -1;
-mov       bx, ax
+xchg      ax, bx
 SHIFT_MACRO shl       bx 2
-mov       byte ptr ds:[bx + di], dl    ; still 0FFh
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], dl    ; still 0FFh
 
 ;	return *nodehead;
 
+dec       si ; head
 lodsb       
 
 LEAVE_MACRO     
@@ -12595,15 +12549,15 @@ pop       bx
 ret       
 ALIGN_MACRO
 erase_this_page:
-mov       byte ptr ds:[si-1], dl     ; 0FFh
-mov       byte ptr ds:[si+bx], dl    ; 0FFh
+mov       byte ptr ds:[si-1], dl     ; 0FFh ; prev
+mov       byte ptr ds:[si+bx], dl    ; 0FFh ; next
 jmp       done_erasing_page
 ALIGN_MACRO
 
 ALIGN_MACRO
 erase_second_page:
-mov       byte ptr ds:[si-1], dl      ; 0FFh
-mov       byte ptr ds:[si+bx], dl     ; 0FFh
+mov       byte ptr ds:[si-1], dl      ; 0FFh ; prev
+mov       byte ptr ds:[si+bx], dl     ; 0FFh ; next
 jmp       done_erasing_second_page
 ALIGN_MACRO
 
@@ -13433,7 +13387,7 @@ retf
 ENDP
 
 ALIGN_MACRO
-PROC R_GetPatchTexture_ NEAR
+PROC R_GetPatchTexture_ NEAR  ; fairly good now
 ;segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
 
 ; bp - 2 = texoffset
@@ -13508,7 +13462,7 @@ add   dx, ax
 mov   word ptr cs:[SELFMODIFY_BSP_set_patch_return_value+1], dx
 xchg  ax, bp  ; restore lump
 call  R_LoadPatchColumns_
-pop   es      ; return value
+
 POPA_NO_AX_MACRO
 SELFMODIFY_BSP_set_patch_return_value:
 mov   ax, 01000h
@@ -13540,7 +13494,7 @@ retf
 ENDP
 
 ALIGN_MACRO
-PROC R_GetCompositeTexture_ NEAR
+PROC   R_GetCompositeTexture_ NEAR
 
 ; segment_t R_GetCompositeTexture(int16_t tex_index) ;
 
@@ -13555,8 +13509,8 @@ mov   es, ax
 mov   al, byte ptr es:[si] ; consider lodsb 
 cmp   al, 0FFh
 je    composite_not_in_cache
+xor   dx, dx
 mov   dl, byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET]
-xor   dh, dh
 mov   si, dx
 
 
@@ -14269,7 +14223,7 @@ call    R_WriteBackLevelConstants24_
 jmp     done_with_level_constants
 
 ALIGN_MACRO
-PROC R_RenderPlayerView24_ FAR ; probably not optimized, runs rarely
+PROC   R_RenderPlayerView24_ FAR ; probably not optimized, runs rarely
 PUBLIC R_RenderPlayerView24_ 
 
 
