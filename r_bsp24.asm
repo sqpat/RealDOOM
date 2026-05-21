@@ -26,6 +26,9 @@ PROC   R_BSP24_STARTMARKER_
 PUBLIC R_BSP24_STARTMARKER_
 ENDP
 
+CACHETYPE_COMPOSITE = 1
+CACHETYPE_PATCH = 0
+
 ;EXTRN R_SetupColfuncsForBSP_:FAR
 ;EXTRN R_SetupColfuncsForMasked_:FAR
 ; todo constant-ize
@@ -12040,7 +12043,7 @@ ENDP
 ; todo pass in si to be _textureL1LRU ptr. put that in < 0x80
 
 ALIGN_MACRO
-PROC R_MarkL1TextureCacheMRU_ NEAR
+PROC R_MarkL1TextureCacheMRU_ NEAR ; todo inline in spots?
 
 
 mov  ah, byte ptr ds:[_textureL1LRU+0]
@@ -12310,8 +12313,8 @@ PUSHA_NO_AX_MACRO
 mov       dh, al
 
 
-cmp       dl, CACHETYPE_COMPOSITE
-jne       not_composite
+dec       dl ; composite = 1
+jnz       not_composite
 
 mov       cx, COMPOSITETEXTUREPAGE_SEGMENT ; hold this till preloop
 mov       di, MAX_TEXTURES-1
@@ -12547,7 +12550,7 @@ erase_this_page:
 mov       byte ptr ds:[si-1], 0FFh     ; 0FFh ; prev
 mov       byte ptr ds:[si+bp], 0FFh    ; 0FFh ; next
 jmp       done_erasing_page
-ALIGN_MACRO
+
 
 ALIGN_MACRO
 erase_second_page:
@@ -12639,8 +12642,8 @@ done_finding_open_page:
 ; bp has texpage.
 ; cl has cachetype
 
-cmp       cl, CACHETYPE_PATCH ; make this 1, and dec cl
-jne       set_non_patch_pages
+dec       cl ;  CACHETYPE_PATCH = 0 ; make this 1, and dec cl
+jns       set_non_patch_pages
 set_patch_pages:
 mov       si, PATCHOFFSET_SEGMENT
 mov       es, si
@@ -13146,11 +13149,19 @@ mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_REND_TEXTURE_OFFSET * 2)],
 xchg  ax, bp
 
 call  R_MarkL2TextureCacheMRU_
-call  Z_QuickMapRenderTexture_BSPLocal_
+
+
+push  cx
+
+Z_QUICKMAPAI8 pageswapargs_rend_texture_size INDEXED_PAGE_5000_OFFSET
+
+
+pop   dx
 
 
 
-mov   dx, cx
+
+
 do_tex_eviction:
 mov   ax, 0FFFFh
 
@@ -13354,7 +13365,14 @@ jns   loop_mark_next_page_mru_multi
 xchg  ax, bp  ; realtexpage
 
 call  R_MarkL2TextureCacheMRU_
-call  Z_QuickMapRenderTexture_BSPLocal_
+
+
+push  dx
+
+Z_QUICKMAPAI8 pageswapargs_rend_texture_size INDEXED_PAGE_5000_OFFSET
+
+pop   dx
+
 
 ;	//todo: detected and only do -1 if its in the knocked out page? pretty infrequent though.
 ;    cachedtex = -1;
@@ -13411,12 +13429,11 @@ mov   si, dx   ; back up texpage
 
 call  R_GetTexturePage_
 SHIFT_MACRO shl   si 4  ; shift texpage 4. 
-cbw
-xchg  al, ah
-xchg  ax, si
-SHIFT_MACRO shl si 2 ; * 400h
+mov   ah, (PATCH_TEXTURE_SEGMENT SHR 8)
+SHIFT_MACRO shl al 2 ; * 400h
+add   ah, al
+xor   al, al
 add   ax, si
-add   ah, (PATCH_TEXTURE_SEGMENT SHR 8)
 
 ret   
 
@@ -13446,13 +13463,12 @@ lods  byte ptr es:[si]
 
 call  R_GetTexturePage_
 
-xor   dx, dx
-mov   dh, al
-SHIFT_MACRO shl dx 2 ; * 400h
+mov   dx, PATCH_TEXTURE_SEGMENT
+SHIFT_MACRO shl al 2 ; * 400h
+add   dh, al
 pop   ax  ; patch offset was a byte... 
 xor   ah, ah
 SHIFT_MACRO   shl ax 4
-add   dh, (PATCH_TEXTURE_SEGMENT SHR 8)
 add   dx, ax
 mov   word ptr cs:[SELFMODIFY_BSP_set_patch_return_value+1], dx
 xchg  ax, bp  ; restore lump
@@ -13489,7 +13505,7 @@ retf
 ENDP
 
 ALIGN_MACRO
-PROC   R_GetCompositeTexture_ NEAR
+PROC   R_GetCompositeTexture_ NEAR   ; todo take a look
 
 ; segment_t R_GetCompositeTexture(int16_t tex_index) ;
 
@@ -13511,13 +13527,12 @@ mov   si, dx
 
 call  R_GetTexturePage_
 SHIFT_MACRO shl   si 4
-cbw
-xchg  al, ah
-xchg  ax, si
-SHIFT_MACRO shl si 2 ; * 400h
-
+mov   ah, (COMPOSITE_TEXTURE_SEGMENT SHR 8) 
+SHIFT_MACRO shl   al 2
+add   ah, al
+xor   al, al
 add   ax, si
-add   ah, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
+
 
 
 ret 
@@ -13525,7 +13540,7 @@ ret
 ALIGN_MACRO
 composite_not_in_cache:
 PUSHA_NO_AX_MACRO
-push  es
+
 mov   dx, TEXTURECOMPOSITESIZES_SEGMENT
 mov   es, dx
 mov   bx, si
@@ -13533,23 +13548,21 @@ mov   bx, si
 mov   dx, word ptr es:[si + bx]
 mov   bl, CACHETYPE_COMPOSITE ; todo 0/1
 call  R_GetNextTextureBlock_
-pop   es
+mov   bx, COMPOSITETEXTUREPAGE_SEGMENT
+mov   es, bx
 
 mov   al, byte ptr es:[si]
+xor   bx, bx
 mov   bl, byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET]
 call  R_GetTexturePage_
-cbw
-xchg  ax, bx
-xchg  bl, bh
-xor   ah, ah   ; this could be cleaner.
-SHIFT_MACRO shl bh 2 ; * 400h
-SHIFT_MACRO shl   ax 4
-
-
-add   bh, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
+SHIFT_MACRO shl   bx 4
+mov   ah, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
+SHIFT_MACRO shl   al 2
+add   ah, al
+xor   al, al
 add   bx, ax
 mov   dx, bx
-mov   ax, si
+xchg  ax, si
 ; fall thru
 
 push  bx ; eventual return value in ax
@@ -13563,7 +13576,7 @@ WAD_PATCH_7000_SEGMENT = 07000h
 
 
 ;ALIGN_MACRO
-;PROC R_GenerateComposite_ NEAR
+;PROC R_GenerateComposite_ NEAR  ; todo take a look
 
 ; void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
@@ -14075,8 +14088,8 @@ PROC   R_LoadPatchColumns_ NEAR ; todo inline only use?
 
 mov       si, ax
 
-test      di, di
-jne       do_masked_jump
+dec       di
+jz        do_masked_jump
 mov       ax, ((SELFMODIFY_loadpatchcolumn_masked_check1_TARGET - SELFMODIFY_loadpatchcolumn_masked_check1_AFTER) SHL 8) + 0EBh
 mov       di, 0c089h   ; 2 byte nop
 ready_selfmodify_loadpatch:
@@ -14141,7 +14154,7 @@ rep movsb
 mov       cx, ax  ; restore length in cx
 inc       si
 
-;cmp       byte ptr [bp - 2], 0
+
 SELFMODIFY_loadpatchcolumn_masked_check1:
 jmp       SHORT       skip_segment_alignment_1
 SELFMODIFY_loadpatchcolumn_masked_check1_AFTER:
@@ -14159,11 +14172,11 @@ lodsb
 cmp       al, dh
 jne       do_next_post_in_column
 done_with_column:
-;cmp       byte ptr [bp - 2], 0
+
 SELFMODIFY_loadpatchcolumn_masked_check2:
 jmp       SHORT       skip_segment_alignment_2
 SELFMODIFY_loadpatchcolumn_masked_check2_AFTER:
-;ALIGN_MACRO
+
 ; adjust col offset
 
 sub       di, dx
@@ -14189,23 +14202,6 @@ ret
 
 ENDP
 
-; todo inline
-ALIGN_MACRO
-PROC Z_QuickMapRenderTexture_BSPLocal_ NEAR ; todo
-
-
-push  dx
-push  cx
-push  si   
-
-Z_QUICKMAPAI8 pageswapargs_rend_texture_size INDEXED_PAGE_5000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-ret
-
-ENDP
 
 
 ;R_RenderPlayerView_

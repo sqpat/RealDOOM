@@ -28,6 +28,8 @@ ASSUME  CS:R_MASK16_TEXT
 
 
 
+ CACHETYPE_SPRITE = 2
+CACHETYPE_PATCH = 0
 
 ; for the 6th colormap (used in fuzz draws. offset by 600h bytes, or 60h segments)
 

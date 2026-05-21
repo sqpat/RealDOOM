@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/05/19 23:33:16
+Created on:       26/05/20 00:42:46
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -340,10 +340,10 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079c:0000      SM_MPUMD_STARTMARKER_
 079c:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-081a:391a      R_WriteBackViewConstants24_
+081a:3918      R_WriteBackViewConstants24_
 081a:0d93*     tx_already_positive
 081a:26cd*     R_AddLine_
-081a:33a4      R_GetPatchTexture_Far24_
+081a:33be      R_GetPatchTexture_Far24_
 081a:3e80      R_BSP24_ENDMARKER_
 081a:09b8*     FixedMulTrigNoShiftSine_BSPLocal_
 081a:1084*     handle_closed_door_top
@@ -367,12 +367,12 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:25ca*     R_Subsector_
 081a:23d4*     just_do_draw_top
 081a:2393*     do_top_texture_draw
-081a:38b8*     R_WriteBackLevelConstants24_
+081a:38b6*     R_WriteBackLevelConstants24_
 081a:0000      R_BSP24_STARTMARKER_
 081a:0200*     OFFSET_CEILINGCLIP
 081a:1538*     exit_rendersegloop
 081a:12f0*     scales_set
-081a:373c      R_RenderPlayerView24_
+081a:373a      R_RenderPlayerView24_
 081a:0968*     FixedDivBSPLocal_
 081a:1559*     increment_loop_values
 081a:0384*     _CURRENT_LINE_TEXTURE_HEIGHT
@@ -382,7 +382,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:0080*     BEOFRE_COLFUNC_LOOKUP
 081a:2462*     SELFMODIFY_set_pixel_count_shift_mul_bot
 081a:3260*     R_GetTexturePage_
-081a:3aaa*     R_WriteBackFrameConstants_
+081a:3aa8*     R_WriteBackFrameConstants_
 081a:09e2*     FixedMulTrigNoShiftCosine_BSPLocal_
 081a:0056*     _cachedsegmentlumpsBSPLocal
 081a:0a0c*     R_ClearPlanes_
@@ -402,7 +402,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:15a8*     SELFMODIFY_BSP_markceiling_1
 081a:1868*     R_StoreWallRangeWithBackSector_
 081a:1856*     adjust_row_offset_TWOSIDED
-081a:3434      R_GetCompositeTexture_Far24_
+081a:344c      R_GetCompositeTexture_Far24_
 081a:004a*     _segloopnextlookup
 081a:24c8*     R_RenderSegLoop_exit_TWOSIDED
 081a:0098*     _basexscale
@@ -1251,8 +1251,8 @@ Module: main.obj(main.ASM)
 2fd9:5fb1      getStringByIndex_
 2fd9:5a66*     locallib_createhexnibble_
 2fd9:5b93*     locallib_printf_
-2fd9:5002      I_StartTic_
 2fd9:5e5f      S_ResumeSound_
+2fd9:5002      I_StartTic_
 Module: g_setup.obj(g_setup.ASM)
 2fd9:60b0      R_CheckTextureNumForName_
 2fd9:62a9*     G_SETUP_ENDMARKER_
