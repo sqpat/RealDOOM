@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN M_WriteFile_:NEAR
 EXTRN M_ReadFile_:NEAR
+EXTRN M_InitAndReadFile_:NEAR
 
 EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapScratch_5000_:NEAR
@@ -214,7 +215,7 @@ mov     di, SCRATCH_SEGMENT_5000
 mov     cx, di
 xor     bx, bx
 mov     ax, OFFSET _savename
-call    M_ReadFile_
+call    M_InitAndReadFile_
 
 mov     al, OVERLAY_ID_SAVELOADGAME
 call    Z_SetOverlay_

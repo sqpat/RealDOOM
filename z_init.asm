@@ -74,6 +74,7 @@ EXTRN V_DrawFullscreenPatch_FromIntermission_:FAR
 EXTRN SFX_PlayPatch_:FAR
 EXTRN S_DecreaseRefCountFar_:FAR
 EXTRN W_CheckNumForNameFar_:FAR
+EXTRN M_AdvanceLoadFile_:FAR
 
 EXTRN CopyString13_:NEAR
 
@@ -470,6 +471,7 @@ db "EMS Iniitaliation Successful!", 0Ah, 0
     mov    ax, NUM_EMS4_SWAP_PAGES
     cmp    byte ptr ds:[_novideo], 0
     je     skip_low_page_count_check
+    ; nodraw shouldnt use all those render pages, can run with less memory
     mov    ax, BSP_CODE_PAGE ; todo NUM_WAD_PAGES
     cmp    bx, ax 
     mov    bx, ax 
@@ -1216,7 +1218,7 @@ dw OFFSET _I_Quit_addr                         , OFFSET I_Quit_
 dw OFFSET _I_SetPalette_addr                   , OFFSET I_SetPalette_
 dw OFFSET _I_SetPalette_FromMenu_addr          , OFFSET I_SetPalette_FromMenu_
 ;dw OFFSET _V_MarkRect_addr                     , OFFSET V_MarkRect_
-;dw OFFSET _V_DrawPatch_addr                    , OFFSET V_DrawPatch_
+dw OFFSET _M_AdvanceLoadFile_addr_             , OFFSET M_AdvanceLoadFile_
 dw OFFSET _V_DrawFullscreenPatch_addr          , OFFSET V_DrawFullscreenPatch_
 dw OFFSET _V_DrawFullscreenPatch_FromMenu_addr , OFFSET V_DrawFullscreenPatch_FromMenu_
 dw OFFSET _V_DrawFullscreenPatch_FromIntermission_addr , OFFSET V_DrawFullscreenPatch_FromIntermission_

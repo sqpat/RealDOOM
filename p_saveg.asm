@@ -380,12 +380,32 @@ ret
 
 ENDP
 
+FILE_MAX_BUFFER_CHECK  = 16384
 
 
 SIZEOF_MOBJ_VANILLA_T = 09Ah
 SIZEOF_THINKER_VANILLA_T = 12
 
-PROC P_UnArchiveThinkers_  NEAR
+PROC   P_CheckRepageLoadgame_  NEAR
+PUBLIC P_CheckRepageLoadgame_
+cmp    si, FILE_MAX_BUFFER_CHECK
+jb     no_repage
+; advance savegame....
+push   si
+push   ss
+pop    ds
+
+call   dword ptr ds:[_M_AdvanceLoadFile_addr_]
+
+pop    si
+sub    si, FILE_MAX_BUFFER_CHECK
+sub    word ptr ss:[_save_p], FILE_MAX_BUFFER_CHECK
+
+no_repage:
+ret
+
+
+PROC   P_UnArchiveThinkers_  NEAR
 PUBLIC P_UnArchiveThinkers_
 
 
@@ -472,7 +492,11 @@ rep stosw
 mov       si, word ptr ds:[_save_p]
 
 load_next_thinker:
+call      P_CheckRepageLoadgame_
 mov       ds, word ptr  ss:[_save_p+2]
+
+
+
 lodsb
 
 cmp       al, 1
@@ -739,6 +763,9 @@ PUBLIC P_UnArchiveSpecials_
 
 
 lds    si, dword ptr ds:[_save_p]
+push   ds
+call   P_CheckRepageLoadgame_ ; run once after thinkers
+pop    ds
 load_next_special:
 
 xor    ax, ax

@@ -92,6 +92,20 @@ ret
 
 ENDP
 
+_currentloadptr:
+dw 0, 0
+
+FILE_MAX_BUFFER_CHECK = 16384
+
+PROC    M_InitAndReadFile_ NEAR
+PUBLIC  M_InitAndReadFile_
+
+mov   word ptr cs:[_currentloadptr+0], 0
+mov   word ptr cs:[_currentloadptr+2], 0  
+; fall thru
+
+ENDP    
+
 ALIGN_MACRO
 PROC    M_ReadFile_ NEAR
 PUBLIC  M_ReadFile_
@@ -114,10 +128,17 @@ call  locallib_fseek_
 mov   ax, si    ; fp
 call  locallib_ftell_
 
+sub   ax, word ptr cs:[_currentloadptr+0] ; subtract size by start point
+sbb   dx, word ptr cs:[_currentloadptr+2]
+
+test  dx, dx
+je    done_capping_size
+mov   ax, 65534 ; fill the seg seg
+done_capping_size:
 xchg  ax, di    ; store length
 
-xor   bx, bx
-xor   cx, cx
+les   bx, dword ptr cs:[_currentloadptr+0] ; start at start point
+mov   cx, es
 xor   dx, dx    ; SEEK_SET
 
 
@@ -142,6 +163,32 @@ call  locallib_fclose_
 POPA_NO_AX_OR_BP_MACRO
 
 ret  
+
+ENDP
+
+ALIGN_MACRO
+; advance the file forward 16384 
+PROC    M_AdvanceLoadFile_ FAR
+PUBLIC  M_AdvanceLoadFile_
+
+add     word ptr cs:[_currentloadptr+0], FILE_MAX_BUFFER_CHECK
+adc     word ptr cs:[_currentloadptr+2], 0  
+
+push    cx
+push    bx
+mov     cx, SCRATCH_SEGMENT_5000
+xor     bx, bx
+mov     ax, OFFSET _savename
+
+
+call    M_ReadFile_
+
+
+
+pop     bx
+pop     cx
+
+retf
 
 
 ENDP
