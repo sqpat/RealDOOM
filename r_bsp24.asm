@@ -13584,10 +13584,10 @@ WAD_PATCH_7000_SEGMENT = 07000h
 ; bp - 4  block_segment
 ; bp - 6  i (loop counter)
 ; bp - 8  lastusedpatch/patchpatch starts as -1
-; bp - 0Ah  texture width
-; bp - 0Ch  texture height
-; bp - 0Eh  usetextureheight
-; bp - 010h  TEXTUREDEFS_BYTES_SEGMENT
+; bp - 0Ah  ; unused
+; bp - 0Ch  ; unused
+; bp - 0Eh  ; unused
+; bp - 010h  ; unused
 ; bp - 012h  texture->patches
 ; bp - 014h  collump offset?
 ; bp - 016h  texturepatchcount
@@ -13601,44 +13601,42 @@ WAD_PATCH_7000_SEGMENT = 07000h
 push      bp
 mov       bp, sp
 ; ah should already be 0
-mov       bx, ax
-sal       bx, 1
-push      bx  ; bp - 2
-mov       si, bx
+xchg      ax, si
+sal       si, 1
+push      si  ; bp - 2
 
 push      dx  ; bp - 4
 mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
 mov       es, ax
-mov       bx, word ptr es:[bx]          ; 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
+mov       bx, word ptr es:[si]          ; 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 mov       dx, TEXTUREDEFS_BYTES_SEGMENT
 mov       es, dx
 
 ; todo get both in one read..
-xor       ax, ax
-cwd       ; zero dx
-push      ax ; bp - 6 ; zero
-dec       dx
-push      dx ; bp - 8 ; -1 now
+xor       dx, dx
+
+push      dx ; bp - 6 ; zero
+
+mov       word ptr cs:[SELFMODIFY_BSP_compare_to_last_patch+1], 0FFFFh
 
 
-mov       al, byte ptr es:[bx + 8]      ; texturewidth = texture->width + 1;
-inc       ax
-push      ax  ; bp - 0Ah 
-mov       al, byte ptr es:[bx + 9]      ; textureheight = texture->height + 1;
-inc       al
+; height in ah, width in al
+mov       ax, word ptr es:[bx + TEXTURE_T.texture_width]      ; texturewidth = texture->width + 1;
+inc       ah
+mov       byte ptr cs:[SELFMODIFY_BSP_set_compsite_texheight+1], ah
+mov       dl, ah  ; store height
 xor       ah, ah
-push      ax  ; bp - 0Ch
+
+inc       ax
+mov       word ptr cs:[SELFMODIFY_BSP_set_compsite_texwidth+1], ax
 
 ;	usetextureheight = textureheight + ((16 - (textureheight &0xF)) &0xF);
 
-mov       dx, ax  ; store bp - 0Ch
-and       al, 0Fh
-mov       ah, 010h
-sub       ah, al
-mov       al, ah
+mov       ax, dx ; retrieve textureheight
+neg       ax
 and       ax, 0Fh
 
-
+sub       sp, 8
 
 
 add       al, dl   ; textureheight copy
@@ -13647,9 +13645,11 @@ add       al, dl   ; textureheight copy
 SHIFT_MACRO sar       ax 4
 ; ah already known zero
 
+mov       byte ptr cs:[SELFMODIFY_BSP_add_composite_textureheight+3], al
+mov       byte ptr cs:[SELFMODIFY_BSP_set_composite_textureheight+1], al
 
-push      ax ; bp - 0Eh
 push      es ; bp - 010h
+
 
 add       bx, 0Bh    ; patches pointer todo?
 push      bx ; bp - 012h
@@ -13670,6 +13670,7 @@ xor       ah, ah
 push      ax ; bp - 016h texturepatchcount
 
 ;	for (i = 0; i < texturepatchcount; i++) {
+
 loop_texture_patch:
 ; ax is bp - 016h
 ; todo move this check to the end with selfmodify.
@@ -13677,22 +13678,15 @@ cmp       ax, word ptr [bp - 6]
 jng       done_with_composite_loop
 
 les       si, dword ptr [bp - 012h]
-xor       bx, bx ; 
 mov       di, word ptr [bp - 014h] ; di is collump[currentRLEIndex]
 
 mov       dx, word ptr es:[si + 2]
 and       dh, (PATCHMASK SHR 8)
-mov       ax, word ptr [bp - 8]
-mov       word ptr [bp - 8], dx
-cmp       ax, dx
-je        use_same_patch
-mov       cx, SCRATCH_PAGE_SEGMENT_7000 
 mov       ax, dx
-;call      W_CacheLumpNumDirect_
-call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
-
-mov       es, word ptr [bp - 010h]
-use_same_patch:
+SELFMODIFY_BSP_compare_to_last_patch:
+cmp       ax, 01000h
+jne       load_new_patch
+done_loading_patch:
 mov       ax, word ptr es:[si]
 mov       dl, ah
 xor       ah, ah
@@ -13732,6 +13726,17 @@ xor       cx, cx
 push      cx  ; bp - 018h
 jmp       done_setting_x
 ALIGN_MACRO
+load_new_patch:
+push      es
+mov       word ptr cs:[SELFMODIFY_BSP_compare_to_last_patch+1], ax
+mov       cx, SCRATCH_PAGE_SEGMENT_7000 
+xor       bx, bx ; 
+
+call      dword ptr ds:[_W_CacheLumpNumDirect_addr]
+pop       es
+jmp       done_loading_patch
+
+ALIGN_MACRO
 done_with_composite_loop:
 ;call      Z_QuickMapRender7000_
 Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
@@ -13751,10 +13756,11 @@ done_setting_x:
 ;        x2 = texturewidth;
 ;    }
 
-
-cmp       bx, word ptr [bp - 0Ah]
+SELFMODIFY_BSP_set_compsite_texwidth:
+mov       ax, 01000h ; texturewidth
+cmp       bx, ax
 jle       x2_smaller_than_texture_width
-mov       bx, word ptr [bp - 0Ah]
+xchg      ax, bx
 x2_smaller_than_texture_width:
 mov       word ptr cs:[SELFMODIFY_x2_check+2], bx
 
@@ -13857,7 +13863,8 @@ dont_add_final_diffpixels:
 
 ; currentdestsegment += FastMul8u8u(usetextureheight, diffpixels);
 
-mov       al, byte ptr [bp - 0Eh]
+SELFMODIFY_BSP_set_composite_textureheight:
+mov       al, 010h
 mul       dl
 add       word ptr [bp - 01Ch], ax
 
@@ -13890,7 +13897,8 @@ add       ax, 8  ; prestore offset
 
 push      ax  ; bp - 01Eh columnofs[x - x1] 
 
-mov       dx, word ptr [bp - 0Ch] ; dx gets this for the whole inner loop
+SELFMODIFY_BSP_set_compsite_texheight:
+mov       dx, 00010h ; dx gets this for the whole inner loop
 
 mov       ax, COLUMN_IN_CACHE_WAD_LUMP_SEGMENT
 mov       ds, ax
@@ -13987,7 +13995,7 @@ xchg      cl, ah                ; length to cl, 0 to ah
 
 SELFMODIFY_add_patchoriginy:
 add       ax, 01000h ; patchoriginy + topdelta
-ENSUREALIGN_079:  ; hard
+
 xchg      ax, di
 
 
@@ -14044,8 +14052,9 @@ pop       di
 pop       si
 pop       cx
 
-mov       ax, word ptr [bp - 0Eh]
-add       word ptr [bp - 01Ch], ax   ; currentdestsegment += usetextureheight;
+SELFMODIFY_BSP_add_composite_textureheight:
+db 081h, 046h, 0e4h, 001h, 00h ;add       word ptr [bp - 01Ch], 00001h   ; currentdestsegment += usetextureheight;
+
 increment_x_x2_loop:
 add       word ptr [bp - 01Eh], 4
 inc       cx
@@ -15176,7 +15185,7 @@ public ENSUREALIGN_074
 
 public ENSUREALIGN_076
 public ENSUREALIGN_078
-public ENSUREALIGN_079
+
 public ENSUREALIGN_080
 
 public ENSUREALIGN_081
