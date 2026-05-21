@@ -13580,17 +13580,17 @@ WAD_PATCH_7000_SEGMENT = 07000h
 
 ; void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
-; bp - 2  unused
-; bp - 4  block_segment
+; bp - 2  block_segment
+; bp - 4  unused
 ; bp - 6  unused
 ; bp - 8  unused
 ; bp - 0Ah  ; unused
 ; bp - 0Ch  ; unused
 ; bp - 0Eh  ; unused
-; bp - 010h  ; patch seg
-; bp - 012h  texture->patches
-; bp - 014h  collump offset?
-; bp - 016h  unused
+; bp - 010h  ; unused
+; bp - 012h  ; unused
+; bp - 014h  ; unused
+; bp - 016h  ; unused
 ; bp - 018h  (innerloop) x
 ; bp - 01Ah  (innerloop) currentlump
 ; bp - 01Ch  (innerloop) currentdestsegment
@@ -13603,9 +13603,8 @@ mov       bp, sp
 ; ah should already be 0
 xchg      ax, si
 sal       si, 1
-sub       sp, 2
 
-push      dx  ; bp - 4
+push      dx  ; bp - 2
 mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
 mov       es, ax
 mov       bx, word ptr es:[si]          ; 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
@@ -13637,7 +13636,7 @@ mov       ax, dx ; retrieve textureheight
 neg       ax
 and       ax, 0Fh
 
-sub       sp, 0Ah
+sub       sp, 0Ch ; bp - 00Eh
 
 
 add       al, dl   ; textureheight copy
@@ -13649,18 +13648,18 @@ SHIFT_MACRO sar       ax 4
 mov       byte ptr cs:[SELFMODIFY_BSP_add_composite_textureheight+3], al
 mov       byte ptr cs:[SELFMODIFY_BSP_set_composite_textureheight+1], al
 
-push      es ; bp - 010h
+
 
 
 add       bx, 0Bh    ; patches pointer todo?
-push      bx ; bp - 012h
+
 
 ;	// Composite the columns together.
 ;	collump = &(texturecolumnlumps_bytes[texturepatchlump_offset[texnum]]);
 ; si is bp - 2
-mov       si, word ptr ds:[si + _texturepatchlump_offset]
-sal       si, 1
-push      si ; bp - 014h
+mov       di, word ptr ds:[si + _texturepatchlump_offset]
+sal       di, 1
+
 
 ;call      Z_QuickMapScratch_7000_
 
@@ -13668,19 +13667,26 @@ Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
 
 mov       al, byte ptr es:[bx - 1] ; texturepatchcount = texture->patchcount;
 mov       byte ptr cs:[SELFMODIFY_BSP_compare_composite_patchcount+1], al
-sub       sp, 2 ;  todo remove
+
+
+
+mov       si, bx  ; si gets pointer
+; es:si is set
+; di is collump...
 
 ;	for (i = 0; i < texturepatchcount; i++) {
 
 loop_texture_patch:
 ; ax is iterator
-; todo move this check to the end with selfmodify.
+; todo al/ah have both fields, push/pop one. inc ax. etc.
 SELFMODIFY_BSP_cmp_iterator:
 cmp       al, 010h
 jng       done_with_composite_loop
 
-les       si, dword ptr [bp - 012h]
-mov       di, word ptr [bp - 014h] ; di is collump[currentRLEIndex]
+; es:si set.
+push      es ; bp - 10h
+push      si ; bp - 12h
+push      di ; bp - 14h
 
 mov       dx, word ptr es:[si + 2]
 and       dh, (PATCHMASK SHR 8)
@@ -13783,7 +13789,7 @@ mov       si, ax   ; si is nextcollumpRLE
 
 ;		currentdestsegment = block_segment;
 
-push      word ptr [bp - 4] ; ; bp - 01Ch  currentdestsegment from blocksegment
+push      word ptr [bp - 2] ; ; bp - 01Ch  currentdestsegment from blocksegment
 inc       si
 
 
@@ -14066,11 +14072,16 @@ ALIGN_MACRO
 do_next_composite_loop_iter:
 mov       ax, ss
 mov       ds, ax  ; restore ds
-add       word ptr [bp - 012h], 4
+; todo pop iterator fields here.
 inc       byte ptr cs:[SELFMODIFY_BSP_cmp_iterator+1]
 SELFMODIFY_BSP_compare_composite_patchcount:
 mov       al, 010h
 add       sp, 8 ; back to 46?
+; restore es:si
+pop       di
+pop       si
+pop       es
+add       si, 4 ; next patch
 jmp       loop_texture_patch
 ALIGN_MACRO
 
