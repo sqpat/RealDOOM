@@ -13615,7 +13615,7 @@ mov       es, dx
 xor       dx, dx
 
 
-mov       byte ptr cs:[SELFMODIFY_BSP_cmp_iterator+1], dl
+
 
 mov       word ptr cs:[SELFMODIFY_BSP_compare_to_last_patch+1], 0FFFFh
 
@@ -13648,9 +13648,6 @@ SHIFT_MACRO sar       ax 4
 mov       byte ptr cs:[SELFMODIFY_BSP_add_composite_textureheight+3], al
 mov       byte ptr cs:[SELFMODIFY_BSP_set_composite_textureheight+1], al
 
-
-
-
 add       bx, 0Bh    ; patches pointer todo?
 
 
@@ -13660,14 +13657,12 @@ add       bx, 0Bh    ; patches pointer todo?
 mov       di, word ptr ds:[si + _texturepatchlump_offset]
 sal       di, 1
 
-
 ;call      Z_QuickMapScratch_7000_
 
 Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
 
+xor       ax, ax
 mov       al, byte ptr es:[bx - 1] ; texturepatchcount = texture->patchcount;
-mov       byte ptr cs:[SELFMODIFY_BSP_compare_composite_patchcount+1], al
-
 
 
 mov       si, bx  ; si gets pointer
@@ -13677,16 +13672,13 @@ mov       si, bx  ; si gets pointer
 ;	for (i = 0; i < texturepatchcount; i++) {
 
 loop_texture_patch:
-; ax is iterator
-; todo al/ah have both fields, push/pop one. inc ax. etc.
-SELFMODIFY_BSP_cmp_iterator:
-cmp       al, 010h
-jng       done_with_composite_loop
+
 
 ; es:si set.
 push      es ; bp - 10h
 push      si ; bp - 12h
 push      di ; bp - 14h
+push      ax ; bp - 16h ; loop counter
 
 mov       dx, word ptr es:[si + 2]
 and       dh, (PATCHMASK SHR 8)
@@ -13744,17 +13736,7 @@ call      dword ptr ds:[_W_CacheLumpNumDirect_addr]
 pop       es
 jmp       done_loading_patch
 
-ALIGN_MACRO
-done_with_composite_loop:
-;call      Z_QuickMapRender7000_
-Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
 
-
-LEAVE_MACRO     
-pop   es ; return value
-POPA_NO_AX_MACRO
-mov   ax, es
-ret       
 ALIGN_MACRO
 set_x_to_x1:
 push      dx  ; bp - 018h
@@ -14072,16 +14054,15 @@ ALIGN_MACRO
 do_next_composite_loop_iter:
 mov       ax, ss
 mov       ds, ax  ; restore ds
-; todo pop iterator fields here.
-inc       byte ptr cs:[SELFMODIFY_BSP_cmp_iterator+1]
-SELFMODIFY_BSP_compare_composite_patchcount:
-mov       al, 010h
 add       sp, 8 ; back to 46?
 ; restore es:si
+pop       ax
 pop       di
 pop       si
 pop       es
 add       si, 4 ; next patch
+dec       ax ; increment loop counter
+jz        done_with_composite_loop
 jmp       loop_texture_patch
 ALIGN_MACRO
 
@@ -14089,7 +14070,17 @@ position_under_zero:
 add       cx, di
 xor       di, di
 jmp       done_with_position_check
+ALIGN_MACRO
+done_with_composite_loop:
+;call      Z_QuickMapRender7000_
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
 
+
+LEAVE_MACRO     
+pop   es ; return value
+POPA_NO_AX_MACRO
+mov   ax, es
+ret       
 ENDP
 
 
