@@ -452,7 +452,7 @@ je      skip_special_button   ; todo make this reverse logic case?
 mov     ah, al
 and     al, BT_SPECIALMASK
 cmp     al, BTS_PAUSE
-je      not_pause
+jne     not_pause
 xor     byte ptr ds:[_paused], 1
 jne     do_pause
 call    S_ResumeSound_
