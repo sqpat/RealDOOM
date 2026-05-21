@@ -12304,44 +12304,36 @@ ENDP
 
 
 ALIGN_MACRO
-PROC R_EvictL2CacheEMSPage_ NEAR   ; could use a little bit more work
+PROC R_EvictL2CacheEMSPage_ NEAR   ; pretty good now
 
-; bp - 2    used for ds first, used for es first
-; bp - 4    second offset used for si
-; bp - 6    used for ds second
-; bp - 8    secondarymaxitersize
-; bp - 0Ch currentpage
-
-; todo some of these dont have to push/pop? di, si...
-
-push      bx
-push      cx
-push      si
-push      di
-push      bp
-mov       bp, sp
+PUSHA_NO_AX_MACRO
 mov       dh, al
 
 
 cmp       dl, CACHETYPE_COMPOSITE
 jne       not_composite
 
-PUSH_MACRO_WITH_REG AX COMPOSITETEXTUREPAGE_SEGMENT
-PUSH_MACRO_WITH_REG AX MAX_TEXTURES
-PUSH_MACRO_WITH_REG AX PATCHOFFSET_SEGMENT
-PUSH_MACRO_WITH_REG AX MAX_PATCHES
+mov       cx, COMPOSITETEXTUREPAGE_SEGMENT ; hold this till preloop
+mov       di, MAX_TEXTURES-1
+mov       ax, PATCHOFFSET_SEGMENT
+mov       bp, MAX_PATCHES-1
 
 jmp       done_with_switchblock
 
 ALIGN_MACRO
 not_composite:
 
-PUSH_MACRO_WITH_REG AX PATCHPAGE_SEGMENT
-PUSH_MACRO_WITH_REG AX MAX_PATCHES
-PUSH_MACRO_WITH_REG AX COMPOSITETEXTUREOFFSET_SEGMENT
-PUSH_MACRO_WITH_REG AX MAX_TEXTURES
+mov       cx, PATCHPAGE_SEGMENT ; hold this till preloop
+mov       di, MAX_PATCHES-1
+mov       ax, COMPOSITETEXTUREOFFSET_SEGMENT
+mov       bp, MAX_TEXTURES-1
 
 done_with_switchblock:
+
+mov       es, ax
+mov       word ptr cs:[SELFMOIDFY_BSP_cacheevict_loop_1+1], di
+mov       word ptr cs:[SELFMOIDFY_BSP_cacheevict_loop_2+1], bp
+
 
 mov       di, OFFSET _texturecache_nodes
 
@@ -12371,12 +12363,13 @@ jnz       go_back_next_page
 
 
 found_enough_pages:
-; put in bp
-push ax   ; bp - 0Ah store currentpage
+
 
 ;	evictedpage = currentpage;
 
-mov       cx, ax
+mov       bx, ax
+; dx carries forward current page.
+xchg      ax, dx
 
 ;	while (nodelist[evictedpage].numpages != nodelist[evictedpage].pagecount){
 ;		evictedpage = nodelist[evictedpage].next;
@@ -12384,32 +12377,33 @@ mov       cx, ax
 
 
 find_first_evictable_page:
-mov       bx, cx
+mov       bp, bx
 SHIFT_MACRO shl       bx, 2
 mov       ax, word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
 cmp       al, ah ; pagecount == numpages?
 je        found_first_evictable_page
-mov       cl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+mov       bl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
 jmp       find_first_evictable_page
 ALIGN_MACRO
 
 found_first_evictable_page:
 
 ;	while (evictedpage != -1){
-mov       dx, 000FFh      ; dh gets 0, dl gets ff
-
+mov       bx, bp
 ; todo set up registers... pop stuff
 
+
 check_next_evicted_page:
-cmp       cl, dl
+cmp       bl, 0FFh
 je        cleared_all_cache_data
+mov       ds, cx ; set up segment 1.
 
 
 do_next_evicted_page:
 
 
 ; loop setup
-mov       bx, cx
+mov         ah, bl
 SHIFT_MACRO shl       bx 2
 
 xor       si, si
@@ -12421,7 +12415,9 @@ xor       si, si
 mov       word ptr ss:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], si    ; set both at once
 ; si is zero...
 ; ds!
-lds       bx, dword ptr [bp - 4] ; both an index and a loop limit
+SELFMOIDFY_BSP_cacheevict_loop_1:
+mov       bp, 01000h ; offset
+mov       cx, bp     ; counter
 
 ;    for (k = 0; k < maxitersize; k++){
 ;			if ((cacherefpage[k] >> 2) == evictedpage){
@@ -12429,16 +12425,15 @@ lds       bx, dword ptr [bp - 4] ; both an index and a loop limit
 ;				cacherefoffset[k] = 0xFF;
 ;			}
 ;		}
-dec       bx   ; lodsw makes this off by one so we offset here...
+
 
 continue_first_cache_erase_loop:
 lodsb     ; increments si...
 SHIFT_MACRO shr       al, 2
-cmp       al, cl
+cmp       al, ah
 je        erase_this_page
 done_erasing_page:
-cmp       si, bx
-jle       continue_first_cache_erase_loop   ; jle, not jl because bx is decced
+loop       continue_first_cache_erase_loop   ; jle, not jl because bx is decced
 
 done_with_first_cache_erase_loop:
 
@@ -12450,41 +12445,38 @@ done_with_first_cache_erase_loop:
 ;        }
 ;    }
 
-lds       bx, dword ptr [bp - 8] 
-
+SELFMOIDFY_BSP_cacheevict_loop_2:
+mov       bp, 01000h ; offset
+mov       cx, bp     ; counter
 
 
 xor       si, si                     ; offset and loop ctr
-dec       bx
 continue_second_cache_erase_loop:
-lodsb
+lods      byte ptr es:[si]
 
 SHIFT_MACRO sar       al 2
-cmp       al, cl
+cmp       al, ah
 je        erase_second_page
 done_erasing_second_page:
-cmp       si, bx
-jle       continue_second_cache_erase_loop    ; jle, not jl because bx is decced
+
+loop      continue_second_cache_erase_loop    ; jle, not jl because bx is decced
 
 skip_secondary_loop:
 
 ;		usedcacherefpage[evictedpage] = 0;
 
 
-
-
-mov       bx, cx
-mov       byte ptr ss:[bx + _usedtexturepagemem], dh    ; 0
+xchg      bl, ah
+mov       byte ptr ss:[bx + _usedtexturepagemem], bh    ; 0
 
 ;		evictedpage = nodelist[evictedpage].prev;
 
-SHIFT_MACRO shl       bx 2
-mov       cl, byte ptr ss:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]     ; get prev
-cmp       cl, dl                   ; dl is -1
+xchg      bl, ah  ; shifted 2
+mov       bl, byte ptr ss:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]     ; get prev
+cmp       bl, 0FFh
 jne       do_next_evicted_page
 
 
-cleared_all_cache_data:
 
 ;	// connect old tail and old head.
 ;	nodelist[*nodetail].prev = *nodehead;
@@ -12492,72 +12484,75 @@ cleared_all_cache_data:
 
 mov      ax, ss
 mov      ds, ax
+cleared_all_cache_data:
+
+; bh should be 0
 
 
-mov       al, byte ptr ds:[_texturecache_l2_tail]
-cbw      
-mov       cx, ax            ; cx stores nodetail
+;	// connect old tail and old head.
+;	nodelist[*nodetail].prev = *nodehead; DONE
+;	nodelist[*nodehead].next = *nodetail; DONE
+;	*nodehead = currentpage;              DONE
 
-SHIFT_MACRO shl       ax 2
-xchg      ax, bx            ; bx has nodelist nodetail lookup
-
-
-mov       si, OFFSET _texturecache_l2_head
-lodsb     ; head
-mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al
-mov       bl, al
+;	previous_next = nodelist[currentpage].next;  DONE
+;	nodelist[currentpage].next = -1;     DONE
+;	nodelist[previous_next].prev = -1;   DONE
+;	*nodetail = previous_next;           DONE
 
 
-;	nodelist[*nodehead].next = *nodetail;
+mov       ax, 0FFFFh
+mov       bl, byte ptr ds:[_texturecache_l2_tail]
+
+mov       cl, bl            ; cl backs up tail
+
+SHIFT_MACRO shl       bl 2
+
+mov       es, dx  ;return value/new head
+xchg      byte ptr ds:[_texturecache_l2_head], dl ; ;	*nodehead = currentpage;
+
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], dl  ;   nodelist[*nodetail].prev = *nodehead;
+mov       bl, dl
+; bl is OLD head.
 
 SHIFT_MACRO shl       bx 2
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl  ;   nodelist[*nodehead].next = *nodetail;
 
-mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl  ; write nodetail to next
 
-;	previous_next = nodelist[currentpage].next;
-;	*nodehead = currentpage;
-;	nodelist[currentpage].next = -1;
-
-pop       bx ; bp - 0Ah ; currentpage
-mov       byte ptr ds:[_texturecache_l2_head], bl ; todo this is the return value.
+mov       bx, es  ; NEW head
 SHIFT_MACRO shl       bx 2
-mov       ax, 00FFh
-xchg      al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]    ; previous_next
 
+xchg      al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]    ; ;	nodelist[currentpage].next = -1;
+; al = previous_next
 
 ;	*nodetail = previous_next;
 
-mov       byte ptr ds:[si], al  ;   si = _texturecache_l2_head + 1, _texturecache_l2_tail
+mov       byte ptr ds:[_texturecache_l2_tail], al ;	*nodetail = previous_next;
+
 
 
 ;	// new tail
 ;	nodelist[previous_next].prev = -1;
-xchg      ax, bx
+mov       bl, al
 SHIFT_MACRO shl       bx 2
-mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], dl    ; still 0FFh
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ah    ;	nodelist[previous_next].prev = -1;
 
 ;	return *nodehead;
 
-dec       si ; head
-lodsb       
-
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
+POPA_NO_AX_MACRO
+mov       ax, es
 ret       
 ALIGN_MACRO
+; bp is -1 to offset si being +1 due to lodsb
 erase_this_page:
-mov       byte ptr ds:[si-1], dl     ; 0FFh ; prev
-mov       byte ptr ds:[si+bx], dl    ; 0FFh ; next
+mov       byte ptr ds:[si-1], 0FFh     ; 0FFh ; prev
+mov       byte ptr ds:[si+bp], 0FFh    ; 0FFh ; next
 jmp       done_erasing_page
 ALIGN_MACRO
 
 ALIGN_MACRO
 erase_second_page:
-mov       byte ptr ds:[si-1], dl      ; 0FFh ; prev
-mov       byte ptr ds:[si+bx], dl     ; 0FFh ; next
+mov       byte ptr es:[si-1], 0FFh      ; 0FFh ; prev
+mov       byte ptr es:[si+bp], 0FFh     ; 0FFh ; next
 jmp       done_erasing_second_page
 ALIGN_MACRO
 
