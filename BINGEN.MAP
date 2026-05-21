@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/05/20 02:11:22
+Created on:       26/05/20 02:24:34
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -312,8 +312,8 @@ Module: sm_opl2.obj(sm_opl2.ASM)
 0534:0f0b*     OPLinitDriver_OPL2_
 0534:0e9f*     OPLstopMusic_OPL2_
 0534:0cd2*     OPLpitchWheel_OPL2_
-0534:0929*     OPLresumeMusic_OPL2_
 0534:0ec0*     OPLchangeSystemVolume_OPL2_
+0534:0929*     OPLresumeMusic_OPL2_
 0534:0e80*     OPLplayMusic_OPL2_
 0534:089d*     OPL2detectHardware_OPL2_
 0534:0000      SM_OPL2_STARTMARKER_
@@ -340,7 +340,7 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079c:0000      SM_MPUMD_STARTMARKER_
 079c:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-081a:3922      R_WriteBackViewConstants24_
+081a:392c      R_WriteBackViewConstants24_
 081a:0d93*     tx_already_positive
 081a:26cd*     R_AddLine_
 081a:33be      R_GetPatchTexture_Far24_
@@ -367,12 +367,12 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:25ca*     R_Subsector_
 081a:23d4*     just_do_draw_top
 081a:2393*     do_top_texture_draw
-081a:38c0*     R_WriteBackLevelConstants24_
+081a:38ca*     R_WriteBackLevelConstants24_
 081a:0000      R_BSP24_STARTMARKER_
 081a:0200*     OFFSET_CEILINGCLIP
 081a:1538*     exit_rendersegloop
 081a:12f0*     scales_set
-081a:3744      R_RenderPlayerView24_
+081a:374e      R_RenderPlayerView24_
 081a:0968*     FixedDivBSPLocal_
 081a:1559*     increment_loop_values
 081a:0384*     _CURRENT_LINE_TEXTURE_HEIGHT
@@ -382,7 +382,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081a:0080*     BEOFRE_COLFUNC_LOOKUP
 081a:2462*     SELFMODIFY_set_pixel_count_shift_mul_bot
 081a:3260*     R_GetTexturePage_
-081a:3ab2*     R_WriteBackFrameConstants_
+081a:3abc*     R_WriteBackFrameConstants_
 081a:09e2*     FixedMulTrigNoShiftCosine_BSPLocal_
 081a:0056*     _cachedsegmentlumpsBSPLocal
 081a:0a0c*     R_ClearPlanes_
@@ -844,8 +844,8 @@ Module: p_inter.obj(p_inter.ASM)
 2444:682c*     P_GiveArmor_
 2444:6708*     P_INTER_STARTMARKER_
 2444:6b30*     P_KillMobj_
-2444:6718*     P_GiveAmmo_
 2444:685c      P_GivePower_
+2444:6718*     P_GiveAmmo_
 2444:6c8e*     getMassThrust_
 2444:6f7f*     P_INTER_ENDMARKER_
 Module: p_lights.obj(p_lights.ASM)

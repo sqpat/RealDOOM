@@ -13580,17 +13580,17 @@ WAD_PATCH_7000_SEGMENT = 07000h
 
 ; void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment) {
 
-; bp - 2  texnum * 2 (word lookup)
+; bp - 2  unused
 ; bp - 4  block_segment
-; bp - 6  i (loop counter)
-; bp - 8  lastusedpatch/patchpatch starts as -1
+; bp - 6  unused
+; bp - 8  unused
 ; bp - 0Ah  ; unused
 ; bp - 0Ch  ; unused
 ; bp - 0Eh  ; unused
-; bp - 010h  ; unused
+; bp - 010h  ; patch seg
 ; bp - 012h  texture->patches
 ; bp - 014h  collump offset?
-; bp - 016h  texturepatchcount
+; bp - 016h  unused
 ; bp - 018h  (innerloop) x
 ; bp - 01Ah  (innerloop) currentlump
 ; bp - 01Ch  (innerloop) currentdestsegment
@@ -13603,7 +13603,7 @@ mov       bp, sp
 ; ah should already be 0
 xchg      ax, si
 sal       si, 1
-push      si  ; bp - 2
+sub       sp, 2
 
 push      dx  ; bp - 4
 mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
@@ -13615,7 +13615,8 @@ mov       es, dx
 ; todo get both in one read..
 xor       dx, dx
 
-push      dx ; bp - 6 ; zero
+
+mov       byte ptr cs:[SELFMODIFY_BSP_cmp_iterator+1], dl
 
 mov       word ptr cs:[SELFMODIFY_BSP_compare_to_last_patch+1], 0FFFFh
 
@@ -13636,7 +13637,7 @@ mov       ax, dx ; retrieve textureheight
 neg       ax
 and       ax, 0Fh
 
-sub       sp, 8
+sub       sp, 0Ah
 
 
 add       al, dl   ; textureheight copy
@@ -13666,15 +13667,16 @@ push      si ; bp - 014h
 Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
 
 mov       al, byte ptr es:[bx - 1] ; texturepatchcount = texture->patchcount;
-xor       ah, ah
-push      ax ; bp - 016h texturepatchcount
+mov       byte ptr cs:[SELFMODIFY_BSP_compare_composite_patchcount+1], al
+sub       sp, 2 ;  todo remove
 
 ;	for (i = 0; i < texturepatchcount; i++) {
 
 loop_texture_patch:
-; ax is bp - 016h
+; ax is iterator
 ; todo move this check to the end with selfmodify.
-cmp       ax, word ptr [bp - 6]
+SELFMODIFY_BSP_cmp_iterator:
+cmp       al, 010h
 jng       done_with_composite_loop
 
 les       si, dword ptr [bp - 012h]
@@ -14065,8 +14067,9 @@ do_next_composite_loop_iter:
 mov       ax, ss
 mov       ds, ax  ; restore ds
 add       word ptr [bp - 012h], 4
-inc       word ptr [bp - 6]
-mov       ax, word ptr [bp - 016h]
+inc       byte ptr cs:[SELFMODIFY_BSP_cmp_iterator+1]
+SELFMODIFY_BSP_compare_composite_patchcount:
+mov       al, 010h
 add       sp, 8 ; back to 46?
 jmp       loop_texture_patch
 ALIGN_MACRO
