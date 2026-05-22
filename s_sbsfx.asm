@@ -202,6 +202,7 @@ db 0
 ; todo: revisit for mixing > 2 sfx. maybe a different table is better.
 
 _sfx_mix_table:
+public  _sfx_mix_table
 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -1953,25 +1954,24 @@ handle_sfx_mix_22_11:
 ;        dma_buffer[j] = sfx_mix_table_2[total];
 ;    }
 
+xor   ax, ax
+
 loop_handle_next_mix_sample_22_11:
+MOV   BX, OFFSET _sfx_mix_table ; restore BH TODO bh only
+LODSB
+MOV   AH, AL
+MOV   DX, ES:[DI]
+ADD   AL, DH
+ADC   BH, CH ; 0
+XLAT  CS:[BX]
+MOV   BX, OFFSET _sfx_mix_table ; restore BH TODO bh only
 
-xor   ax, ax ; clear ah
-lodsb
-mov   dx, ax  ; back up for 2nd write
-add   al, byte ptr es:[di]
-adc   ah, ah   ; ah known zero
-xchg  ax, bx
-mov   al, byte ptr cs:[bx + _sfx_mix_table]
-stosb
-xchg  ax, dx  ; restore, mix to 2nd existing sample.
-add   al, byte ptr es:[di]
-adc   ah, ah   ; ah known zero
-xchg  ax, bx
-mov   al, byte ptr cs:[bx + _sfx_mix_table]
-stosb
-
-
-loop   loop_handle_next_mix_sample_22_11
+XCHG  AL, AH
+ADD   AL, DL
+ADC   BH, CH ; 0
+XLAT  CS:[BX]
+STOSW
+LOOP loop_handle_next_mix_sample_22_11
 
 jmp   do_sfx_play_cleanup_22_11
 
@@ -2115,16 +2115,18 @@ handle_sfx_mix_22_22:
 ;        dma_buffer[j] = sfx_mix_table_2[total];
 ;    }
 
+xor   ax, ax ; clear ah
+MOV   BX, OFFSET _sfx_mix_table
+mov   dl, bh
 loop_handle_next_mix_sample_22_22:
 
-xor   ax, ax ; clear ah
 lodsb
 add   al, byte ptr es:[di]
-adc   ah, ah   ; ah known zero
-xchg  ax, bx
-mov   al, byte ptr cs:[bx + _sfx_mix_table]
+adc   bh, ah   ; ah known zero
+xlat  byte ptr cs:[bx]
 stosb
-
+;mov   bh, (HIGH _sfx_mix_table)
+MOV   bh, dl
 
 loop   loop_handle_next_mix_sample_22_22
 
@@ -2403,18 +2405,21 @@ handle_sfx_mix:
 ;        dma_buffer[j] = sfx_mix_table_2[total];
 ;    }
 
+xor   ax, ax ; clear ah
+MOV   BX, OFFSET _sfx_mix_table
+mov   dl, bh
 loop_handle_next_mix_sample:
 
-xor   ax, ax ; clear ah
 lodsb
 add   al, byte ptr es:[di]
-adc   ah, ah   ; ah known zero
-xchg  ax, bx
-mov   al, byte ptr cs:[bx + _sfx_mix_table]
+adc   bh, ah   ; ah known zero
+xlat  byte ptr cs:[bx]
 stosb
+;mov   bh, (HIGH _sfx_mix_table)
+MOV    bh, dl
+loop  loop_handle_next_mix_sample
 
 
-loop   loop_handle_next_mix_sample
 
 jmp    do_sfx_play_cleanup
 
@@ -2436,10 +2441,7 @@ do_volume_mix_first_buffer:
 loop_handle_next_vol_mix_sample:
 
 lodsb
-
 xor   al, 080h  ; sub/add 080h          (source[j] - 0x80);
-
-
 ;total.h = FastIMul8u8u(volume, intermediate) << 1;
 
 imul  dl     ; volume

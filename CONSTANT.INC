@@ -990,6 +990,7 @@ NIGHTMARE_SPAWN_SIZE = 020D0h
 SIZE_SEG_LINEDEFS = 015FEh
 SIZE_SEG_SIDES = 0AFFh
 EMS_BUILD_SETTING = 01h
+SFXCACHE_NODES = 0C34h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 01400h
