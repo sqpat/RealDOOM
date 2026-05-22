@@ -23,6 +23,8 @@ INSTRUCTION_SET_MACRO
 EXTRN M_WriteFile_:NEAR
 EXTRN M_ReadFile_:NEAR
 EXTRN M_InitAndReadFile_:NEAR
+EXTRN M_InitFileForWrite_:NEAR
+EXTRN M_AdvanceWriteFile_:FAR
 
 EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapScratch_5000_:NEAR
@@ -283,18 +285,20 @@ call    Z_SetOverlay_
 ;call    G_DoSaveGame_ ; inlined
 
 call    Z_QuickMapScratch_5000_
+
+
 mov     al, '0'
 add     al, byte ptr ds:[_savegameslot];
 mov     byte ptr ds:[_doomsav0_string + 7], al
 
+call    M_InitFileForWrite_
+
 db      09Ah
 dw      G_CONTINUESAVEGAMEOFFSET, CODE_OVERLAY_SEGMENT
 
-mov     ax, OFFSET _doomsav0_string
-mov     cx, es
-xor     bx, bx
+
 mov     dx, word ptr ds:[_save_p]
-call    M_WriteFile_
+call    M_AdvanceWriteFile_
 xor     ax, ax
 mov     byte ptr ds:[_gameaction], al ; GA_NOTHING
 mov     byte ptr ds:[_savedescription], al ; \0

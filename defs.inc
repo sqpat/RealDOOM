@@ -480,8 +480,8 @@ _flatcache_l2_head =                 _NULL_OFFSET + 005AEh
 _flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
 
 _getStringByIndex_addr =             _NULL_OFFSET + 005B0h
-;_segloopcachedbasecol =              _NULL_OFFSET + 005B4h
-;_cachedsegmenttex =                  _NULL_OFFSET + 005B8h
+_M_AdvanceWriteFile_addr =           _NULL_OFFSET + 005B4h
+_M_AdvanceLoadFile_addr =            _NULL_OFFSET + 005B8h
 _playerMobj =                   	 _NULL_OFFSET + 005BCh
 _ceilinglinenum =                    _NULL_OFFSET + 005BEh
 
@@ -511,7 +511,7 @@ _centerx = 							 _NULL_OFFSET + 005F4h
 _centery = 							 _NULL_OFFSET + 005F6h
 
 _V_DrawFullscreenPatch_FromMenu_addr = _NULL_OFFSET + 005F8h
-_M_AdvanceLoadFile_addr_ =             _NULL_OFFSET + 005FCh
+;_M_Unused = 			             _NULL_OFFSET + 005FCh
 
 
 

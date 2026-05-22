@@ -75,7 +75,7 @@ EXTRN SFX_PlayPatch_:FAR
 EXTRN S_DecreaseRefCountFar_:FAR
 EXTRN W_CheckNumForNameFar_:FAR
 EXTRN M_AdvanceLoadFile_:FAR
-
+EXTRN M_AdvanceWriteFile_:FAR
 EXTRN CopyString13_:NEAR
 
 
@@ -1217,8 +1217,8 @@ dw OFFSET _I_Quit_addr                         , OFFSET I_Quit_
 ;dw OFFSET _FastDiv32u16u_addr                  , OFFSET FastDiv32u16u_
 dw OFFSET _I_SetPalette_addr                   , OFFSET I_SetPalette_
 dw OFFSET _I_SetPalette_FromMenu_addr          , OFFSET I_SetPalette_FromMenu_
-;dw OFFSET _V_MarkRect_addr                     , OFFSET V_MarkRect_
-dw OFFSET _M_AdvanceLoadFile_addr_             , OFFSET M_AdvanceLoadFile_
+dw OFFSET _M_AdvanceWriteFile_addr             , OFFSET M_AdvanceWriteFile_
+dw OFFSET _M_AdvanceLoadFile_addr              , OFFSET M_AdvanceLoadFile_
 dw OFFSET _V_DrawFullscreenPatch_addr          , OFFSET V_DrawFullscreenPatch_
 dw OFFSET _V_DrawFullscreenPatch_FromMenu_addr , OFFSET V_DrawFullscreenPatch_FromMenu_
 dw OFFSET _V_DrawFullscreenPatch_FromIntermission_addr , OFFSET V_DrawFullscreenPatch_FromIntermission_

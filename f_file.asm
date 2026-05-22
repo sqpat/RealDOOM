@@ -55,6 +55,7 @@ _WRITE   = 00002h    ; file opened for writing
 _EOF     = 00010h    ; EOF has occurred 
 _SFERR   = 00020h    ; error has occurred on this file 
 
+_APPEND  = 00080h    ; file opened for append 
 
 _IOFBF   = 00100h    ; full buffering 
 _IOLBF   = 00200h    ; line buffering 
@@ -70,8 +71,9 @@ _O_RDONLY        = 00000h ;  open for read only
 _O_WRONLY        = 00001h ;  open for write only 
 _O_RDWR          = 00002h ;  open for read and write 
 
+_O_APPEND        = 00010h  ; writes done at end of file 
 _O_CREAT         = 00020h ;  create new file 
-_O_TRUNC         = 00040h ;  truncate existing file 
+; _O_TRUNC         = 00040h ;  truncate existing file 
 _O_NOINHERIT     = 00080h ;  file is not inherited by child process
 
 
@@ -457,6 +459,11 @@ dec  bx ; PERMISSION_WRITABLE = 0
 or   dl, (_O_WRONLY OR _O_CREAT)
 not_write_flag:
 
+test al, FILEFLAG_APPEND
+je   not_append_flag
+or   dl, _O_APPEND
+not_append_flag:
+
 ; bx has permissions.
 
 or   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], ax  ; flags
@@ -466,8 +473,6 @@ or   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], ax  ; flags
 
 ;    fp->_handle = __F_NAME(_sopen,_wsopen)( name, open_mode, shflag, p_mode );
 ; ?? why var args...
-
-
 
 
 
@@ -514,7 +519,10 @@ je        sopen_access_check_ok    ; readonly, access/write is ok
 cmp       di, 0FFFFh               ; file does not exist, dont need to do access check, will try to create later
 je        do_create_file
 
-; open a file for writing is always delete file, not append
+test      byte ptr [bp - 2], _O_APPEND ; if not append then we are truncating the file
+jne       sopen_access_check_ok        ; dont delete file
+
+
 lea       dx, [bp - 2]            ; dummy ptr
 mov       bx, di ; handle
 xor       cx, cx                  ; len
@@ -562,6 +570,10 @@ jz   bad_handle_exit
 dec  di
 
 mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle], di
+test      byte ptr [bp - 2], _O_APPEND ; if not append then we are truncating the file
+jne       do_lseek_end
+done_with_lseek_end:
+
 
 xchg  ax, si
 exit_doopen:
@@ -574,6 +586,25 @@ LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
 mov   ax, es
 ret 
+
+do_lseek_end:
+public do_lseek_end
+
+
+xor  dx, dx
+xor  cx, cx
+mov  bx, di
+
+; al is 02 = SEEK_END
+; cx:dx the size
+; bx the file handle... ready to go
+
+
+mov  ax, 04202h   ; Move file pointer using handle
+int  021h 
+
+
+jmp  done_with_lseek_end
 
 exit_sopen_return_bad_handle:
 
@@ -830,7 +861,7 @@ check_for_seek_end:
 cmp  dx, SEEK_CUR
 je   handle_seek_cur
 ja   reset_buffer
-; no invlaid param checking.
+; no invalid param checking.
 ; SEEK_SET case
 
 

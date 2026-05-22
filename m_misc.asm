@@ -40,8 +40,14 @@ PUBLIC  M_MISC_STARTMARKER_
 ENDP
 
 
+PROC    M_InitFileForWrite_ NEAR
+PUBLIC  M_InitFileForWrite_
+mov   ax, OFFSET _doomsav0_string
+mov   dl, (FILEFLAG_WRITE OR FILEFLAG_BINARY)
+call  locallib_fopen_nobuffering_
+call  locallib_fclose_              ; delete file
 
-
+ret
 
 ;boolean __near M_WriteFile (int8_t const* name, void __far* source,filelength_t length );
 ; ax name
@@ -166,6 +172,58 @@ ret
 
 ENDP
 
+
+
+ALIGN_MACRO
+; advance the file forward x bytes.
+PROC    M_AppendFle_ NEAR
+
+
+; dx is len
+; ax is ptr to filename
+
+push  dx  ; ; backup size
+mov   dl, (FILEFLAG_WRITE OR FILEFLAG_BINARY OR FILEFLAG_APPEND)
+call  locallib_fopen_nobuffering_
+
+pop   dx ; retrieve size/len
+
+xchg  ax, cx ; cx gets fp, ax gets segment
+xchg  ax, dx ; dx gets segment, ax gets len
+xchg  ax, bx ; bx gets len, ax gets offset
+
+
+push  cx      ; back up fp once more
+
+
+call  locallib_fwrite_
+
+pop   ax       ; retrieve fp
+call  locallib_fclose_
+
+ret  
+
+ENDP
+
+
+ALIGN_MACRO
+; advance the file forward x bytes.
+PROC    M_AdvanceWriteFile_ FAR
+PUBLIC  M_AdvanceWriteFile_
+;
+push    cx
+mov     cx, SCRATCH_SEGMENT_5000
+xor     bx, bx
+; dx has size
+mov     ax, OFFSET _doomsav0_string
+
+
+call    M_AppendFle_
+pop     cx
+
+retf
+
+ENDP
 ALIGN_MACRO
 ; advance the file forward 16384 
 PROC    M_AdvanceLoadFile_ FAR

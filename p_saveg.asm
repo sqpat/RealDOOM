@@ -386,22 +386,50 @@ FILE_MAX_BUFFER_CHECK  = 16384
 SIZEOF_MOBJ_VANILLA_T = 09Ah
 SIZEOF_THINKER_VANILLA_T = 12
 
-PROC   P_CheckRepageLoadgame_  NEAR
-PUBLIC P_CheckRepageLoadgame_
+PROC   P_CheckRepageSaveGame_  NEAR
+PUBLIC P_CheckRepageSaveGame_
+
+cmp    di, FILE_MAX_BUFFER_CHECK
+jb     no_repage_save
+; advance savegame....
+
+push   es
+push   dx
+push   ds
+push   ss
+pop    ds
+
+mov    dx, di
+and    di, 3
+mov    word ptr ds:[_save_p], di
+sub    dx, di
+call   dword ptr ds:[_M_AdvanceWriteFile_addr]
+pop    ds
+pop    dx
+pop    es
+
+
+no_repage_save:
+ret
+
+ENDP    
+
+PROC   P_CheckRepageLoadGame_  NEAR
+PUBLIC P_CheckRepageLoadGame_
 cmp    si, FILE_MAX_BUFFER_CHECK
-jb     no_repage
+jb     no_repage_load
 ; advance savegame....
 push   si
 push   ss
 pop    ds
 
-call   dword ptr ds:[_M_AdvanceLoadFile_addr_]
+call   dword ptr ds:[_M_AdvanceLoadFile_addr]
 
 pop    si
 sub    si, FILE_MAX_BUFFER_CHECK
-sub    word ptr ss:[_save_p], FILE_MAX_BUFFER_CHECK
+sub    word ptr ds:[_save_p], FILE_MAX_BUFFER_CHECK
 
-no_repage:
+no_repage_load:
 ret
 
 
@@ -492,7 +520,7 @@ rep stosw
 mov       si, word ptr ds:[_save_p]
 
 load_next_thinker:
-call      P_CheckRepageLoadgame_
+call      P_CheckRepageLoadGame_
 mov       ds, word ptr  ss:[_save_p+2]
 
 
@@ -764,7 +792,7 @@ PUBLIC P_UnArchiveSpecials_
 
 lds    si, dword ptr ds:[_save_p]
 push   ds
-call   P_CheckRepageLoadgame_ ; run once after thinkers
+call   P_CheckRepageLoadGame_ ; run once after thinkers
 pop    ds
 load_next_special:
 
@@ -1566,6 +1594,8 @@ mov       dx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 test      dx, dx
 je        exit_archivethinkers
 loop_check_next_thinker:
+call      P_CheckRepageSaveGame_ ; run once after thinkers
+
 mov       ax, (SIZE THINKER_T)
 push      dx    ; backup  th
 mul       dx
@@ -1906,6 +1936,8 @@ PUBLIC P_ArchiveSpecials_
 
 
 les       di, dword ptr ds:[_save_p]
+call      P_CheckRepageSaveGame_ ; run once after thinkers
+
 mov       cx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 test      cx, cx
 je        exit_archive_specials
