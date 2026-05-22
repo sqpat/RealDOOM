@@ -1925,8 +1925,8 @@ jne   handle_sfx_mix_22_11
 do_mixless_sfx_play_22_11:
 loop_next_copy_22_11:
 lodsb
-stosb
-stosb
+mov   ah, al
+stosw
 loop  loop_next_copy_22_11
 
 
@@ -1990,6 +1990,7 @@ jne   handle_sfx_and_volume_mix_22_11
 ;    }
 do_volume_mix_first_buffer_22_11:
 
+shl   dl, 1 ; preshift outside of loop
 loop_handle_next_vol_mix_sample_22_11:
 
 lodsb
@@ -1997,12 +1998,11 @@ lodsb
 xor   al, 080h  ; sub/add 080h          (source[j] - 0x80);
 ;total.h = FastIMul8u8u(volume, intermediate) << 1;
 imul  dl     ; volume
-sal   ax, 1  ; << 1
 
-mov   al, ah
-xor   al, 080h  ; sub/add 080h  
-stosb  ; store 
-stosb  ; store 
+xor    ah, 080h  ; sub/add 080h  
+mov    al, ah
+stosw  ; store 
+
 
 loop   loop_handle_next_vol_mix_sample_22_11
 
@@ -2028,28 +2028,33 @@ handle_sfx_and_volume_mix_22_11:
 ; todo this loop kind of sucks.
 do_volume_mix_nonfirst_buffer_22_11:
 
-loop_handle_next_vol_sfx_mix_sample_22_11:
+shl   dl, 1 ; preshift outside of loop
+MOV   BX, OFFSET _sfx_mix_table
+mov   dh, bh
 
+loop_handle_next_vol_sfx_mix_sample_22_11:
 lodsb
 xor   al, 080h  ; sub/add 080h
 imul  dl     ; volume
-xor   bx, bx
-sal   ax, 1
+
+
 xor   ah, 080h  ; sub/add 080h
 
-mov   dh, ah ; backup
-add   ah, byte ptr es:[di]
-adc   bh, bh
-mov   bl, ah
-mov   al, byte ptr cs:[bx + _sfx_mix_table]
-stosb
+mov   al, ah ; dupe
 
-xor   bx, bx
-mov   bl, dh
-add   bl, byte ptr es:[di]
-adc   bh, bh
-mov   al, byte ptr cs:[bx + _sfx_mix_table]
-stosb
+add   al, byte ptr es:[di+1]  ; is bp = 1 worth it?
+adc   bh, ch ; 0
+xlat  byte ptr cs:[bx]
+
+xchg  al, ah
+MOV   bh, dh
+
+add   al, byte ptr es:[di]
+adc   bh, ch ; 0
+xlat  byte ptr cs:[bx]
+stosw
+
+MOV   bh, dh
 
 loop   loop_handle_next_vol_sfx_mix_sample_22_11
 
@@ -2146,6 +2151,7 @@ jne   handle_sfx_and_volume_mix_22_22
 ;        dma_buffer[j] = 0x80 + total.bu.bytehigh; // divide by 256 means take the high byte
 ;    }
 do_volume_mix_first_buffer_22_22:
+shl   dl, 1 ; preshift outside of loop
 
 loop_handle_next_vol_mix_sample_22_22:
 
@@ -2157,7 +2163,7 @@ xor   al, 080h  ; sub/add 080h          (source[j] - 0x80);
 ;total.h = FastIMul8u8u(volume, intermediate) << 1;
 
 imul  dl     ; volume
-sal   ax, 1  ; << 1
+
 
 mov   al, ah
 xor   al, 080h  ; sub/add 080h  
@@ -2187,21 +2193,26 @@ handle_sfx_and_volume_mix_22_22:
 ; todo this loop kind of sucks.
 do_volume_mix_nonfirst_buffer_22_22:
 
+shl   dl, 1 ; preshift outside of loop
+MOV   BX, OFFSET _sfx_mix_table
+mov   dh, bh
 loop_handle_next_vol_sfx_mix_sample_22_22:
 
 lodsb
 
 xor   al, 080h  ; sub/add 080h
 imul  dl     ; volume
-xor   bx, bx
-sal   ax, 1
-xor   ah, 080h  ; sub/add 080h
 
-add   ah, byte ptr es:[di]
-adc   bh, bh
-mov   bl, ah
+mov   al, ah
+xor   al, 080h  ; sub/add 080h
+
+add   al, byte ptr es:[di]
+adc   bh, 0
+
 mov   al, byte ptr cs:[bx + _sfx_mix_table]
+xlat  byte ptr cs:[bx]
 stosb
+mov   bh, dh
 
 loop   loop_handle_next_vol_sfx_mix_sample_22_22
 
@@ -2438,6 +2449,7 @@ jne   handle_sfx_and_volume_mix
 ;    }
 do_volume_mix_first_buffer:
 
+shl   dl, 1 ; preshift outside of loop
 loop_handle_next_vol_mix_sample:
 
 lodsb
@@ -2445,7 +2457,7 @@ xor   al, 080h  ; sub/add 080h          (source[j] - 0x80);
 ;total.h = FastIMul8u8u(volume, intermediate) << 1;
 
 imul  dl     ; volume
-sal   ax, 1  ; << 1
+
 
 mov   al, ah
 xor   al, 080h  ; sub/add 080h  
@@ -2473,23 +2485,26 @@ handle_sfx_and_volume_mix:
 
 
 ; todo this loop kind of sucks.
-do_volume_mix_nonfirst_buffer:
 
+
+shl   dl, 1 ; preshift outside of loop
+MOV   BX, OFFSET _sfx_mix_table
+mov   dh, bh
 loop_handle_next_vol_sfx_mix_sample:
 
 lodsb
 
 xor   al, 080h  ; sub/add 080h
 imul  dl     ; volume
-xor   bx, bx
-sal   ax, 1
-xor   ah, 080h  ; sub/add 080h
 
-add   ah, byte ptr es:[di]
-adc   bh, bh
-mov   bl, ah
-mov   al, byte ptr cs:[bx + _sfx_mix_table]
+mov   al, ah
+xor   al, 080h  ; sub/add 080h
+
+add   al, byte ptr es:[di]
+adc   bh, 0
+xlat  byte ptr cs:[bx]
 stosb
+mov   bh, dh
 
 loop   loop_handle_next_vol_sfx_mix_sample
 
