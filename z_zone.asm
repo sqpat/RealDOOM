@@ -72,7 +72,7 @@ ALIGN_MACRO
 
     cmp   al, byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX]
     jne   actually_changing_sfx_page_frame
-    retf  
+    ret  
     actually_changing_sfx_page_frame:
     push  bx
     push  dx
