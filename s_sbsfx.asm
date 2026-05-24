@@ -2805,7 +2805,7 @@ mov   cx, 0FFFFh
 try_write_dsp_again:
 in    al, dx
 test  al, 080h
-jne   do_out
+je    do_out
 loop try_write_dsp_again
 
 pop  cx
