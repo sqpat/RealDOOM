@@ -26,6 +26,7 @@ EXTRN locallib_dos_getvect_:NEAR
 EXTRN SB_ServiceInterrupt_:FAR
 EXTRN I_Error_:FAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
+EXTRN DEBUG_PRINT_:NEAR
 EXTRN S_InitSFXCache_:FAR
 EXTRN SB_StopPlayback_:NEAR
 EXTRN SB_ResetDSP_:NEAR
@@ -150,11 +151,9 @@ db 08Ah, 0CCh, 0CEh
 str_SB_OK:
 db "Sound Blaster SFX Engine Initailized!..", 0Ah, 00
 
-str_SB_ERROR_A:
-db 0Ah, "SB INIT Error A", 0Ah, 00
 
 str_SB_ERROR_B:
-db 0Ah, "SB INIT Error B", 0Ah, 00
+db 0Ah, "SB INIT Error: %i %i", 0Ah, 00
 
 
 
@@ -607,7 +606,7 @@ mov    word ptr cs:[_SB_IntController2Mask], ax
 call   SB_ResetDSP_
 
 cmp    al, SB_OK
-jne    return_status
+jne    return_sb_error_1
 
 call   SB_GetDSPVersion_            ;    SB_GetDSPVersion();
 call   SB_SaveVoiceVolume_          ;    SB_SaveVoiceVolume();
@@ -621,7 +620,7 @@ mov    al, byte ptr cs:[_sb_dma_8]
 call   SB_DMA_VerifyChannel_
 
 
-jnc    return_sb_error
+jnc    return_sb_error_2
 
 mov    byte ptr ds:[_sb_dma], al        ;    sb_dma = used_dma;
 
@@ -631,7 +630,7 @@ mov    byte ptr ds:[_sb_dma], al        ;    sb_dma = used_dma;
 
 mov    al, byte ptr ds:[_sb_irq]
 test   al, 0F0h  ; between 0 and 15
-jne    return_sb_error
+jne    return_sb_error_3
 
 ; sb_int = IRQ_TO_INTERRUPT_MAP[sb_irq];
 cbw    ; zero ah. we know al is 0-15 anyway
@@ -666,8 +665,14 @@ pop   dx  ; restore dx from earlier
 mov    ax, SB_OK
 return_status:
 ret
-return_sb_error:
-mov     al, SB_ERROR
+return_sb_error_1:
+mov     ax, 12
+ret
+return_sb_error_2:
+mov     ax, 10
+ret
+return_sb_error_3:
+mov     ax, 11
 ret
 
 ENDP
@@ -679,26 +684,38 @@ PUBLIC  SB_StartInit_
 
 call   SB_InitCard_
 cmp    al, SB_OK
-jne    show_error_b
+jne    show_error
 
 call   SB_SetupPlayback_
 cmp    al, SB_OK
-jne    show_error_a
+jne    return_sb_error_4
 
 call   S_InitSFXCache_
 mov    ax, OFFSET str_SB_OK
-jmp    print_exit
-
-show_error_b:
-mov   ax, OFFSET str_SB_ERROR_B
-jmp   print_error
-show_error_a:
-mov   ax, OFFSET str_SB_ERROR_A
-print_error:
-mov   byte ptr ds:[_snd_SfxDevice], SND_NONE   ; 0
 print_exit:
 call  DEBUG_PRINT_NOARG_CS_
 ret
+
+
+show_error:
+push  word ptr ss:[_sb_port]
+push  ax
+mov   ax, OFFSET str_SB_ERROR_B
+mov   byte ptr ds:[_snd_SfxDevice], SND_NONE   ; 0
+push  cs
+push  ax
+call  I_Error_
+
+ret 
+return_sb_error_4:
+mov     ax, 14
+jmp     show_error
+;mov   ax, OFFSET str_SB_ERROR_B
+;jne    show_error_b
+
+;print_error:
+;mov   byte ptr ds:[_snd_SfxDevice], SND_NONE   ; 0
+;jmp    print_exit
 
 
 ENDP
