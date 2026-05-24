@@ -1,7 +1,7 @@
 # RealDOOM
 
 
-[![RealDOOM 0.78 Alpha Recording](https://img.youtube.com/vi/tmDWH_pMDAQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=tmDWH_pMDAQ)
+[![RealDOOM 0.88 Beta Recording](https://i3.ytimg.com/vi/PK0eF9IVNLA/maxresdefault.jpg)](https://www.youtube.com/watch?v=PK0eF9IVNLA)
 
 
 RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
