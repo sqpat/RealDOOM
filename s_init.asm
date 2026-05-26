@@ -168,7 +168,7 @@ PUBLIC LoadSFXWadLumps_
 
 
     push es ; store SFX_DATA_SEGMENT
-    mov  word ptr es:[di+4], 0FFFFh   ; store default value for cache pos...
+    mov  word ptr es:[di+SFXINFO_T.sfxinfo_cache_position], 0FFFFh   ; store default value for cache pos...
 
     mov  ax, di
     ; gross but its init code so who cares if its slow
@@ -179,7 +179,7 @@ PUBLIC LoadSFXWadLumps_
     pop  es
     mov  si, ax  ; backup lump num
 
-    mov  word ptr es:[di+0], ax      ; store lump data  in sfx_data
+    mov  word ptr es:[di+SFXINFO_T.sfxinfo_lumpandflags], ax      ; store lump data  in sfx_data
     
 
     cmp  ax, 0FFFFh
@@ -187,7 +187,7 @@ PUBLIC LoadSFXWadLumps_
 
     ; apply singularity...
     mov  bl, byte ptr cs:[_singularity_list + di];
-    or   byte ptr es:[di+1], bl      ; or the singularity flag onto the field
+    or   byte ptr es:[di+SFXINFO_T.sfxinfo_lumpandflags + 1], bl      ; or the singularity flag onto the field
 
     push es
 
@@ -197,9 +197,10 @@ PUBLIC LoadSFXWadLumps_
     ; ax is lumpsize
 
     sub  ax, 32     ; remove padding, header, etc from lump
+    ;and  ax, 16383 ; force everything one page for testing.
     pop  es
     push es
-    mov  word ptr es:[di+2], ax      ; store lump_size in sfx_data
+    mov  word ptr es:[di + SFXINFO_T.sfxinfo_lumpsize], ax      ; store lump_size in sfx_data
 
 
     xchg ax, si    ; ax gets lumpnum again. size to si.
@@ -214,10 +215,10 @@ PUBLIC LoadSFXWadLumps_
     mov  ax,  word ptr ds:[2]       ; get sample rate
     cmp  ax,  SAMPLE_RATE_22_KHZ_UINT
     je   write_22_khz_sample_bit
-    and   byte ptr es:[di + 1], (SOUND_LUMP_BITMASK SHR 8)
+    and   byte ptr es:[di + SFXINFO_T.sfxinfo_lumpandflags + 1], (SOUND_LUMP_BITMASK SHR 8)
     jmp  done_with_sample_bit
     write_22_khz_sample_bit:
-    or   byte ptr es:[di + 1], (SOUND_22_KHZ_FLAG SHR 8)
+    or   byte ptr es:[di + SFXINFO_T.sfxinfo_lumpandflags + 1], (SOUND_22_KHZ_FLAG SHR 8)
 
     done_with_sample_bit:
 

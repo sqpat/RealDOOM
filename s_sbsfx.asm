@@ -36,7 +36,7 @@ EXTRN _SB_CardActive:BYTE
 .CODE
 
 
-
+;SKIP_SFX = 1
 
 
 PROC    S_SBFX_STARTMARKER_ NEAR
@@ -1325,12 +1325,12 @@ adc   dl, dh    ; dh is known zero. add carry flag
 ; dl = pagecount
 ; dh = known zero
 
-xor     bx, bx  ; clear high byte
+mov     bx, dx  ; clear high byte
 mov     bl, byte ptr ds:[_sfxcache_head]
 
 
-cmp   dl, 1
-jne   jump_to_handle_multipage_pagecount
+dec   dx
+jnz   jump_to_handle_multipage_pagecount
 
 handle_singlepage_pagecount:
 
@@ -1351,7 +1351,7 @@ cmp   dl, byte ptr ds:[_sfx_free_bytes + bx]
 jg    not_enough_room_single_check_next_page
 ;            allocate_position.bu.bytehigh = BUFFERS_PER_EMS_PAGE - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
 mov   si, bx
-mov   bx, (BUFFERS_PER_EMS_PAGE SHL 8)   ; bl is 0
+mov   bx, (BUFFERS_PER_EMS_PAGE SHL 8)   ; bl is 0. 0400h.
 sub   bh, byte ptr ds:[_sfx_free_bytes + si]
 ;            goto found_page;
 jmp   found_page   
@@ -1489,14 +1489,15 @@ ret
 
 
 handle_multipage_pagecount:
-
+inc     dx ; undo dec
 mov     ch, dl  ; page count in ch
 
 ; al = sfx_id
 ; bp = lumpsize
 ; cl = sample_256_size
 ; ch = pagecount
-; bx = sfx_page
+; bl = sfx_page
+; bh = 0
 ; dx/si = current_page
 ; ah = j
 
@@ -1506,15 +1507,13 @@ loop_check_next_multipage:
 ;   int8_t currentpage = sfx_page;
 mov     dx, bx
 ;   for (j = 0; j < pagecount; j++){
-xor     ah, ah  ; j = 0, compare ah to ch
+cbw  ; j = 0, compare ah to ch
 
 loop_check_next_multipage_inner:
 
 ;        if (currentpage == -1){
 ;            break;
 
-test  dl, dl
-js    break_multipage_innerloop
 mov   si, dx  ; currentpage lookup
 
 ;    if (sfx_free_bytes[currentpage] == BUFFERS_PER_EMS_PAGE){
@@ -1524,22 +1523,23 @@ jne     break_multipage_innerloop
 SHIFT_MACRO  sal si 2
 ;        currentpage = sfxcache_nodes[currentpage].prev;
 
-mov   dl, byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 inc   ah
 ;  for (j = 0; j < pagecount; j++){
 cmp   ah, ch
-jl    loop_check_next_multipage_inner
-
-;   not a break; found enough
-jmp   found_page_multiple
+jge   found_page_multiple ; found enough
+mov   dl, byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+test  dl, dl
+jns   loop_check_next_multipage_inner ; continue looping.
 
 break_multipage_innerloop:
+mov   bx, dx ; skip forward to currentpage...
 SHIFT_MACRO  sal bl 2
 mov   bl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+mov   dl, bl ; new currentpage/sfxpage...
 test  bl, bl
 jns   loop_check_next_multipage
-
-xchg  ax, dx  ; backup sfx_id
+; out of pages
+xchg  ax, dx  ; backup sfx_id in dx
 call  S_UpdateLRUCache_   ;   S_UpdateLRUCache();
 
 mov   al, ch
@@ -1553,34 +1553,28 @@ call  S_EvictSFXPage_     ;    sfx_page = S_EvictSFXPage(pagecount); // get the 
 
 jc    do_return_minus_1
 cbw
-xchg  ax, bx ; bx gets sfx_page
-xchg  ax, dx ; retrieve sfx_id
+mov   bx, dx  ; sfx id in bx
 
 
 found_page_multiple:
 
 mov    dx, SFX_DATA_SEGMENT
 mov    es, dx
-xor    ah, ah  
+
+cbw    ; clear ah, al is sfx_id and < 7F
+xchg   ax, bx   ; bl gets sfx_id... al gets sfx_page
+
 
 ; ch = pagecount
-; al = sfx_id
-; bl = sfx_page
+; bl = sfx_id
+; al = sfx_page
 ; bp = lumpsize
 ; es:di sfx_data ptr
 
 
 
-
-
-; todo inline , dont overwrite sample_256_size etc
-
-
 mov    si, bp   ; si gets lumpsize
 
-
-
-xchg   ax, bx   ; bl gets sfx_id... al gets sfx_page
 
 ;     sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
 ;     sfx_data[sfx_id].cache_position.bu.bytelow = 0;
@@ -1592,7 +1586,6 @@ mov    bp, word ptr es:[di + SFXINFO_T.sfxinfo_lumpandflags]
 and    bp, SOUND_LUMP_BITMASK ; store lump in bp for now.
 
 mov    cl, ch ; pagecount in cl too
-;xor    ah, ah ; todo was this necessaery...
 
 mov    dx, 18  ; offset
 
@@ -1611,17 +1604,12 @@ mov    dx, 18  ; offset
 loop_load_sfx_data_into_next_page:
 
 mov    di, ax  ; backup page
-;    sfx_free_bytes[currentpage] = 0;
-mov    byte ptr ds:[_sfx_free_bytes + di], ah  ; known 0?
-
-;    sfxcache_nodes[currentpage].pagecount = pagecount - j;
-;    sfxcache_nodes[currentpage].numpages  = pagecount;
-SHIFT_MACRO sal    di, 2
-mov    word ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx   ; cl is pagecount - j, ch is pagecount
-
 
 ;        Z_QuickMapSFXPageFrame(currentpage);
 call   Z_QuickMapSFXPageFrame_   
+
+
+
 
 ;                W_CacheLumpNumDirectWithOffset(
 ;                    lump, 
@@ -1633,11 +1621,32 @@ push   cx   ; store pagecount
 push   dx   ; store offset
 push   si   ; store remaining size
 
+
+xor    ax, ax
+
+;    sfx_free_bytes[currentpage] = 0;
+cmp    si, 16384
+jae    do_full_page
+mov    ax, si
+add    ax, 0FFh   ; round up sample_256_size
+mov    al, 040h
+sub    al, ah
+do_full_page:
+mov    byte ptr ds:[_sfx_free_bytes + di], al 
+
+
+;    sfxcache_nodes[currentpage].pagecount = pagecount - j;
+;    sfxcache_nodes[currentpage].numpages  = pagecount;
+SHIFT_MACRO sal    di, 2
+mov    word ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx   ; cl is pagecount - j, ch is pagecount
+
+
+
 ; todo change this to be a single loop/call set
 
-mov    ax, bp
+mov    ax, bp ; lump
 ; dx already offset
-cmp    si, 16384
+cmp    si, 16384  ; todo combine with the above cmp somehow...
 jb     dont_cap_size
 mov    si, 16384 ; numbytes
 dont_cap_size:
@@ -1673,7 +1682,7 @@ dont_normalize_sfx_multi:
 
 ;   currentpage = sfxcache_nodes[currentpage].prev;
 mov    al, byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-xor    ah, ah
+cbw
 
 ;   offset += 16384;
 add   dh, 040h  ;  add   dx, 16384
@@ -1683,8 +1692,7 @@ dec   cl
 jnz   loop_load_sfx_data_into_next_page
 
 
-
-and   si, 16383   
+;and   si, 16383  ; last page. ; should be below 16384 already or something is wrong.
 mov   di, si
 
 
@@ -1726,8 +1734,8 @@ mov  byte ptr ds:[si-1], ah
 cmp  si, dx
 jb   do_next_byte
 exit_loop:
-mov  ax, FIXED_DS_SEGMENT
-mov  ds, ax ; restore ds
+push ss
+pop  ds
 pop  cx
 pop  si
 ret
@@ -1900,7 +1908,9 @@ cmp   cx, (SB_TRANSFERLENGTH SHR 1) ; 128
 jb    used_capped_length_22_11
 mov   cx, (SB_TRANSFERLENGTH SHR 1)
 used_capped_length_22_11:
-
+IFDEF SKIP_SFX
+jmp   do_sfx_play_cleanup_22_11
+ENDIF
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
 
 ; al is volume
@@ -2065,7 +2075,9 @@ test  ch, ch  ; is cx at least 256?
 jz    used_capped_length_22_22
 mov   cx, SB_TRANSFERLENGTH
 used_capped_length_22_22:
-
+IFDEF SKIP_SFX
+jmp   do_sfx_play_cleanup_22_22
+ENDIF
 
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
 
@@ -2361,6 +2373,9 @@ test  ch, ch  ; is cx at least 256?
 jz    used_capped_length
 mov   cx, SB_TRANSFERLENGTH
 used_capped_length:
+IFDEF SKIP_SFX
+jmp   do_sfx_play_cleanup
+ENDIF
 mov   al, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_volume]
 cbw   ; ah is 0, max vol is 7F
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
@@ -2440,6 +2455,7 @@ jne   handle_sfx_and_volume_mix
 ;        total.h = FastIMul8u8u(volume, intermediate) << 1;
 ;        dma_buffer[j] = 0x80 + total.bu.bytehigh; // divide by 256 means take the high byte
 ;    }
+
 do_volume_mix_first_buffer:
 
 shl   dl, 1 ; preshift outside of loop
@@ -2483,6 +2499,7 @@ handle_sfx_and_volume_mix:
 shl   dl, 1 ; preshift outside of loop
 MOV   BX, OFFSET _sfx_mix_table
 mov   dh, bh
+
 loop_handle_next_vol_sfx_mix_sample:
 
 lodsb
@@ -2502,7 +2519,7 @@ mov   bh, dh
 loop   loop_handle_next_vol_sfx_mix_sample
 
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
+
 jmp   do_sfx_play_cleanup
 
 
@@ -3130,7 +3147,7 @@ push    bx
 push    ds
 push    dx
 
-xor     bx, bx
+xor     bx, bx  
 mov     bl, byte ptr ds:[_sb_irq]
 mov     al, byte ptr cs:[_IRQ_TO_INTERRUPT_MAP + bx]
 lds     dx, dword ptr cs:[_SB_OldInt]
