@@ -40,6 +40,7 @@ DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_SEGMENT - COLORMAPS_SEGMENT)) +
 
 _basexscale = 0
 _extralight =     0
+_MULT_4096 = 0
 
 
 _spanfunc_inner_loop_count:
@@ -105,6 +106,11 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
 
+_cachedheight_segment_storage =   0
+_distscale_segment_storage =    	0
+_cacheddistance_segment_storage = 0
+_cachedxstep_segment_storage =    0
+_cachedystep_segment_storage =    0
 
 
 

@@ -42,7 +42,10 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ;0x50   0x54 = _planezlight (dword, so segment in 56)	
 dw 0, 0, 0, 0, 0, 0, 0, 0
 ;0x60
-dw 0, 0, 0, 0, 0, 0, 0, 0
+; visplanelookupsegments
+dw 08400h, 08800h, 08C00h
+; 0x66
+dw  0, 0, 0, 0, 0
 ;0x70  7E = screen_segments
 dw 00, 00, 00, 00, 00, 00, 00, 8000h
 ; 0x80
@@ -69,19 +72,15 @@ dw 0, 0, 1, 0, 0, 0, 0, 0
 ;  unused   0x0100
 ; _viewangle_shiftright3 0x104
 ; _dc_source_segment  0x10A
-dw 00, 00, 00h, XTOVIEWANGLE_SEGMENT,  004Fh, 00h, 00h, BSP_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET SHR 4
-dw 00, CACHEDHEIGHT_SEGMENT, DISTSCALE_SEGMENT, CACHEDDISTANCE_SEGMENT, CACHEDXSTEP_SEGMENT, CACHEDYSTEP_SEGMENT, 0, 0
-; todo unused
+dw 00, 00, 00h, 00h, 00h, 00h, 00h, BSP_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET SHR 4
+; 0x110
+dw  00, 00, 00, 00, 00, 00, 00, 00
+
 ; 0x120
-dw 00, 00h, 00h, 00h
-; MULT_4096 0x128
-dw 00, 01000h, 02000h, 03000h
+dw  00, 00, 00, 00, 00, 00, 00, 00
+
 ; 0x130
-dw  00, 00, 00, 00
-; visplanelookupsegments  0x138
-dw 08400h, 08800h, 08C00h
-; firstflat 0x13E
-dw 00h
+dw  00, 00, 00, 00, 00, 00, 00, 00
 
 ; 0x140
 dw  00, 00, 00, 00, 00, 00, 00, 00

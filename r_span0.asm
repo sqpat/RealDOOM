@@ -33,6 +33,7 @@ ENDP
 R_DRAWSPANACTUAL_DIFF = (OFFSET R_DrawSpan0_ - OFFSET R_SPAN0_STARTMARKER_)
 
 DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_SEGMENT - COLORMAPS_SEGMENT)) 
+_MULT_4096 = 0
 
 
 ;SPANFUNC_SEGMENT and COLORMAPS_SEGMENT difference is  006A0h
@@ -63,7 +64,11 @@ _ds_y = 0
 ; segment:0000 at runtime and the cs offset stuff is absolute, not relative.
 
 
-
+_cachedheight_segment_storage =   0
+_distscale_segment_storage =    	0
+_cacheddistance_segment_storage = 0
+_cachedxstep_segment_storage =    0
+_cachedystep_segment_storage =    0
 
 
 ;

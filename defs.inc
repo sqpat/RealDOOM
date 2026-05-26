@@ -90,8 +90,9 @@ _cachedcollength =                 _NULL_OFFSET + 00050h
 _segloopcachedbasecol =             _NULL_OFFSET + 00058h
 _cachedsegmenttex =                 _NULL_OFFSET + 0005Ch
 
-; keep these in order for selfmodify lodsw chain?	
-;_basexscale = 						_NULL_OFFSET + 00060h
+; 6 bytes
+_visplanelookupsegments =           _NULL_OFFSET + 00060h
+; 66 free
 ;_baseyscale = 						_NULL_OFFSET + 00064h
 ;_viewx = 							_NULL_OFFSET + 00068h
 ;_viewy = 							_NULL_OFFSET + 0006Ch
@@ -134,8 +135,9 @@ _emsconventional =                  _NULL_OFFSET + 000BDh
 _finale_laststage =              	_NULL_OFFSET + 000BEh
 _playingstate = 	                _NULL_OFFSET + 000BFh
 
-;_mfloorclip = 						_NULL_OFFSET + 000C0h
-;_mceilingclip = 					_NULL_OFFSET + 000C4h
+;_MULT_4096 =                    	_NULL_OFFSET + 000C0h
+_tmceilingz =                       _NULL_OFFSET + 000C8h
+_tmdropoffz =                       _NULL_OFFSET + 000CAh
 
 _viletryx =                         _NULL_OFFSET + 000CCh
 _viletryy =                         _NULL_OFFSET + 000D0h
@@ -169,47 +171,20 @@ _gameskill =	                    _NULL_OFFSET + 00101h
 _TaskServiceCount =	                _NULL_OFFSET + 00102h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 ; 106h is a segment used for LES
-; todo free space after 106?
-;_dc_source_segment =	 			_NULL_OFFSET + 0010Ah
-; todo could ds and cx stuff overlap?
-;_ds_y = 				    		_NULL_OFFSET + 0010Ch ; unused
+_tmflags1 =                         _NULL_OFFSET + 00108h
+_tmfloorz =                         _NULL_OFFSET + 0010Ah
+_pspriteiscale =                    _NULL_OFFSET + 0010Ch
 _BSP_MUL_80_LOOKUP_SEGMENT = 		_NULL_OFFSET + 0010Eh
-_cachedheight_segment_storage =    	_NULL_OFFSET + 00112h
-_distscale_segment_storage =    	_NULL_OFFSET + 00114h
-_cacheddistance_segment_storage =   _NULL_OFFSET + 00116h
-_cachedxstep_segment_storage =    	_NULL_OFFSET + 00118h
-_cachedystep_segment_storage =    	_NULL_OFFSET + 0011Ah
 
-_pspriteiscale =                    _NULL_OFFSET + 0011Ch
-_tmflags1 =                         _NULL_OFFSET + 00120h
-_tmfloorz =                         _NULL_OFFSET + 00122h
-_tmceilingz =                       _NULL_OFFSET + 00124h
-_tmdropoffz =                       _NULL_OFFSET + 00126h
-_MULT_4096 =                    	_NULL_OFFSET + 00128h
-_sb_port =              	      	_NULL_OFFSET + 00130h
-_sb_dma =           	         	_NULL_OFFSET + 00132h
-_sb_irq =                       	_NULL_OFFSET + 00133h
-_sfxcache_head =                    _NULL_OFFSET + 00134h
-_sfxcache_tail =                    _NULL_OFFSET + 00135h
-_grmode =                    		_NULL_OFFSET + 00136h
-_novideo =                    		_NULL_OFFSET + 00137h
-_visplanelookupsegments =           _NULL_OFFSET + 00138h
-_firstflat =                  		_NULL_OFFSET + 0013Eh
-_castattacking =                 	_NULL_OFFSET + 00140h
-_castdeath =                     	_NULL_OFFSET + 00141h
-_castonmelee =                   	_NULL_OFFSET + 00142h
-_castframes =                    	_NULL_OFFSET + 00143h
-_casttics =                      	_NULL_OFFSET + 00144h
-_castnum =                       	_NULL_OFFSET + 00145h
-_finaleflat =                   	_NULL_OFFSET + 00146h
-_R_TextureNumForName_addr =         _NULL_OFFSET + 00148h
-_tmthing_pos =                      _NULL_OFFSET + 0014Ch
+;040h in size
+_SFX_INTERRUPT_STACK_FRAME  =    	_NULL_OFFSET + 00110h
+
 _trace =                            _NULL_OFFSET + 00150h
 _currentflatpage =            		_NULL_OFFSET + 00160h
 _lastflatcacheindicesused =         _NULL_OFFSET + 00164h
 _skyflatnum =            			_NULL_OFFSET + 00168h
-;_extralight =            			_NULL_OFFSET + 00169h  ; unused
-;_visplanedirty =            		_NULL_OFFSET + 0016Ah
+_grmode =                    		_NULL_OFFSET + 00169h
+_novideo =                    		_NULL_OFFSET + 0016Ah
 _screenblocks =            			_NULL_OFFSET + 0016Bh
 _lastvisplane =            			_NULL_OFFSET + 0016Ch
 _hudneedsupdate =                   _NULL_OFFSET + 0016Eh
@@ -237,10 +212,14 @@ _setblocks = 						_NULL_OFFSET + 00196h
 _levelfirstframe = 					_NULL_OFFSET + 00197h
 _viewwidth =                     	_NULL_OFFSET + 00198h
 _viewheight =	                    _NULL_OFFSET + 0019Ah
-;_ceiltop =      	                _NULL_OFFSET + 0019Ch
-;_floortop =         	            _NULL_OFFSET + 001A0h
-;_frontsector =          	        _NULL_OFFSET + 001A4h
-;_backsector =               	    _NULL_OFFSET + 001A8h
+_sb_port =              	      	_NULL_OFFSET + 0019Ch
+_sb_dma =           	         	_NULL_OFFSET + 0019Eh
+_sb_irq =                       	_NULL_OFFSET + 0019Fh
+_sfxcache_head =                    _NULL_OFFSET + 001A0h
+_sfxcache_tail =                    _NULL_OFFSET + 001A1h
+; 1A2 to 1A3
+_R_TextureNumForName_addr =         _NULL_OFFSET + 001A4h
+_tmthing_pos =                      _NULL_OFFSET + 001A8h
 _playingtime =		                _NULL_OFFSET + 001ACh
 _active_visplanes =             	_NULL_OFFSET + 001B0h
 _wipegamestate =                    _NULL_OFFSET + 001B5h
@@ -272,17 +251,20 @@ _maskedcachedbasecol =               _NULL_OFFSET + 0028Eh
 _maskedcachedsegment =               _NULL_OFFSET + 00290h
 _maskedheightvalcache =              _NULL_OFFSET + 00292h
 _currentoverlay = 		         	 _NULL_OFFSET + 00293h
-;_lastvisspritesegment =              _NULL_OFFSET + 00294h
-;_lastvisspritesegment2 =             _NULL_OFFSET + 00296h
-;_lastvisspritepatch =                _NULL_OFFSET + 00298h
-;_lastvisspritepatch2 =               _NULL_OFFSET + 0029Ah
+_castattacking =                 	 _NULL_OFFSET + 00294h
+_castdeath =                     	 _NULL_OFFSET + 00295h
+_castonmelee =                   	 _NULL_OFFSET + 00296h
+_castframes =                    	 _NULL_OFFSET + 00297h
+_casttics =                      	 _NULL_OFFSET + 00298h
+_castnum =                       	 _NULL_OFFSET + 00298h
+_finaleflat =                   	 _NULL_OFFSET + 0029Ah
 _ds_p =               				 _NULL_OFFSET + 0029Ch
 
 _olddb =							 _NULL_OFFSET + 002A0h
 _detailshift = 						 _NULL_OFFSET + 002B0h
 _detailshiftitercount = 			 _NULL_OFFSET + 002B2h
 _detailshiftandval = 				 _NULL_OFFSET + 002B4h
-;_xiscalelowbits =                  	 _NULL_OFFSET + 002B6h
+_firstflat =                  		 _NULL_OFFSET + 002B6h
 _gameaction =                 		 _NULL_OFFSET + 002B8h
 _viewactive =                 		 _NULL_OFFSET + 002B9h
 _am_bigstate =                 		 _NULL_OFFSET + 002BAh

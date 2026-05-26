@@ -37,7 +37,7 @@ _basexscale = 0
 
 
 ;SPANFUNC_SEGMENT and COLORMAPS_SEGMENT difference is  006A0h
-
+_MULT_4096 = 0
 
 MAXLIGHTZ                      = 0080h
 MAXLIGHTZ_UNSHIFTED            = 0800h

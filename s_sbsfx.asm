@@ -308,7 +308,7 @@ ENDP
 
 PROC    S_DecreaseRefCountFar_ FAR
 PUBLIC  S_DecreaseRefCountFar_
-
+; called by S_StopChannel_
 call    S_DecreaseRefCount_
 retf
 
@@ -2256,7 +2256,7 @@ check_next_sfx_loop:
 
 add    bp, SIZE SB_VOICEINFO_T
 inc    cx
-cmp    cl, ch
+cmp    cl, ch ; numchannels
 jl     loop_next_channel
 
 
@@ -2603,18 +2603,39 @@ not_our_interrupt_chain:
 ; check dmx_asm and OLDINT8 chain code..
 
 jmp     done_acking_interrupt
+USE_SAFE_SFX_STACK = 0
+SFX_INTERRUPT_STACK_SIZE = 040h
+
+ALIGN_MACRO
+old_ss_sp:
+dw 0, 0
+safe_ss_sp:
+dw _SFX_INTERRUPT_STACK_FRAME + SFX_INTERRUPT_STACK_SIZE, FIXED_DS_SEGMENT
 
 PROC   SB_ServiceInterrupt_ FAR
 PUBLIC SB_ServiceInterrupt_
 
 ; main interrupt
 
+IFDEF USE_SAFE_SFX_STACK
+
+mov    word ptr cs:[old_ss_sp+0], sp
+mov    word ptr cs:[old_ss_sp+2], ss
+cli
+mov    sp, word ptr cs:[safe_ss_sp+0]
+mov    ss, word ptr cs:[safe_ss_sp+2]
+sti
+
+ENDIF
+
+
+
 PUSHA_MACRO_REAL 
 push   ds
 push   es
-mov    bp, sp
 
 cld    
+
 mov    ax, FIXED_DS_SEGMENT
 mov    ds, ax
 
@@ -2749,6 +2770,19 @@ out    020h, al
 pop    es
 pop    ds
 POPA_MACRO_REAL  
+
+
+
+
+IFDEF USE_SAFE_SFX_STACK
+
+cli
+mov    sp, word ptr cs:[old_ss_sp+0]
+mov    ss, word ptr cs:[old_ss_sp+2]
+sti
+
+ENDIF
+
 iret   
 
 recover_sfx_page:
