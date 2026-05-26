@@ -43,6 +43,8 @@ EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fwrite_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN locallib_fseek_:NEAR
+
+EXTRN I_Error_:FAR
 EXTRN locallib_ftell_:NEAR
 
 
@@ -270,6 +272,44 @@ db 0
 _kbdhead:
 db 0
 
+;FORCEQUIT_KEY = SC_PERIOD
+
+IFDEF FORCEQUIT_KEY
+forcequit_msg:
+db "forcequit prev cs:ip: %x:%x", 0
+forcequit:  
+; finish interrupt stuff for stability on exit reasons
+    in     al, 061h ; xt keyboard support shuffle.
+    or     al, 080h
+    out    061h, al
+    and    al, 07Fh
+    out    061h, al
+    mov    al, 020h
+    out    ACKNOWLEDGE_INTERRUPT, al
+
+; restore ds/ss for clean shutdown
+    mov     ax, FIXED_DS_SEGMENT
+    mov     ds, ax
+
+; get cs:ip for error msg
+
+    pop     dx  ; ax
+    pop     dx  ; bx
+    pop     dx  ; cs
+    pop     cx  ; ip
+    
+    mov     ss, ax
+    push    dx  ; cs
+    push    cx  ; ip
+
+
+    mov     ax, OFFSET forcequit_msg
+    push    cs
+    push    ax
+    call    I_Error_
+
+ENDIF
+
 
 ALIGN_MACRO
 PROC I_KeyboardISR_  INTERRUPT
@@ -284,6 +324,11 @@ in     al, 060h                     ; read kb
 mov    bl, byte ptr cs:[_kbdhead]
 and    bx, KBDQUESIZE - 1           ; wraparound keyboard queue
 mov    byte ptr cs:[bx + _keyboardque], al
+IFDEF FORCEQUIT_KEY
+    and    al, 07Fh
+    cmp    al, FORCEQUIT_KEY
+    je     forcequit
+ENDIF
 inc    byte ptr cs:[_kbdhead]
 
 
