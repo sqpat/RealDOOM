@@ -726,8 +726,7 @@ call  dword ptr ds:[_SFX_PlayPatch_addr]
 
 done_with_i_sound:
 
-cmp   al, -1
-je    exit_startsoundwithposition
+jc    exit_startsoundwithposition
 successful_play:
 ;    al is already handle!
 sal   si, 1  ; x2

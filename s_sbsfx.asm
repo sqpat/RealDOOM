@@ -420,7 +420,7 @@ find_prev_startpoint:
     jmp done_with_prevstartpoint_loop
 
 
-PROC S_MoveCacheItemBackOne_ NEAR
+PROC   S_MoveCacheItemBackOne_ NEAR
 PUBLIC S_MoveCacheItemBackOne_
 
 
@@ -442,7 +442,7 @@ xor   cx, cx  ; zero cx
     cmp   byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages],  ch ; known 0
     jne   find_prev_startpoint
 
-    use_existing_prevstartpoint:
+
     done_with_prevstartpoint_loop:
 
 
@@ -882,14 +882,16 @@ jnz    loop_find_more_pages
 jmp    done_finding_nextmost
 pages_in_use_exit:
 POPA_NO_AX_MACRO
-mov    ax, -1
+stc
 ret
-PROC   S_EvictSFXPage_ NEAR
+
+
+PROC   S_EvictSFXPage_ NEAR  ; return no space found as carry flag
 PUBLIC S_EvictSFXPage_
 
 PUSHA_NO_AX_MACRO
 
-cbw    ; zero ah...
+; ah is 0.
 
 ;	currentpage = sfxcache_tail;
 mov    dl, byte ptr ds:[_sfxcache_tail]   ; dl holds tail
@@ -897,7 +899,7 @@ mov    dh, dl                             ; dh holds currentpage
 xor    bx, bx
 mov    bl, dh
 SHIFT_MACRO  sal bl 2  ; bx holds currentpage/tail
-mov    di, bx
+mov    si, bx
   
 dec    ax      ; numpages - 1
 jnz    loop_find_more_pages
@@ -909,23 +911,23 @@ done_finding_nextmost:
 
 ;	evictedpage = currentpage;
 mov    cl, dh   
-mov    ah, bl   ; evictedpage lookup
+mov    ch, bl   ; evictedpage lookup
 
-; al is 0
-; ah is currentpage lookup
+; al/ah unused
+; ch is currentpage lookup
 ; dl holds sfx_cache_tail
 ; cl is evictedpage
 ; di holds sfx_cache_tail lookup
 ; dh holds currentpage
-; bx holds evictedpage lookup (same as ah currently)
+; bx holds evictedpage lookup (same as ch currently)
 
 loop_check_next_evictedpage:
 ;	while (sfxcache_nodes[evictedpage].numpages != sfxcache_nodes[evictedpage].pagecount){
 ;		evictedpage = sfxcache_nodes[evictedpage].next;
 ;	}
 
-mov    al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages]
-cmp    al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+mov    ax, word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+cmp    al, ah
 je     done_finding_evictedpage
 
 mov    cl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
@@ -935,10 +937,10 @@ jmp    loop_check_next_evictedpage
 
 done_finding_evictedpage:
 
-xchg   bl, ah   ; reverse evictedpage/currentpage again
+xchg   bl, ch   ; reverse evictedpage/currentpage again
 
 ; al is garbage
-; ah is evictedpage lookup
+; ch is evictedpage lookup
 ; dl holds sfx_cache_tail
 ; cl is evictedpage
 ; di holds sfx_cache_tail lookup
@@ -960,47 +962,41 @@ xchg   bl, ah   ; reverse evictedpage/currentpage again
 ;        }
 ;    }
 
-mov    al, cl   ; checkpage
+; iterate over all pages targeted for eviction (until we reach -1)
+; make sure none are in use. 
+mov    al, bl   ; evictedpage lookup
+mov    bl, cl   ; checkpage
 check_next_page_in_use:
-test   al, al
-js     done_with_checkpage_loop
-xchg   al, bl
-cmp    byte ptr ds:[_sfx_page_reference_count + bx], bh ; known zero
+cmp    byte ptr ds:[_sfx_page_reference_count + bx], bh ; byte lookup. bh known zero
 jne    pages_in_use_exit
 SHIFT_MACRO  sal bl 2
 mov    bl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-xchg   al, bl ; juggle these back
-jmp    check_next_page_in_use
+test   bl, bl
+jns    check_next_page_in_use
 
 done_with_checkpage_loop:
 
 
 
+xchg   ax, cx  ; copy over evictedpage to al
+mov    ah, cl  ; old al
 
-
-
-
-xchg   ah, bl
-mov    al, cl  ; copy over evictedpage
 
 ; al is evictedpage
 ; ah is currentpage lookup
 ; dl holds sfx_cache_tail
 ; dh holds currentpage
-; bx holds evictedpage lookup
 ; di holds sfx_cache_tail lookup
 
-
 ;	while (evictedpage != -1){
-test   al, al
-js     done_with_evictedpageloop
+mov    bp, (SIZE SFXINFO_T) - 1; for adding to di after scasb
+mov    di, SFX_DATA_SEGMENT
+mov    es, di
 
-mov    bp, SIZE SFXINFO_T; for adding to si
+; clear cache data that was pointing to the page
 
 evict_next_page:
-;		sfxcache_nodes[evictedpage].pagecount = 0;
-;		sfxcache_nodes[evictedpage].numpages = 0;
-mov    word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], 0
+mov    bl, al
 
 ;		for (i = 0; i < NUMSFX; i++){
 ;			if ((sfx_data[i].cache_position.bu.bytehigh) == evictedpage){
@@ -1009,33 +1005,32 @@ mov    word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecoun
 ;		}
 
 
-mov   cx, SFX_DATA_SEGMENT
-mov   ds, cx
-mov   si, SFXINFO_T.sfxinfo_cache_position + 1   ; 3
+mov   di, SFXINFO_T.sfxinfo_cache_position + 1   ; 5
 mov   cx, NUMSFX
 
-loop_check_next_cache_position:
 
-cmp   byte ptr ds:[si], al
+loop_check_next_cache_position:
+scasb
 je    erase_this_sfx
 done_erasing_this_sfx:
-add   si, bp   ; 4
+add   di, bp   ; 5+1 = 6 = SIZE SFXINFO_T
 loop  loop_check_next_cache_position
 
-mov   cx, ss
-mov   ds, cx
-
 ;		sfx_free_bytes[evictedpage] = BUFFERS_PER_EMS_PAGE;
-xchg   al, bl
-mov    byte ptr ds:[_sfx_free_bytes + bx], BUFFERS_PER_EMS_PAGE
-xchg   al, bl
+mov    byte ptr ds:[_sfx_free_bytes + bx], BUFFERS_PER_EMS_PAGE ; 040h
+SHIFT_MACRO  sal bl 2
+
+
+;		sfxcache_nodes[evictedpage].pagecount = 0;
+;		sfxcache_nodes[evictedpage].numpages = 0;
+; cx zero after loops
+mov    word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx
+
 
 ;		evictedpage = sfxcache_nodes[evictedpage].prev;
 mov    al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-mov    bl, al
-SHIFT_MACRO  sal bl 2
 test   al, al
-jns    evict_next_page
+jns    evict_next_page ; not at end of linked list yet. keep goin
 
 done_with_evictedpageloop:
 
@@ -1044,18 +1039,17 @@ done_with_evictedpageloop:
 ; dl holds sfx_cache_tail
 ; dh holds currentpage
 ; bx garbage
-; di holds sfx_cache_tail lookup
+; si holds sfx_cache_tail lookup
 ; cx garbage
 mov cl, -1
 
 ;	// connect old tail and old head.
 ;	sfxcache_nodes[sfxcache_tail].prev = sfxcache_head;
-mov    al, byte ptr ds:[_sfxcache_head]
-mov    byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al
+mov    bl, byte ptr ds:[_sfxcache_head]
+mov    byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], bl
 
 
 ;	sfxcache_nodes[sfxcache_head].next = sfxcache_tail;
-mov    bl, al
 SHIFT_MACRO sal bl 2
 mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dl
 
@@ -1085,6 +1079,7 @@ mov    byte ptr ds:[_sfxcache_tail], al
 
 mov    al, dh
 cbw
+clc
 mov    es, ax
 POPA_NO_AX_MACRO
 mov    ax, es
@@ -1094,7 +1089,7 @@ ret
 
 
 erase_this_sfx:
-mov   byte ptr ds:[si], -1
+mov   byte ptr es:[di-1], SOUND_NOT_IN_CACHE ; 0FFh
 jmp   done_erasing_this_sfx
 
 
@@ -1158,7 +1153,7 @@ done_checking_channels:
 return_error_no_space_in_cache:
 pop  cx
 pop  si
-mov  ax, -1
+stc
 
 retf
 
@@ -1171,11 +1166,11 @@ found_open_channel:
 
 mov    bx, SFX_DATA_SEGMENT
 mov    es, bx
-xor    ah, ah
+cbw
 mov    bx, ax
 sal    bx, 1   ; * 2
 add    bx, ax  ; * 3
-sal    bx, 1   ; * 6 foe SIZEOF 
+sal    bx, 1   ; * 6 for SIZEOF 
 mov    cx, bx  ; store
 cmp    byte ptr es:[bx + SFXINFO_T.sfxinfo_cache_position + 1], SOUND_NOT_IN_CACHE
 jne    sound_in_cache
@@ -1185,9 +1180,8 @@ jne    sound_in_cache
 ;  return -1; 
 
 mov    bh, al  ; back up sfxid
-call   S_LoadSoundIntoCache_
-test   ax, ax
-js     return_error_no_space_in_cache
+call   S_LoadSoundIntoCache_ ; carry means no space...
+jc     return_error_no_space_in_cache
 mov    al, bh  ; restore sfxid
 
 sound_in_cache:
@@ -1268,8 +1262,8 @@ xchg   ax, si
 mov    dl, 6
 div    dl
 xor    ah, ah
-
 sti
+clc
 pop  cx
 pop  si
 retf
@@ -1288,13 +1282,12 @@ PUBLIC S_LoadSoundIntoCache_
 
 PUSHA_NO_AX_MACRO
 
-xor   ah, ah
+
 mov   di, ax
 sal   di, 1
 add   di, ax
 sal   di, 1    ; * 6
-mov   bp, SFX_DATA_SEGMENT
-mov   es, bp
+; es already SFX_DATA_SEGMENT
 ;    int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
 mov   bp, word ptr es:[di + SFXINFO_T.sfxinfo_lumpsize]
 
@@ -1320,7 +1313,7 @@ and   dx, 3   ; pagecount in dl, 0 in dh
 ;    pagecount += (sample_256_size & BUFFERS_PER_EMS_PAGE_MASK) ? 1 : 0;
 
 mov   cl, ch    ; backup
-and   ch, BUFFERS_PER_EMS_PAGE_MASK
+and   ch, BUFFERS_PER_EMS_PAGE_MASK ; 03F
 add   ch, 0FFh  ; carry if nonzero
 adc   dl, dh    ; dh is known zero. add carry flag
 
@@ -1384,9 +1377,8 @@ call  S_EvictSFXPage_     ;     sfx_page = S_EvictSFXPage(1);
 ;            sfx_free_bytes[sfx_page] -= sample_256_size;
 ;        }
 
-test  ax, ax
-js    do_return_minus_1
-xor   ah, ah
+jc    do_return_minus_1
+cbw
 mov   si, ax  ; si gets sfx_page
 xchg  ax, cx  ; restore sfx_id to ax
 xor   bx, bx  ; allocate_position default 0
@@ -1486,13 +1478,14 @@ rep    stosb
 ;xor    ax, ax        ;return 0;  ax already zero from fmemset above..
 
 
-
-do_return_minus_1:
+clc
 do_return:
-mov      es, ax
+do_return_minus_1:
 POPA_NO_AX_MACRO
-mov      ax, es
+
 ret
+
+
 
 
 handle_multipage_pagecount:
@@ -1557,9 +1550,9 @@ call  S_EvictSFXPage_     ;    sfx_page = S_EvictSFXPage(pagecount); // get the 
 ;       return -1;
 ;   } 
 
-test  ax, ax
-js    do_return_minus_1
 
+jc    do_return_minus_1
+cbw
 xchg  ax, bx ; bx gets sfx_page
 xchg  ax, dx ; retrieve sfx_id
 
