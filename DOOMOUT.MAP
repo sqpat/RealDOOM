@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/05/26 13:31:16
+Created on:       26/05/27 11:47:31
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -270,9 +270,9 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 0000:56f6      SB_ServiceInterrupt_
 0000:4c5a      _sb_dma_8
 0000:4ebd      S_DecreaseRefCountFar_
-0000:55b2*     SB_Service_Mix11Khz_
+0000:55b1*     SB_Service_Mix11Khz_
 0000:4e6a      _IRQ_TO_INTERRUPT_MAP
-0000:5411*     SB_Service_Mix22Khz_
+0000:5410*     SB_Service_Mix22Khz_
 0000:5920*     SB_RestoreVoiceVolume_
 0000:4ec1*     S_DecreaseRefCount_
 0000:58ea      SB_ResetDSP_
@@ -280,7 +280,7 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 0000:58cf      SB_StopPlayback_
 0000:4c5f      _SB_IntController2Mask
 0000:4c63      _SB_OriginalVoiceVolumeRight
-0000:53ec*     S_NormalizeSfxVolume_
+0000:53eb*     S_NormalizeSfxVolume_
 0000:5971*     S_SBFX_ENDMARKER_
 0000:58ab*     SB_DMA_EndTransfer_
 0000:4e7a*     S_IncreaseRefCount_

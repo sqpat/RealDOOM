@@ -1539,10 +1539,10 @@ mov   dl, bl ; new currentpage/sfxpage...
 test  bl, bl
 jns   loop_check_next_multipage
 ; out of pages
-xchg  ax, dx  ; backup sfx_id in dx
+xchg  ax, bx  ; backup sfx_id in bx
 call  S_UpdateLRUCache_   ;   S_UpdateLRUCache();
 
-mov   al, ch
+mov   al, ch ; pagecount
 cbw
 call  S_EvictSFXPage_     ;    sfx_page = S_EvictSFXPage(pagecount); // get the headmost
 
@@ -1553,7 +1553,9 @@ call  S_EvictSFXPage_     ;    sfx_page = S_EvictSFXPage(pagecount); // get the 
 
 jc    do_return_minus_1
 cbw
-mov   bx, dx  ; sfx id in bx
+
+; al has page, bx has sfxid
+xchg   ax, bx   ; al gets sfx_id... bl gets sfx_page
 
 
 found_page_multiple:
