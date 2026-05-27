@@ -173,7 +173,7 @@ _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 ; 106h is a segment used for LES
 _tmflags1 =                         _NULL_OFFSET + 00108h
 _tmfloorz =                         _NULL_OFFSET + 0010Ah
-_pspriteiscale =                    _NULL_OFFSET + 0010Ch
+; 10c free
 _BSP_MUL_80_LOOKUP_SEGMENT = 		_NULL_OFFSET + 0010Eh
 
 ;040h in size
@@ -427,7 +427,7 @@ _screen_botleft_y =				     _NULL_OFFSET + 00506h
 _screen_topright_x =				 _NULL_OFFSET + 00508h
 _screen_topright_y =			     _NULL_OFFSET + 0050Ah
 
-;_planezlight = 						 _NULL_OFFSET + 0050Ch
+_pspriteiscale =                     _NULL_OFFSET + 0050Ch
 _caststate =                         _NULL_OFFSET + 00510h
 _STATES_SEGMENT_PTR =                _NULL_OFFSET + 00512h
 _playingdriver =                     _NULL_OFFSET + 00514h

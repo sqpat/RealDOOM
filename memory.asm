@@ -69,24 +69,17 @@ dw 0, 0, 0, 0, 0, SPANFUNC_SEGMENT, 0, 0
 ; 0xF0   validcount (0xF4)= 1
 dw 0, 0, 1, 0, 0, 0, 0, 0
 ; 0x100:
-;  unused   0x0100
-; _viewangle_shiftright3 0x104
-; _dc_source_segment  0x10A
 dw 00, 00, 00h, 00h, 00h, 00h, 00h, BSP_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET SHR 4
 ; 0x110
 dw  00, 00, 00, 00, 00, 00, 00, 00
-
 ; 0x120
 dw  00, 00, 00, 00, 00, 00, 00, 00
-
 ; 0x130
 dw  00, 00, 00, 00, 00, 00, 00, 00
-
 ; 0x140
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0x150
 dw  00, 00, 00, 00, 00, 00, 00, 00
-
 ; 0x160
 ; currentflatpage 0x160, lastflatcacheindicesused 0x164
 db 0, 1, 2, 3, 0, 1, 2, 3
