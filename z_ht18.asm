@@ -242,7 +242,7 @@ ENDP
 
 
 ; todo inline its one use
-PROC Z_QuickMapMusicPageFrame_ FAR
+PROC Z_QuickMapMusicPageFrame_ NEAR
 PUBLIC Z_QuickMapMusicPageFrame_
 
 push dx
@@ -265,7 +265,7 @@ sti
 pop dx
 exit_page_frame:
 
-retf
+ret
 
 
 ENDP

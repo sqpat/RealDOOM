@@ -45,7 +45,7 @@ IFDEF COMP_CH
 ELSE
 
 ALIGN_MACRO
-    PROC   Z_QuickMapMusicPageFrame_ FAR
+    PROC   Z_QuickMapMusicPageFrame_ NEAR
     PUBLIC Z_QuickMapMusicPageFrame_
 
     push  bx
@@ -61,7 +61,7 @@ ALIGN_MACRO
     int   067h
     pop   dx
     pop   bx
-    retf  
+    ret
 
 
     ENDP

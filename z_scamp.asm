@@ -227,7 +227,7 @@ void __far Z_QuickMapMusicPageFrame(uint8_t pageframeindex, uint8_t pagenumber){
 ; pagenumber dl 
 
 ; todo inline its one use
-PROC Z_QuickMapMusicPageFrame_ FAR
+PROC Z_QuickMapMusicPageFrame_ NEAR
 PUBLIC Z_QuickMapMusicPageFrame_
 
 
@@ -248,7 +248,7 @@ add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
 out  SCAMP_PAGE_SET_REGISTER, ax
 sti
 exit_page_frame:
-retf
+ret
 
 ENDP
 

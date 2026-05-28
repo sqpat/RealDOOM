@@ -27,11 +27,12 @@ EXTRN locallib_freadfromfar_:FAR
 EXTRN I_Error_:FAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN Z_QuickMapWADPageFrame_:NEAR
-EXTRN Z_QuickMapMusicPageFrame_:FAR
+
 EXTRN Z_QuickMapSFXPageFrame_:NEAR
 EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapRender_:NEAR
 
+EXTRN S_CheckFar_:FAR
 
 EXTRN Z_QuickMapMenu_:NEAR
 EXTRN locallib_fread_nearsegment_:NEAR
@@ -58,7 +59,7 @@ EXTRN locallib_ftell_:NEAR
 EXTRN getStringByIndex_:FAR
 EXTRN I_Error_:FAR
 EXTRN Z_SetOverlay_:FAR
-EXTRN Z_QuickMapMusicPageFrame_:FAR
+EXTRN Z_QuickMapMusicPageFrame_:NEAR
 EXTRN FixedMul_:FAR
 EXTRN FastDiv32u16u_:FAR
 EXTRN cht_CheckCheat_Far_:FAR
@@ -1224,6 +1225,7 @@ dw OFFSET _V_DrawFullscreenPatch_FromMenu_addr , OFFSET V_DrawFullscreenPatch_Fr
 dw OFFSET _V_DrawFullscreenPatch_FromIntermission_addr , OFFSET V_DrawFullscreenPatch_FromIntermission_
 dw OFFSET _SFX_PlayPatch_addr                  , OFFSET SFX_PlayPatch_
 dw OFFSET _S_DecreaseRefCountFar_addr          , OFFSET S_DecreaseRefCountFar_
+dw OFFSET _S_Check_addr                        , OFFSET S_CheckFar_
 dw OFFSET _W_CheckNumForNameFar_addr           , OFFSET W_CheckNumForNameFar_
 dw OFFSET _R_TextureNumForName_addr            , OFFSET R_TextureNumForName_FAR_
 dw OFFSET _R_FlatNumForName_addr               , OFFSET R_FlatNumForName_FAR_
