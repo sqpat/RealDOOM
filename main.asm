@@ -273,6 +273,7 @@ _kbdhead:
 db 0
 
 ;FORCEQUIT_KEY = SC_PERIOD
+;FORCEREBOOT_KEY = SC_PERIOD
 
 IFDEF FORCEQUIT_KEY
 forcequit_msg:
@@ -310,6 +311,19 @@ forcequit:
 
 ENDIF
 
+IFDEF FORCEREBOOT_KEY
+forcereboot:  
+; set warm boot 
+    mov    ax, 040h
+    mov    es, ax
+    mov    word ptr es:[072h], 01234h
+    db     0EAh, 00, 00, 0FFh, 0FFh  ; JMP FFFF:0000
+
+
+
+ENDIF
+
+
 
 ALIGN_MACRO
 PROC I_KeyboardISR_  INTERRUPT
@@ -328,6 +342,11 @@ IFDEF FORCEQUIT_KEY
     and    al, 07Fh
     cmp    al, FORCEQUIT_KEY
     je     forcequit
+ENDIF
+IFDEF FORCEREBOOT_KEY
+    and    al, 07Fh
+    cmp    al, FORCEREBOOT_KEY
+    je     forcereboot
 ENDIF
 inc    byte ptr cs:[_kbdhead]
 
