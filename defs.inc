@@ -947,7 +947,7 @@ ELSE
 ENDIF
 ENDM
 
-
+; optimized for speed
 SHIFT_MACRO MACRO instruction, register, count
 
 
@@ -962,6 +962,20 @@ ELSEIF COMPISA GE COMPILE_186
 			&instruction &register, 1
 		ENDM
 	ENDIF
+ELSE
+	REPT &count
+		&instruction &register, 1
+	ENDM
+ENDIF
+
+ENDM
+
+; optimized for size
+SHIFT_MACRO_SMALL MACRO instruction, register, count
+
+
+IF COMPISA GE COMPILE_186
+	&instruction &register, &count
 ELSE
 	REPT &count
 		&instruction &register, 1

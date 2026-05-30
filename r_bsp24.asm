@@ -6404,6 +6404,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta_TWOSIDED], dl
    ; read all the sides fields now. ;preshift them as they are word lookups
 
    lodsw     ; side toptexture
+   ; here...
    test      ax, ax
    jz        skip_toptex_selfmodify
    xchg      ax, di
@@ -6421,6 +6422,9 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta_TWOSIDED], dl
    
    skip_toptex_selfmodify:
    lodsw     ; side bottexture  ; faster to just do it than branch?
+   ; what if ax is zero??
+   test      ax, ax
+   jz        skip_bottex_selfmodify
    xchg      ax, di
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    mov       byte ptr cs:[SELFMODIFY_BSP_set_textureheight_bottom+4], al  ; before bot draws, set tex height in case necessary in r_col
@@ -6439,6 +6443,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta_TWOSIDED], dl
    sal       di, 1
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1]
+   skip_bottex_selfmodify:
 
 
    lodsw     ; side midtexture
