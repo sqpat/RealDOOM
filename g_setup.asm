@@ -412,6 +412,10 @@ mov     bl, byte ptr ds:[_gameskill]
 db 09Ah
 dw P_SETUPLEVEL_OFFSET, CODE_OVERLAY_SEGMENT
 
+; done with p_setup. now fix levels...
+
+;call    G_FixLevelErrors_
+
 les     ax, dword ptr ds:[_ticcount]
 mov     word ptr ds:[_starttime+0], ax
 mov     word ptr ds:[_starttime+2], es
@@ -453,6 +457,135 @@ pop    bx
 
 
 ret
+ENDP
+
+; sigh ... doom is selective about how it chooses to use its invisible walls
+
+COMMENT @
+
+; calculate this dynamically?
+TEXTURE_TODO = 2
+
+PROC    G_FixLevelErrors_ NEAR
+PUBLIC  G_FixLevelErrors_
+PUSHA_NO_AX_MACRO
+
+; fix missing textures on sides by giving it some texture.
+
+
+; A     
+mov  cx, word ptr ds:[_numlines]
+mov  ds, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov  si, ((LINES_SEGMENT) - (SECTORS_SEGMENT)) SHL 4  ; offset of lines segment in sides segment
+
+
+iter_next_line:
+lodsw
+xchg ax, bx ; bx gets side 1
+lodsw
+test ax, ax ; ax (eventually bp) gets side 2
+jns  check_two_sided_line  ; B   if double sides
+done_checking_twosided_line:
+loop  iter_next_line
+
+push  ss
+pop   ds ; restore ds
+
+POPA_NO_AX_MACRO
+
+ret
+
+check_two_sided_line:
+
+;C   look up its sector, check floor/ceil heights
+
+; set these up in case
+SHIFT_MACRO_SMALL SHL AX 3
+SHIFT_MACRO_SMALL SHL BX 3
+
+
+; we are paged physics now right...?
+mov     es, word ptr ss:[_LINES_PHYSICS_SEGMENT_PTR]
+lea     di, [si - (4 + (((LINES_SEGMENT) - (SECTORS_SEGMENT)) SHL 4))]  ; - 4 for double lodsw
+
+SHIFT_MACRO_SMALL SHL di 2 ; shl 2 more to get * 16 lookup
+
+; cx/si in use by outer loop
+; ax has side 1 offset
+; bx has side 2 offset
+; di is LINE_T pointer
+
+;    lp_frontsecnum dw ?     ; A
+;    lp_backsecnum  dw ?     ; C
+
+les    di, dword ptr es:[di + SECTOR_T.lp_frontsecnum]
+mov    bp, es
+
+SHIFT_MACRO_SMALL SHL di 4
+SHIFT_MACRO_SMALL SHL bp 4
+
+
+; di is front
+; bp is back
+
+;    sec_floorheight          dw ?   ; 0
+;    sec_ceilingheight        dw ?   ; 2
+; ds is sectors segment
+
+les    di, dword ptr ds:[di + SECTOR_T.sec_floorheight]
+mov    dx, es
+les    bp, dword ptr ds:[bp + SECTOR_T.sec_floorheight]
+xchg   ax, bp
+
+;di/dx front floor/ceil
+;ax/es back floor/ceil
+cmp    di, ax
+mov    di,  ((SIDES_SEGMENT - SECTORS_SEGMENT) SHL 4)
+mov    ax, 0  ; for cmp... dont xor due to flags
+jne    floors_diff ; one must have a low wall
+; floors equal...
+check_ceil_after_floor:
+mov    di, es
+cmp    dx, di
+jne    ceils_diff
+jmp    done_checking_twosided_line ; nonwall
+
+;bx is side1/frontsec
+;bp is side1/backsec
+
+floors_diff:
+jg     sec1_floor_above_sec2
+sec2_floor_above_sec1:
+; frontsec should have low texture
+cmp     word ptr ds:[bx + di +  SIDE_T.s_bottomtexture], ax
+jne     check_ceil_after_floor
+mov     word ptr ds:[bx + di +  SIDE_T.s_bottomtexture], TEXTURE_TODO
+jmp    check_ceil_after_floor
+sec1_floor_above_sec2:
+; backsec should have low texture
+cmp     word ptr ds:[bp + di +  SIDE_T.s_bottomtexture], ax
+jne     check_ceil_after_floor
+mov     word ptr ds:[bp + di +  SIDE_T.s_bottomtexture], TEXTURE_TODO
+jmp    check_ceil_after_floor
+
+ceils_diff:
+mov    di,  ((SIDES_SEGMENT - SECTORS_SEGMENT) SHL 4)
+jg     sec1_ceil_above_sec2
+sec2_ceil_above_sec1:
+; backsec should have upper texture
+cmp     word ptr ds:[bp + di +  SIDE_T.s_toptexture], ax
+jne     done_checking_twosided_line
+mov     word ptr ds:[bp + di +  SIDE_T.s_toptexture], TEXTURE_TODO
+jmp    done_checking_twosided_line
+sec1_ceil_above_sec2:
+; frontsec should have upper texture
+cmp     word ptr ds:[bx + di +  SIDE_T.s_toptexture], ax
+jne     done_checking_twosided_line
+mov     word ptr ds:[bx + di +  SIDE_T.s_toptexture], TEXTURE_TODO
+jmp    done_checking_twosided_line
+
+@
+
 ENDP
 
  
