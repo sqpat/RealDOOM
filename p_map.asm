@@ -7261,14 +7261,15 @@ mov   bp, sp
 ;    angle = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 
 les   di, dword ptr ds:[_playerMobj_pos]
-mov   ax, word ptr es:[di + 010h]        ; angle intbits
+mov   ax, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]        ; angle intbits
 
-push  word ptr es:[di]		; x lo bp - 2
-push  word ptr es:[di + 2]  ; x hi bp - 4
-les   bx, dword ptr es:[di + 4]
+push  word ptr es:[di + MOBJ_POS_T.mp_x + 0]  ; x lo bp - 2
+push  word ptr es:[di + MOBJ_POS_T.mp_x + 2]  ; x hi bp - 4
+les   bx, dword ptr es:[di +  MOBJ_POS_T.mp_y + 0]
 mov   cx, es		;			si:di y
-mov   di, ax
-SHIFT_MACRO sar ax 2
+mov   di, ax        ; unmodified angle ??
+
+SHIFT_MACRO shr ax 2
 and   al, 0FEh  ; word lookup
 xchg  ax, di    ; di has sine/cosine fineangle lookup
 				; ax has sign
@@ -7287,6 +7288,8 @@ ELSE
 	mov   si, PT_ADDLINES
 	push  si
 ENDIF
+
+
 
 ; ax has full angle
 xchg  bx, di
@@ -7308,7 +7311,7 @@ jpe   skip_invert_cos_8
 neg   bx
 dec   si
 skip_invert_cos_8:
-xchg  bx, di
+xchg  bx, di  ; restore bx/di pair
 
 
 SHIFT32_MACRO_LEFT dx ax 6
