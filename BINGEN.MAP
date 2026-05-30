@@ -1,7 +1,8 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/05/30 01:13:00
+Created on:       26/05/30 03:41:08
+Warning! W1027: file r_mask24.obj(r_mask24.ASM): redefinition of found_multipage ignored
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -342,10 +343,10 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 07a0:0000      SM_MPUMD_STARTMARKER_
 07a0:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-081e:391a      R_WriteBackViewConstants24_
+081e:391c      R_WriteBackViewConstants24_
 081e:0d93*     tx_already_positive
 081e:26d1*     R_AddLine_
-081e:33c2      R_GetPatchTexture_Far24_
+081e:33c4      R_GetPatchTexture_Far24_
 081e:3e80      R_BSP24_ENDMARKER_
 081e:09b8*     FixedMulTrigNoShiftSine_BSPLocal_
 081e:1084*     handle_closed_door_top
@@ -368,13 +369,14 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081e:1005*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
 081e:25ce*     R_Subsector_
 081e:23d8*     just_do_draw_top
+081e:3219*     found_multipage
 081e:2397*     do_top_texture_draw
-081e:38b8*     R_WriteBackLevelConstants24_
+081e:38ba*     R_WriteBackLevelConstants24_
 081e:0000      R_BSP24_STARTMARKER_
 081e:0200*     OFFSET_CEILINGCLIP
 081e:1538*     exit_rendersegloop
 081e:12f0*     scales_set
-081e:373c      R_RenderPlayerView24_
+081e:373e      R_RenderPlayerView24_
 081e:0968*     FixedDivBSPLocal_
 081e:1559*     increment_loop_values
 081e:0384*     _CURRENT_LINE_TEXTURE_HEIGHT
@@ -383,8 +385,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081e:0080*     _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
 081e:0080*     BEOFRE_COLFUNC_LOOKUP
 081e:2466*     SELFMODIFY_set_pixel_count_shift_mul_bot
-081e:3264*     R_GetTexturePage_
-081e:3aaa*     R_WriteBackFrameConstants_
+081e:3266*     R_GetTexturePage_
+081e:3aac*     R_WriteBackFrameConstants_
 081e:09e2*     FixedMulTrigNoShiftCosine_BSPLocal_
 081e:0056*     _cachedsegmentlumpsBSPLocal
 081e:0a0c*     R_ClearPlanes_
@@ -404,7 +406,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081e:15a8*     SELFMODIFY_BSP_markceiling_1
 081e:1868*     R_StoreWallRangeWithBackSector_
 081e:1856*     adjust_row_offset_TWOSIDED
-081e:3450      R_GetCompositeTexture_Far24_
+081e:3452      R_GetCompositeTexture_Far24_
 081e:004a*     _segloopnextlookup
 081e:24cc*     R_RenderSegLoop_exit_TWOSIDED
 081e:0098*     _basexscale
@@ -617,7 +619,6 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd5:0002*     _fuzzoffset
 1dd5:194c      R_WriteBackViewConstantsMasked24_
 1dd5:04b8*     draw_sprite_normal_innerloop
-1dd5:0678*     found_multipage
 1dd5:1a66      R_WriteBackMaskedFrameConstants24_
 1dd5:0cd4*     selected_sprite_page_multi
 1dd5:1560*     R_GetMaskedColumnSegment_
@@ -1640,4 +1641,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e4d0 (255184.)
 Entry point address: 2fdb:7fee
-Link time: 00:00.59
+Link time: 00:00.04

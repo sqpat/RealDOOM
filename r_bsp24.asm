@@ -12577,7 +12577,7 @@ COLUMN_IN_CACHE_WAD_LUMP_SEGMENT = 07000h
 
 
 
-PROC R_GetNextTextureBlock_ NEAR  ; pretty optimized now
+PROC   R_GetNextTextureBlock_ NEAR  ; pretty optimized now
 
 ; bp - 2  cachetype
 ; bp - 1  blocksize
@@ -12782,6 +12782,7 @@ call      R_EvictL2CacheEMSPage_
 mov       dh, al
 
 found_multipage:
+public    found_multipage
 ;		foundmultipage:
 ;        usedtexturepagemem[i] = 64;
 ; dh is i, the first page.
@@ -12810,7 +12811,11 @@ SHIFT_MACRO shl       bl 2
 
 mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx
 dec       cx ; cl --
+
+mov       bl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 numpages_not_3_or_more:
+
+; cx is 1. note, 4 pages is unimplemented i guess
 
 ; cx is 1. note, 4 pages is unimplemented i guess
 
