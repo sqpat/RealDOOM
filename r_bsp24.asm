@@ -3838,8 +3838,9 @@ adjust_row_offset:
 public adjust_row_offset
 cbw      ; maxes at 127, ah is 0
 SHIFT_MACRO shl ax 3
-neg       ax  ; subtract this from the real number
-add       ax, ((080h SHL 3) - 1) ; 0400h - 1 for equals case
+; offset goes DOWN not up, so the math is that if we render this many pixels we loop, not 128-number
+;neg       ax  ; subtract this from the real number
+;add       ax, ((080h SHL 3) - 1) ; 0400h - 1 for equals case
 mov       word ptr [bp - 0Ch], ax   ;  TODO make this a push. probably change the bp addr.
 
 jmp       done_adjusting_row_offset
@@ -6188,8 +6189,9 @@ adjust_row_offset_TWOSIDED:
 public adjust_row_offset_TWOSIDED
 cbw      ; maxes at 127, ah is 0
 SHIFT_MACRO shl ax 3
-neg       ax  ; subtract this from the real number
-add       ax, ((080h SHL 3) - 1) ; 0400h - 1 for equals case
+; offset goes DOWN not up, so the math is that if we render this many pixels we loop, not 128-number
+;neg       ax  ; subtract this from the real number
+;add       ax, ((080h SHL 3) - 1) ; 0400h - 1 for equals case
 mov       word ptr [bp - 0Ch], ax   ;  TODO make this a push. probably change the bp addr.
 
 jmp       done_adjusting_row_offset_TWOSIDED

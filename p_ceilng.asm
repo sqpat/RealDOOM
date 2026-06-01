@@ -218,7 +218,7 @@ ENDP
 
 
 ; return in carry
-PROC    EV  _DoCeiling_ NEAR
+PROC    EV_DoCeiling_ NEAR
 PUBLIC  EV_DoCeiling_
 
 ;int16_t __near EV_DoCeiling ( uint8_t linetag, ceiling_e	type ) {
