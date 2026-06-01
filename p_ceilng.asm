@@ -218,7 +218,7 @@ ENDP
 
 
 ; return in carry
-PROC    EV_DoCeiling_ NEAR
+PROC    EV  _DoCeiling_ NEAR
 PUBLIC  EV_DoCeiling_
 
 ;int16_t __near EV_DoCeiling ( uint8_t linetag, ceiling_e	type ) {
@@ -364,7 +364,7 @@ jmp   done_with_doceiling_switch_block
 
 
 switch_doceiling_type_3:
-mov   byte ptr es:[di + CEILING_T.ceiling_crush], 1
+mov   byte ptr ds:[bx + CEILING_T.ceiling_crush], 1
 mov   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]
 mov   word ptr ds:[bx + CEILING_T.ceiling_topheight], ax
 ;jmp   switch_doceiling_type_1 ; fall thru
