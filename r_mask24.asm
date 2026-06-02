@@ -1592,7 +1592,7 @@ jae       foundonepage
 
 inc       bx
 cmp       bl, ch
-jl        check_next_texture_page_for_space
+jb        check_next_texture_page_for_space
 
 call      R_EvictL2CacheEMSPage_Sprite_Single_
 ; ah is 0

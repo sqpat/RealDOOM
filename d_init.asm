@@ -67,7 +67,7 @@ EXTRN _scantokey:NEAR
 EXTRN _used_defaultfile:NEAR
 EXTRN W_GetNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNumDirect_:FAR
-
+EXTRN divexception_handler_:FAR
 
 EXTRN locallib_strcmp_:NEAR
 
@@ -2279,6 +2279,20 @@ je      skip_recording
 call    G_BeginRecording_
 skip_recording:
 call    I_InitGraphics_
+
+; lets hook up interrupt handlers...
+
+
+xor     ax, ax
+mov     ds, ax
+les     ax, dword ptr ds:[00 * 4]
+mov     word ptr ds:[00 * 4 + 0], OFFSET divexception_handler_
+mov     word ptr ds:[00 * 4 + 2], cs
+push    ss
+pop     ds
+mov     word ptr ds:[__old_int00+0], ax
+mov     word ptr ds:[__old_int00+0], es
+
 jmp     Z_ClearDeadCode_
 
 ENDP

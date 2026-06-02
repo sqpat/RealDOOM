@@ -362,7 +362,7 @@ SPRITEFRAME_T STRUC
     spriteframe_flip                db 8  DUP(?) ; 010h
     spriteframe_rotate              db ?         ; 018h
 
-SPRITEFRAME_T ENDS
+SPRITEFRAME_T ENDS                               ; 019h
 
 
 SPRITEDEF_T STRUC 

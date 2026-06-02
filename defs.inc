@@ -111,8 +111,8 @@ _bombspot =       					_NULL_OFFSET + 0009Ch
 _bombdamage =       				_NULL_OFFSET + 0009Eh
 _bombspot_pos = 					_NULL_OFFSET + 000A0h
 
-;_spryscale = 						_NULL_OFFSET + 000A4h
-;_sprtopscreen =	 					_NULL_OFFSET + 000A8h
+__old_int00 = 						_NULL_OFFSET + 000A4h
+;__old_int13 =	 					_NULL_OFFSET + 000A8h
 _nomonsters =                       _NULL_OFFSET + 000ACh
 _respawnmonsters =                  _NULL_OFFSET + 000ADh
 

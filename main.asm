@@ -3203,17 +3203,32 @@ call  locallib_fread_
 xchg  ax, di
 call  locallib_fclose_
 
-
+; todo, add some more? SB DMA buffer?
 
 
 ; size of code to clobber
 ;mov   cx, (P_INIT_ENDMARKER - D_INIT_STARTMARKER) AND 0FFF0H  
 
 jmp     D_DoomLoop_  ; never returns
+ENDP
+
+exception_str:
+db  "EXCEPTION %i CAUGHT AT %x:%x", 0
 
 
+
+PROC    divexception_handler_ FAR
+PUBLIC  divexception_handler_
+mov     bx, sp
+push    word ptr ds:[bx+0] ; ip ; todo... just reuse whats already on stack?
+push    word ptr ds:[bx+2] ; cs
+push    cs
+push    OFFSET exception_str
+call    I_Error_
 
 ENDP
+
+
 
 
 

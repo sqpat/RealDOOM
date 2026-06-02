@@ -263,10 +263,25 @@ pop   bx
 exit_shutdown_timer:
 
 
-;call  I_ShutdownMouse_
-xor   ax, ax
+; undo interrupt handlers
 
-cmp   byte ptr ds:[_mousepresent], al
+xor    ax, ax
+mov    ds, ax
+les    ax, dword ptr ss:[__old_int13+0]
+mov    word ptr ds:[13 * 4 + 0], ax
+mov    word ptr ds:[13 * 4 + 2], es
+les    ax, dword ptr ss:[__old_int00+0]
+mov    word ptr ds:[00 * 4 + 0], ax
+mov    word ptr ds:[00 * 4 + 2], es
+push   ss
+pop    ds
+
+
+;call  I_ShutdownMouse_
+
+xor    ax, ax
+
+cmp   byte ptr ds:[_mousepresent], al ; 0
 je    just_exit
 ; ax 0
 int   033h
