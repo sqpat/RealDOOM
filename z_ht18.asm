@@ -274,13 +274,13 @@ ENDP
 PROC   Z_QuickMapSFXPageFrame_ NEAR
 PUBLIC Z_QuickMapSFXPageFrame_
 
-cmp  al, byte ptr ds:[_currentpageframes + 1]
+cmp  al, byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX]
 je   exit_sfx_pageframe
 
 PROC   Z_QuickMapSFXPageFrame_NoCheck_ NEAR
 PUBLIC Z_QuickMapSFXPageFrame_NoCheck_
 push dx
-mov  byte ptr ds:[_currentpageframes + 1], al
+mov  byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX], al
 
 mov  dx, HT18_PAGE_SELECT_REGISTER
 mov  ah, al

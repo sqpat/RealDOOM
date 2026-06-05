@@ -254,10 +254,10 @@ mov  dx, SCAT_PAGE_SELECT_REGISTER
 cli
 out  dx, al
 
-mov  al, 0
 
 mov  dx, SCAT_PAGE_SET_REGISTER
-xchg al, ah	 ; ah becomes 0
+mov  al, ah
+xor  ah, ah
 add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
 out  dx, ax
 sti
@@ -275,13 +275,13 @@ ENDP
 PROC   Z_QuickMapSFXPageFrame_ NEAR
 PUBLIC Z_QuickMapSFXPageFrame_
 
-cmp  al, byte ptr ds:[_currentpageframes + 1]
+cmp  al, byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX]
 je   exit_sfx_pageframe
 PROC   Z_QuickMapSFXPageFrame_NoCheck_ NEAR
 PUBLIC Z_QuickMapSFXPageFrame_NoCheck_
 
 push dx
-mov  byte ptr ds:[_currentpageframes + 1], al
+mov  byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX], al
 
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 mov  ah, al
@@ -290,8 +290,8 @@ cli
 out  dx, al
 
 mov  dx, SCAT_PAGE_SET_REGISTER
-mov  al, 0
-xchg al, ah
+mov  al, ah
+xor  ah, ah
 
 ; adding EMS_MEMORY_PAGE_OFFSET is a manual _EPR process normally handled by c preprocessor...
 ; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.

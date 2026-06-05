@@ -256,12 +256,12 @@ ENDP
 PROC   Z_QuickMapSFXPageFrame_ NEAR
 PUBLIC Z_QuickMapSFXPageFrame_
 
-cmp  al, byte ptr ds:[_currentpageframes + 1]
+cmp  al, byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX]
 je   exit_sfx_pageframe
 
 PROC   Z_QuickMapSFXPageFrame_NoCheck_ NEAR
 PUBLIC Z_QuickMapSFXPageFrame_NoCheck_
-mov  byte ptr ds:[_currentpageframes + 1], al
+mov  byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX], al
 
 mov  ah, al
 mov  al, SCAMP_PAGE_D000 + 1	; page D400
