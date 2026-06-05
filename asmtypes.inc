@@ -601,10 +601,9 @@ GLOW_T ENDS
 ; otherwise its mobj INDEX
 
 CHANNEL_T STRUC
-    channel_soundorg_secnum  dw ?  ; 0   ; todo unused
-    channel_originRef        dw ?  ; 2
-    channel_handle           db ?  ; 4
-    channel_sfx_id           db ?  ; 5
+    channel_originRef        dw ?  ; 0
+    channel_handle           db ?  ; 2
+    channel_sfx_id           db ?  ; 3
 
 CHANNEL_T ENDS
 

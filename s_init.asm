@@ -174,10 +174,11 @@ PUBLIC LoadSFXWadLumps_
     ; gross but its init code so who cares if its slow
     mov  bl, 6 
     div  bl
+    push ax   ; store sfx id..
     call I_GetSfxLumpNum_
 
+    pop  si      ; sfx id..
     pop  es
-    mov  si, ax  ; backup lump num
 
     mov  word ptr es:[di+SFXINFO_T.sfxinfo_lumpandflags], ax      ; store lump data  in sfx_data
     
@@ -186,7 +187,9 @@ PUBLIC LoadSFXWadLumps_
     je   bad_lump_skip
 
     ; apply singularity...
-    mov  bl, byte ptr cs:[_singularity_list + di];
+    mov  bl, byte ptr cs:[_singularity_list + si]; ; sfx lookup index
+
+    mov  si, ax  ; backup lump num
     or   byte ptr es:[di+SFXINFO_T.sfxinfo_lumpandflags + 1], bl      ; or the singularity flag onto the field
 
     push es

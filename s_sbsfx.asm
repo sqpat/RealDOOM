@@ -690,7 +690,7 @@ IFDEF DEBUG_SFX
 ENDIF
 
     ;uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id & SFX_ID_MASK].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
-    push   ax
+
     SHIFT_MACRO    sal ax  3
     xchg   ax, bx
     mov    ax, SFX_DATA_SEGMENT
@@ -714,7 +714,7 @@ ENDIF
     mov    al, ah
     xor    ah, ah
     mov    bx, ax
-    add    sp, 2
+
     ; bl finally cachepage.
     ; dword lookup
     ;uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
@@ -1713,10 +1713,8 @@ PUBLIC S_LoadSoundIntoCache_
 PUSHA_NO_AX_MACRO
 
 
-mov   di, ax
-sal   di, 1
-add   di, ax
-sal   di, 1    ; * 6
+mov   di, cx  ; had the ptr..
+
 ; es already SFX_DATA_SEGMENT
 ;    int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
 mov   bp, word ptr es:[di + SFXINFO_T.sfxinfo_lumpsize]

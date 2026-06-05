@@ -427,7 +427,7 @@ mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], -1
 set_secnum_and_play_sound_and_exit:
 xchg  ax, cx
 
-call  S_StartSoundWithSecnum_
+call  S_StartSoundWithSecnum_ ; here.
 
 switch_block_ev_dodoor_case_doorraisein5mins:
 done_with_evdodoor_switch_block:

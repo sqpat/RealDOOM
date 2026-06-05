@@ -36,14 +36,14 @@ ENDP
 _channels:
 PUBLIC _channels
 ;  channel_t	channels[MAX_SFX_CHANNELS];
-dw 0, 0, 0
-dw 0, 0, 0
-dw 0, 0, 0
-dw 0, 0, 0
-dw 0, 0, 0
-dw 0, 0, 0
-dw 0, 0, 0
-dw 0, 0, 0
+dw 0, 0
+dw 0, 0
+dw 0, 0
+dw 0, 0
+dw 0, 0
+dw 0, 0
+dw 0, 0
+dw 0, 0
 
 _sfx_priority:
 
@@ -123,9 +123,7 @@ PUBLIC  S_StopChannel_
 push  si
 cbw  
 mov   si, ax
-sal   si, 1  ; 2
-add   si, ax ; 3
-sal   si, 1  ; 6
+SHIFT_MACRO SHL SI 2
 
 add   si, OFFSET _channels
 cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE  ; todo maybe not necessary? i think stopchannels is never called when this is 0...
@@ -607,7 +605,7 @@ mov   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], bl
 mov   word ptr cs:[si + CHANNEL_T.channel_originRef], di
 
 ; ax has cnum already
-
+clc
 exit_s_getchannel:
 pop   di
 pop   si
@@ -642,7 +640,7 @@ inc   ax
 cmp   al, ah
 jl    loop_next_channel_getchannel_priority
 
-mov   ax, -1 ; no channel found
+stc
 jmp   exit_s_getchannel
 
 
@@ -801,8 +799,7 @@ mov   bx, word ptr [bp - 2] ; recover sfx_id
 mov   si, bx ; copy sfx id to si
 
 call  S_getChannel_  ; cnum = S_getChannel(origin, soundorg_secnum, sfx_id);
-test  al, al
-jnge  exit_startsoundwithposition
+jc    exit_startsoundwithposition ; carry if notfound
  
 mov   bx, cx ; volume
 mov   dx, di ; sep
@@ -829,10 +826,8 @@ done_with_i_sound:
 jc    exit_startsoundwithposition
 successful_play:
 ;    al is already handle!
-sal   si, 1  ; x2
-mov   bx, si ; x2
-sal   si, 1  ; x2 + x4 = 6
-mov   byte ptr cs:[bx + si + _channels + CHANNEL_T.channel_handle], al
+SHIFT_MACRO SHL SI 2
+mov   byte ptr cs:[si + _channels + CHANNEL_T.channel_handle], al
 
 exit_startsoundwithposition:
 LEAVE_MACRO 
