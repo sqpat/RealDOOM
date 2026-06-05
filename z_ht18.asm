@@ -277,6 +277,8 @@ PUBLIC Z_QuickMapSFXPageFrame_
 cmp  al, byte ptr ds:[_currentpageframes + 1]
 je   exit_sfx_pageframe
 
+PROC   Z_QuickMapSFXPageFrame_NoCheck_ NEAR
+PUBLIC Z_QuickMapSFXPageFrame_NoCheck_
 push dx
 mov  byte ptr ds:[_currentpageframes + 1], al
 
@@ -299,6 +301,7 @@ pop  dx
 
 exit_sfx_pageframe:
 ret
+ENDP
 ENDP
 
 

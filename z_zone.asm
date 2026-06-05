@@ -52,12 +52,13 @@ ALIGN_MACRO
     push  dx
     mov   byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX], al
 
-    xor   ah, ah
+    cbw
+    add   al, MUS_DATA_PAGES
+    xchg  ax, bx
     mov   dx, word ptr ds:[_emshandle]  ; todo hardcode
-    mov   bx, ax
 
     mov   ax, 04400h + MUS_PAGE_FRAME_INDEX
-    add   bx, MUS_DATA_PAGES
+
     int   067h
     pop   dx
     pop   bx
@@ -73,23 +74,25 @@ ALIGN_MACRO
     cmp   al, byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX]
     jne   actually_changing_sfx_page_frame
     ret  
+    PROC   Z_QuickMapSFXPageFrame_NoCheck_ NEAR
+    PUBLIC Z_QuickMapSFXPageFrame_NoCheck_
     actually_changing_sfx_page_frame:
     push  bx
     push  dx
     mov   byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX], al
 
-    xor   ah, ah
+    cbw
+    add   al, SFX_DATA_PAGES
+    xchg  ax, bx
     mov   dx, word ptr ds:[_emshandle]
-    mov   bx, ax
 
     mov   ax, 04400h + SFX_PAGE_FRAME_INDEX
-    add   bx, SFX_DATA_PAGES
     int   067h
     pop   dx
     pop   bx
     ret
 
-
+    ENDP
     ENDP
 
 ALIGN_MACRO

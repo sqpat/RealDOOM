@@ -32,7 +32,6 @@ EXTRN P_CrossSpecialLine_:NEAR
 EXTRN P_ShootSpecialLine_:NEAR
 EXTRN P_TouchSpecialThing_:NEAR
 EXTRN GetDamage_:NEAR
-EXTRN S_StartSound_:NEAR
 EXTRN S_StartSoundPlayer_:NEAR      
 EXTRN FixedMul1632_MapLocal_:NEAR
 EXTRN FixedMul16u32_MapLocal_:NEAR

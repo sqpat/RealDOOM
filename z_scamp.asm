@@ -259,6 +259,8 @@ PUBLIC Z_QuickMapSFXPageFrame_
 cmp  al, byte ptr ds:[_currentpageframes + 1]
 je   exit_sfx_pageframe
 
+PROC   Z_QuickMapSFXPageFrame_NoCheck_ NEAR
+PUBLIC Z_QuickMapSFXPageFrame_NoCheck_
 mov  byte ptr ds:[_currentpageframes + 1], al
 
 mov  ah, al
@@ -275,6 +277,7 @@ out  SCAMP_PAGE_SET_REGISTER, ax
 sti
 exit_sfx_pageframe:
 ret
+ENDP
 ENDP
 
 LUMP_MASK = 0FCh 

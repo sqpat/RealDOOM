@@ -25,6 +25,7 @@ EXTRN R_PointToAngle2_MapLocal_:NEAR
 
 .DATA
 
+;DEBUG_SFX = 1
 
 .CODE
 
@@ -156,10 +157,14 @@ stop_sb_patch:
 ;call  SFX_StopPatch_ ; inlined only use
 cli
 
-
+IFDEF DEBUG_SFX
+    ; al is handle.
+    cmp   al, MAX_SFX_CHANNELS
+    jae   bad_channel
+ENDIF
 call  dword ptr ds:[_S_DecreaseRefCountFar_addr]
 
-mov   byte ptr ds:[_sb_voicelist + si + SB_VOICEINFO_T.sbvi_sfx_id], ah ; 0
+mov   byte ptr ds:[_sb_voicelist + si + SB_VOICEINFO_T.sbvi_sfx_id], 0
 sti
 
 
@@ -168,6 +173,24 @@ pop   si
 ret  
 
 ENDP
+
+IFDEF DEBUG_SFX
+    bad_channel_str:
+    db "bad channel D %i %i", 0
+
+    bad_channel:
+
+    mov  bx, 0E000h
+    mov  es, bx
+    mov  word ptr es:[2], ax ;; FFE0
+    mov  word ptr es:[4], si ;; 000F
+
+    push si
+    push ax
+    push cs
+    push OFFSET bad_channel_str
+    call dword ptr ds:[_I_Error_addr]
+ENDIF
 
 PROC    S_AdjustSoundParamsSep_ NEAR
 PUBLIC  S_AdjustSoundParamsSep_
@@ -212,7 +235,7 @@ sbb   cx, bx
 mov   es, bx
 add   ax, bx
 adc   dx, cx
-jmp   done_with_angle_adjustment
+jmp   done_with_angle_adjustment ; self modified to 00..
 adjustment_angle_above:
 sub   ax, bx
 sbb   dx, cx
@@ -385,11 +408,34 @@ and   al, MAX_SOUND_VOLUME
 ret
 
 ENDP
+IFDEF DEBUG_SFX
 
+    bad_pointer_str:
+    db "bad ptr A %i %i", 0
+    bad_pointer_str_2:
+    db "bad ptr B %x %x", 0
+    bad_pointer_str_3:
+    db "bad ptr C %i %i", 0
 
+    _debug_segment:
+    dw 0E000h
 
+    bad_pointer:
+
+    mov  es, word ptr cs:[_debug_segment]
+    mov  word ptr es:[2], ax
+    mov  word ptr es:[4], dx
+    push dx
+    push ax
+    push cs
+    push OFFSET bad_pointer_str
+    call dword ptr ds:[_I_Error_addr]
+ENDIF
 
 ; todo inline only use?
+
+SOUNDORG_SECNUM_FLAG = 08000h
+SOUNDORG_SECNUM_MASK = SOUNDORG_SECNUM_FLAG - 1
 
 PROC    S_StopSound_ NEAR 
 PUBLIC  S_StopSound_
@@ -397,7 +443,7 @@ PUBLIC  S_StopSound_
 ;void __far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
 
 push  dx  ; push/pop dx allows the following function to piggyback.
-push  bx
+
 push  si
 
 cmp   dx, SECNUM_NULL
@@ -405,22 +451,30 @@ je    check_for_mobjref
 ; check_for_secnum
 
 xchg  ax, dx       ; loop condition soundorg_secnum
-mov   bx, CHANNEL_T.channel_soundorg_secnum
 
+add   ax, SOUNDORG_SECNUM_FLAG
 jmp   setup_stopsound_channel_loop
 
 check_for_mobjref:
+test  ax, ax
+je    mobjref_ready ; use zero as is..
 
 xor   dx, dx
 mov   si, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 div   si ; loop condition originRef
 
+; todo check dx for nonzero?
+IFDEF DEBUG_SFX
+    test  dx, dx
+    jnz   bad_pointer
+    cmp   ax, MAX_THINKERS
+    jae   bad_pointer
+ENDIF
+mobjref_ready:
 
-mov   bx, CHANNEL_T.channel_originRef
-
-; si + bx is comparison target
-; ax is what to compare to
+; si + CHANNEL_T.channel_originRef is comparison target
+; ax is what to compare to. if sector then SOUNDORG_SECNUM_FLAG set
 ; dl is i for StopChannel call.
 ; dh is end condition for loop.
 
@@ -428,20 +482,20 @@ setup_stopsound_channel_loop:
 xor   dx, dx
 mov   si, OFFSET _channels
 mov   dh, byte ptr ds:[_numChannels]
-;test  dh, dh
-;je    exit_stopsound
+test  dh, dh
+je    exit_stopsound
 
 
 loop_next_channel_stopsound:
-cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], bh ; bh is zero for sure
+cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], 0
 je    iter_next_channel_stopsound
-cmp   word ptr cs:[si + bx], ax
+test  ax, ax
+jz    iter_next_channel_stopsound  ; must exist an origin to match
+cmp   word ptr cs:[si + CHANNEL_T.channel_originRef], ax
 jne   iter_next_channel_stopsound
-xchg  ax, dx
-cbw   ; necessary?
+xchg  ax, dx ; cbw done in stopchannel
 call  S_StopChannel_
 pop   si
-pop   bx
 pop   dx
 ret  
 iter_next_channel_stopsound:
@@ -451,7 +505,6 @@ cmp   dl, dh
 jl    loop_next_channel_stopsound
 exit_stopsound:
 pop   si
-pop   bx
 pop   dx
 ret  
 
@@ -461,15 +514,31 @@ PROC    S_StopSoundMobjRef_ NEAR
 PUBLIC  S_StopSoundMobjRef_
 
 push  dx
-push  bx
+
 push  si
 ; ax already ref
-jmp   check_for_mobjref
+jmp   mobjref_ready
 
 
 ENDP
 
+IFDEF DEBUG_SFX
 
+    bad_pointer_3:
+
+    mov  bx, 0E000h
+    mov  es, bx
+    mov  word ptr es:[2], ax ;; FFE0
+    mov  word ptr es:[4], dx ;; 000F
+    mov  word ptr es:[6], cx ;; 0000
+    mov  word ptr es:[8], di ;; 4D55
+
+    push dx
+    push ax
+    push cs
+    push OFFSET bad_pointer_str_3
+    call dword ptr ds:[_I_Error_addr]
+ENDIF
 
 ;int8_t __near S_getChannel (mobj_t __near* origin, int16_t soundorg_secnum, sfxenum_t sfx_id ) {
 
@@ -483,21 +552,36 @@ push  di
 xor   di, di
 mov   cx, dx ; backup soundorg secnum..
 xor   dx, dx
-xor   bh, bh ; sfx_id is oft used as byte lookup.
 
+; bx is sfxid,  bh is 0
+
+cmp   cx, SECNUM_NULL
+je    use_thinker
+mov   di, cx
+add   di, SOUNDORG_SECNUM_FLAG
+
+jmp   dont_get_ref
+use_thinker:
 test  ax, ax
-jz    dont_get_ref
+jz    dont_get_ref ; use 0
 
 mov   di, SIZE THINKER_T
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 div   di
+IFDEF DEBUG_SFX
+    test  dx, dx
+    jne   bad_pointer_3
+    cmp   ax, MAX_THINKERS
+    ja    bad_pointer_3
+ENDIF
 xchg  ax, di  ; di has originref
 xor   ax, ax
 
 dont_get_ref:
 
 
-
+; cmp originref to di
+; cmp secnum to cx
 cwd   ; ax zero already
 mov   ah, byte ptr ds:[_numChannels]
 mov   si, OFFSET _channels
@@ -507,8 +591,6 @@ mov   si, OFFSET _channels
 loop_next_channel_getchannel:
 cmp   word ptr cs:[si + CHANNEL_T.channel_sfx_id], dx ; 0
 je    foundchannel
-test  di, di
-je    check_secnum_instead
 cmp   word ptr cs:[si + CHANNEL_T.channel_originRef], di
 jne   iter_next_channel_getchannel
 found_channel_to_boot:
@@ -523,7 +605,6 @@ foundchannel:
 cbw
 mov   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], bl
 mov   word ptr cs:[si + CHANNEL_T.channel_originRef], di
-mov   word ptr cs:[si + CHANNEL_T.channel_soundorg_secnum], cx
 
 ; ax has cnum already
 
@@ -533,9 +614,6 @@ pop   si
 pop   cx
 exit_startsoundwithpositionearly:
 ret   
-check_secnum_instead:
-cmp   word ptr cs:[si + CHANNEL_T.channel_soundorg_secnum], cx
-je    found_channel_to_boot
 iter_next_channel_getchannel:
 add   si, (SIZE CHANNEL_T)
 inc   ax
@@ -572,6 +650,15 @@ jmp   exit_s_getchannel
 ENDP
 
 
+IFDEF DEBUG_SFX
+
+    bad_pointer_2:
+    push dx
+    push ax
+    push cs
+    push OFFSET bad_pointer_str_2
+    call dword ptr ds:[_I_Error_addr]
+ENDIF
 
 PROC    S_StartSoundWithPosition_ NEAR
 PUBLIC  S_StartSoundWithPosition_
@@ -596,18 +683,21 @@ push  dx  ; sfx_id is [bp - 2]
 ;	if ((origin || (soundorg_secnum != SECNUM_NULL)) && (originRef != playerMobjRef)){
 
 
+mov   si, bx  ; si holds soundorg_secnum
+mov   di, ax  ; di holds origin
 
 cmp   bx, SECNUM_NULL
 jne   location_good_adjust_sound_for_sector
 
-mov   si, bx  ; si holds soundorg_secnum
-mov   di, ax  ; di holds origin
+
 
 mov   cx, MAX_SOUND_VOLUME ; just in case we skip and dont calculate vol.
-
+; not here
 test  di, di
 je    skip_vol_adjustment_use_norm_setp
 
+test  ax, ax
+jz    skip_divide_use_null_mobj
 ; div to get mobjref.
 
 mov   bx, (SIZE THINKER_T)
@@ -615,13 +705,22 @@ sub   ax, (_thinkerlist + THINKER_T.t_data) ; ax still origin
 xor   dx, dx
 div   bx
 
+IFDEF DEBUG_SFX
+    test  dx, dx
+    jne   bad_pointer_2
+    cmp   ax, MAX_THINKERS
+    ja    bad_pointer_2
+ENDIF
+
+skip_divide_use_null_mobj:
+
 ; ax is mobjref/originref
 cmp   ax, word ptr ds:[_playerMobjRef]
 je    skip_vol_adjustment_use_norm_setp
 
 location_good_adjust_sound_for_mobj:
 
-
+; not here
 xchg      bx, ax
 sal       bx, 1
 mov       bx, word ptr ds:[bx + _mobjposlookuptable]
@@ -672,7 +771,7 @@ lea   si, [bp - 0Ah]
 les   di, dword ptr ds:[_playerMobj_pos]
 ; es:di points to MOBJ_POS_T.mp_x already
 mov   cx, 4
-repe  cmpsw
+repe  cmpsw  ;;; TODO test
 
 pop   si ; restore
 pop   di ; restore
@@ -692,6 +791,7 @@ xchg  ax, bx  ; bx has sep
 mov   dx, si
 mov   ax, di
 ; todo inline only use?
+; stop old sound at this location....
 call  S_StopSound_  ;  S_StopSound(origin, soundorg_secnum);
 
 mov   dx, si
@@ -828,14 +928,29 @@ PUBLIC  S_StartSoundWithSecnum_
 test  dl, dl
 je    exit_startsound_sfxid_0
 push  bx
+IFDEF DEBUG_SFX
+    cmp   ax, word ptr cs:[_numsectors]
+    jae   bad_sector
+ENDIF
 xchg  ax, bx
-xor   ax, ax
+xor   ax, ax  ; todo or use a different id?
 call  S_StartSoundWithPosition_
 pop   bx
 ret
 
 ENDP
+IFDEF DEBUG_SFX
 
+    bad_sector_str:
+    db "bad sector %i", 0
+
+    bad_sector:
+
+    push ax
+    push cs
+    push OFFSET bad_sector_str
+    call dword ptr ds:[_I_Error_addr]
+ENDIF
 PROC    S_UpdateSounds_ FAR
 PUBLIC  S_UpdateSounds_
 
@@ -874,24 +989,23 @@ retf
 
 handle_position_update:
 
-les   bx, dword ptr cs:[si + CHANNEL_T.channel_soundorg_secnum]
-mov   ax, es ; es was originref
+mov   ax, word ptr cs:[si + CHANNEL_T.channel_originRef]
+test  ax, ax
+jz    iter_next_channel_updatesounds   ; dont adjust vol for origin = null
 cmp   ax, word ptr ds:[_playerMobjRef]
 je    iter_next_channel_updatesounds   ; dont adjust vol for player (listener) source sounds. theyre always full vol
 
-
 mov   di, dx ; back this up...
-cmp   bx, SECNUM_NULL
+
+test  ax, SOUNDORG_SECNUM_FLAG
 jne   update_sound_with_sector
 
 update_sound_with_mobjpos:
 ; ax is originref
-test  ax, ax
-jz    iter_next_channel_updatesounds   ; null source.
 
-xchg      bx, ax
-sal       bx, 1
-mov       bx, word ptr ds:[bx + _mobjposlookuptable]
+xchg  bx, ax
+sal   bx, 1
+mov   bx, word ptr ds:[bx + _mobjposlookuptable]
 mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 
 ;    originX = originMobjPos->x;
@@ -908,8 +1022,10 @@ jmp   origins_ready
 
 
 update_sound_with_sector:
-mov   ax, SECTORS_SOUNDORGS_SEGMENT ; todo ptr
-mov   es, ax
+mov   bx, SECTORS_SOUNDORGS_SEGMENT ; todo ptr
+mov   es, bx
+and   ax, SOUNDORG_SECNUM_MASK
+xchg  ax, bx
 SHIFT_MACRO shl   bx 2
 les   dx, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX] ; x hibits
 mov   cx, es                                                    ; y hibits
@@ -990,10 +1106,9 @@ test  dh, dh
 je    exit_s_start
 
 loop_next_channel_s_start:
-mov   al, byte ptr cs:[si + CHANNEL_T.channel_sfx_id]
-test  al, al
+cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], 0
 je    iter_next_channel_s_start
-cbw
+mov   al, dl
 call  S_StopChannel_
 
 iter_next_channel_s_start:
@@ -1112,6 +1227,32 @@ pop   si
 ret
 
 ENDP
+
+MAX_SFX_CHANNELS = 8
+
+COMMENT @
+
+PROC   S_InitChannels_ FAR
+PUBLIC S_InitChannels_
+
+    push cx
+    push di
+
+
+    mov   cx, (MAX_SFX_CHANNELS * (SIZE CHANNEL_T)) / 2
+    mov   di, OFFSET _channels
+    push  cs
+    pop   es
+    xor   ax, ax
+    rep   stosw
+
+    pop   di
+    pop   cx
+
+    retf
+ENDP
+
+@
 
 
 PROC    S_SOUND_ENDMARKER_ NEAR

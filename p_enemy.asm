@@ -4287,8 +4287,8 @@ push  cs
 call  GetPainSound_
 
 
-xchg  ax, dx  ; dx gets ax
-xchg  ax, bx  ; bx gets ax
+xchg  ax, dx  ; dx gets ax ; (pain sound)
+xchg  ax, si  ; ax gets si ; (mobj)
 call  S_StartSound_
 
 ret   
@@ -4313,10 +4313,10 @@ mov dx, bx   ; mobjpos
 
 
 
-mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
-sal       bx, 1
-mov       bx, word ptr ds:[bx + _mobjlookuptable]
-add       bx, THINKER_T.t_data
+mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal   bx, 1
+mov   bx, word ptr ds:[bx + _mobjlookuptable]
+add   bx, THINKER_T.t_data
 mov   cx, 128
 
 call  P_RadiusAttack_

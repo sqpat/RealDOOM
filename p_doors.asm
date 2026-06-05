@@ -24,7 +24,7 @@ INSTRUCTION_SET_MACRO
 EXTRN P_RemoveThinker_:NEAR
 EXTRN P_CreateThinker_:NEAR
 
-EXTRN S_StartSound_:NEAR
+
 EXTRN S_StartSoundAX0_:NEAR
 EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
@@ -301,7 +301,7 @@ mov   word ptr ds:[_player + PLAYER_T.player_message], bx
 
 play_sound_and_exit_lockedoor:
 
-call  S_StartSound_
+call  S_StartSoundAX0_
 
 
 exit_non_player_locked_door:

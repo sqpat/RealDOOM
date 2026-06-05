@@ -211,6 +211,8 @@ void __far GetPainState();
 void __far GetSpawnHealth();
 void __far P_CreateThinkerFar();
 
+// void __far S_InitChannels();
+
 void __far M_MENU_STARTMARKER();
 void __far M_MENU_ENDMARKER();
 void __far M_Init();
@@ -676,6 +678,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "GETDEATHSTATEADDR     = 0%Xh\n",                   FP_OFF(GetDeathState)                     - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "GETPAINSTATEADDR      = 0%Xh\n",                   FP_OFF(GetPainState)                      - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "GETSPAWNHEALTHADDR    = 0%Xh\n",                   FP_OFF(GetSpawnHealth)                    - FP_OFF(P_SIGHT_STARTMARKER));
+
+    // fprintf(fp, "S_INITCHANNELSOFFSET  = 0%Xh\n",                   FP_OFF(S_InitChannels)                    - FP_OFF(P_SIGHT_STARTMARKER));
     
     fprintf(fp, "AM_RESPONDER_OFFSET    = 0%Xh\n",                   FP_OFF(AM_Responder)                     - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "AM_DRAWER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Drawer)                        - FP_OFF(P_SIGHT_STARTMARKER));

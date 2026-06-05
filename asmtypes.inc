@@ -596,10 +596,12 @@ GLOW_T STRUC
 
 GLOW_T ENDS
 
-
+; if high bit set (08000h) then soundorg is sector
+; if 0 then its a null source
+; otherwise its mobj INDEX
 
 CHANNEL_T STRUC
-    channel_soundorg_secnum  dw ?  ; 0
+    channel_soundorg_secnum  dw ?  ; 0   ; todo unused
     channel_originRef        dw ?  ; 2
     channel_handle           db ?  ; 4
     channel_sfx_id           db ?  ; 5

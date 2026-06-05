@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN I_Error_:FAR
 EXTRN Z_QuickMapSFXPageFrame_:NEAR
+EXTRN Z_QuickMapSFXPageFrame_NoCheck_:NEAR
 EXTRN W_CacheLumpNumDirectWithOffset_:NEAR
 EXTRN SB_DSP1xx_BeginPlayback_:NEAR
 EXTRN SB_SetPlaybackRate_:NEAR
@@ -36,15 +37,13 @@ EXTRN _SB_CardActive:BYTE
 .CODE
 
 
-;SKIP_SFX = 1
+;DEBUG_SFX = 1
+
 
 
 PROC    S_SBFX_STARTMARKER_ NEAR
 PUBLIC  S_SBFX_STARTMARKER_
 ENDP
-
-str_bad_sfx_refcount:
-db "Bad sfx ref count", 0
 
 str_bad_vol:
 db "bad vol! %i %i %i", 0
@@ -180,11 +179,13 @@ PUBLIC _SB_IntController1Mask
 PUBLIC _SB_IntController2Mask
 
 
+ALIGN_MACRO 
 _sound_played:
 db  0
 _remaining_22khz:
 db  0
 
+ALIGN_MACRO 
 _change_sampling_to_22_next_int:
 db  0
 _change_sampling_to_11_next_int:
@@ -192,6 +193,9 @@ db  0
 _current_sampling_rate:
 db 0
 
+ALIGN_MACRO
+_in_second_buffer_low:
+db 0  ; always 0. for word read into di
 _in_second_buffer:
 db 0
 
@@ -248,21 +252,375 @@ db    074h, 	   INVALID_IRQ, INVALID_IRQ, 077h
 
 PUBLIC _IRQ_TO_INTERRUPT_MAP
 
+IFDEF DEBUG_SFX
+
+
+str_bad_sfx_refcount:
+db "Bad sfx ref count %i", 0
+
+str_bad_sfx_refcount_2:
+db "Bad sfx ref count 2 %i", 0
+str_bad_sfx_refcount_3:
+db "Bad sfx ref count 3 %x %x", 0
+str_bad_sfx_refcount_4:
+db "Bad sfx ref count 4 %i %i", 0
+_debug_segment:
+dw 0E000h
+
+
+    check_vals:
+    dw 0, 0
+
+    _currentphase:
+    PUBLIC _currentphase
+    db 0FFh, 00
+
+    str_error_1:
+    db "Wrong backlink. %x %x", 0
+    str_error_2:
+    db "Too Few %i", 0
+    str_error_3:
+    db "Too Many %i", 0
+    str_error_4:
+    db "Bad Page %i", 0
+    str_error_5:
+    db "Bad Head %i", 0
+    str_error_6:
+    db "Bad Tail %i", 0
+
+    wrong_link:
+    push   ax
+    push   dx
+    push   cs
+    push   OFFSET str_error_1
+    call   I_Error_
+
+
+    too_many_pages:
+    push   cx
+    push   cs
+    push   OFFSET str_error_3
+    call   I_Error_
+
+    too_few_pages:
+    push   cx
+    push   cs
+    push   OFFSET str_error_2
+    call   I_Error_
+    bad_page_number:
+    push   ax
+    push   cs
+    push   OFFSET str_error_4
+    call   I_Error_
+
+    bad_head:
+    push   ax
+    push   cs
+    push   OFFSET str_error_5
+    call   I_Error_
+
+    bad_tail:
+    push   ax
+    push   cs
+    push   OFFSET str_error_6
+    call   I_Error_
+
+
+    PROC    check_sfx_cache NEAR
+    PUSHA
+    push    ds
+    mov     si, FIXED_DS_SEGMENT
+    mov     ds, si
+    mov     si, OFFSET _sfxcache_nodes
+    xor     bx, bx
+    xor     ax, ax
+    xor     cx, cx
+    mov     al, byte ptr ds:[_sfxcache_head]
+    cmp     al, NUM_SFX_PAGES
+    jae     bad_head
+    jmp    done_for_now
+
+    mov     dl, 0FFh
+    mov     bl, al
+    SHIFT_MACRO shl bl 2
+
+    loop_next_node:
+    inc     cx
+    cmp     cx, NUM_SFX_PAGES
+    ja      too_many_pages
+
+    cmp     dl, byte ptr ds:[si + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+    jne     wrong_link
+    mov     dl, al
+    mov     al, byte ptr ds:[si + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+    cmp     al, 0FFh
+    je      done_looping
+    cmp     al, NUM_SFX_PAGES
+    jae     bad_page_number
+    mov     bl, al
+    SHIFT_MACRO shl bl 2
+    jmp     loop_next_node
+    done_looping:
+    cmp     cx, NUM_SFX_PAGES
+    jne     too_few_pages
+    cmp     dl, byte ptr ds:[_sfxcache_tail]
+    jne     bad_tail
+    done_for_now:
+
+    pop     ds
+    POPA
+    ret
+
+    ENDP
+
+    COMMENT @
+    PROC    checksound_in NEAR
+    PUSHA
+    push    ds
+    mov     si, FIXED_DS_SEGMENT
+    mov     ds, si
+    mov     si, offset _spritecache_nodes
+    mov     cx, NUM_SPRITE_CACHE_PAGES
+
+    xor     ax, ax
+    cwd
+    next_page_1:
+    lodsw
+    add     dx, ax
+    lodsw
+    add     dx, ax
+    loop    next_page_1
+    mov     si, offset _usedspritepagemem
+
+    mov     cx, NUM_SPRITE_CACHE_PAGES
+    xor     ax, ax
+    next_page_2:
+    lodsb
+    add     ah, al
+    loop    next_page_2
+
+    mov     word ptr cs:[check_vals+0], dx
+    mov     byte ptr cs:[check_vals+2], ah
+    pop     ds
+
+    POPA
+    ret
+
+    ENDP
+
+    PROC    checksound_out NEAR
+    PUSHA
+    push    ds
+    mov     si, FIXED_DS_SEGMENT
+    mov     ds, si
+
+    mov     si, offset _spritecache_nodes
+    mov     cx, NUM_SPRITE_CACHE_PAGES
+
+    xor     ax, ax
+    cwd
+    next_page_1b:
+    lodsw
+    add     dx, ax
+    lodsw
+    add     dx, ax
+    loop    next_page_1b
+    mov     si, offset _usedspritepagemem
+
+    mov     cx, NUM_SPRITE_CACHE_PAGES
+    xor     ax, ax
+    next_page_2b:
+    lodsb
+    add     ah, al
+    loop    next_page_2b
+
+    cmp     word ptr cs:[check_vals+0], dx
+    jne     crash_1
+    cmp     byte ptr cs:[check_vals+2], ah
+    jne     crash_2
+
+
+    pop     ds
+    POPA
+    ret
+    str_bad_1:
+    db "Error 1: expected %i was %i",0
+    str_bad_2:
+    db "Error 2: expected %i was %i",0
+    crash_1:
+        push    dx
+        push    word ptr cs:[check_vals+0]
+        mov     ax, OFFSET str_bad_1
+        jmp     do_error_str
+    crash_2:
+        xor     al, al
+        xchg    al, ah
+        push    ax
+        push    word ptr cs:[check_vals+2]
+        mov     ax, OFFSET str_bad_2
+        do_error_str:
+        push    cs
+        push    ax
+        call    I_Error_
+
+    ENDP
+
+
+
+
+
+
+    PROC    findgarbagesfx NEAR
+    ret
+    ; iterate thru sfx. look for an sfx pointing to uninitialized memory space.
+    PUSHA
+
+    xor   si, si
+    mov   cx, NUMSFX
+    mov   bp, SIZE SFXINFO_T
+    mov   ax, SFX_DATA_SEGMENT
+    mov   es, ax
+    xor   bx, bx ; bh 0
+
+
+    loop_check_next_cache:
+    mov   ax, word ptr es:[si + SFXINFO_T.sfxinfo_cache_position]
+    ; ah  cachepage
+    ; al  location in page
+    cmp   ah, SOUND_NOT_IN_CACHE
+    jne   continue_sfx_cache_check
+
+    done_with_sfx_cache_check:
+
+    add   si, bp   ; 5+1 = 6 = SIZE SFXINFO_T
+    loop  loop_check_next_cache
+
+
+
+    POPA
+
+    ret
+
+    continue_sfx_cache_check:
+    ; ah  cachepage
+    ; al  location in page
+    ; check to see if this page is valid, and allocated to this point?
+    mov   dx, word ptr es:[si + SFXINFO_T.sfxinfo_lumpsize]
+
+    ; corresponds to quickmap to ah, al:00 location.
+    ; in theory the page ah should be allocated to at least al + (dx >> 8)
+    add   dx, 0FFh ; round up lump to 256 byte multiple
+    mov   bl, ah
+    mov   dl, byte ptr ds:[_sfx_free_bytes + bx]
+
+    ; dl = free bytes (* 256)
+    ; dh = size (* 256)
+    ; al = position in page
+
+    cmp dl, 040h
+    je  error_page_empty ; cant have an allocation in an empty page!
+
+    neg  dl
+    add  dl, 040h  ; 040h - freebytes = position of allocation in the page
+
+    ;sfx_barexp
+
+    ; page 52(!), pos 0
+    ; pos   00 2E
+    ; size  C9F
+    ; phase 5
+    ; sfx   82
+    ; DX    4930
+    ; AX:   5200
+
+    cmp  al, dl
+    ja   error_start_too_far ; allocation starts after the allocated space region in unallocated space
+
+    cmp  dh, 040h  ; larger than 16384 in size
+    ja   do_multi_page_checks
+
+    ; single page checks
+    add  al, dh
+
+    cmp  al, 040h
+    ja   error_overallocated_singlepage
+
+
+    jmp  done_with_sfx_cache_check
+
+
+    ; multipage stuff?
+
+    do_multi_page_checks:
+
+    ; DX 1200
+    ; AX 0420
+    ; sfx  6
+    ; size 11 A2 (4514/4534)  12 in size. Not multipage!
+    ; 04 2A
+
+    test al, al
+    jnz  error_multipage_nonzero_start
+
+    cmp  dl, 040h
+    jne  error_multipage_firstpage_nonzero
+
+    jmp  done_with_sfx_cache_check
+
+    ENDP
+
+    error_page_str:
+    db "Error: %i sfx: %i currentphase: %i DX: %x AX: %x", 0
+
+
+    error_page_empty:
+    push 1
+    jmp  do_error_page
+    error_start_too_far:
+    push 2
+    jmp  do_error_page
+    error_overallocated_singlepage:
+    push 3
+    jmp  do_error_page
+    ;error_end_too_fars:
+    ;push 4
+    ;jmp  do_error_page
+    error_multipage_nonzero_start:
+    push 5
+    jmp  do_error_page
+    error_multipage_firstpage_nonzero:  
+    push 6
+    do_error_page:
+    pop  di
+    push ax
+    push dx
+    push word ptr cs:[_currentphase]
+    sub  cl, NUMSFX
+    neg  cl
+    push cx
+    push di
+    push cs
+    push OFFSET error_page_str
+    call I_Error_
+
+    @
+ENDIF
+
 
 PROC    S_IncreaseRefCount_ NEAR
-PUBLIC  S_IncreaseRefCount_
+PUBLIC  S_IncreaseRefCount_ ; todo inline
 
     push  bx
-    cbw   ; clear ah
+    ; cx has ref, ch 0
 
-    mov   bx, ax
+    mov   bx, cx
     ; dword lookup
     SHIFT_MACRO sal   bx 2
-    cmp   byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages], ah ; known 0
+    cmp   byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages], ch ; known 0
     jne   increaserefcount_multipage
 
     increaserefcount_singlepage:
-    xchg  ax, bx ; restore byte ptr
+    mov   bx, cx ; restore byte ptr
     inc   byte ptr ds:[_sfx_page_reference_count + bx]
     pop   bx
     ret
@@ -272,13 +630,16 @@ PUBLIC  S_IncreaseRefCount_
     mov   dx, word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
     ; dh stores numpages
     ; dl has page count. which should be linearly stored so we just decrease towards 1 as we go up the list.
+    
+    mov   ax, cx ; clear ah.. set default
+    ; first, find page 1.
+
     loop_next_increaserefcount_multipage:
-    cmp   dl, 1
-    je    done_with_increaseref_multipage_loop
+    dec   dl ; dl go towards 1
+    jz    done_with_increaseref_multipage_loop
     mov   al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
     mov   bl, al
     SHIFT_MACRO sal   bx 2
-    dec   dx   ; dl go towards 1
     jmp   loop_next_increaserefcount_multipage
 
     ; dl = pagecount
@@ -323,9 +684,13 @@ PUBLIC  S_DecreaseRefCount_
     push  bx
     cbw   ; clear ah
     ; note! al is voice index, not cachepage!
+IFDEF DEBUG_SFX
+    test   ah, ah
+    jne    error_bad_ref_count_3
+ENDIF
 
     ;uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id & SFX_ID_MASK].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
-
+    push   ax
     SHIFT_MACRO    sal ax  3
     xchg   ax, bx
     mov    ax, SFX_DATA_SEGMENT
@@ -333,13 +698,23 @@ PUBLIC  S_DecreaseRefCount_
 
     mov    al, byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_sfx_id]
     and    ax, SFX_ID_MASK
-    sal    ax, 1   ; x 2
+    ; ax (sfx) was 3Dh (SFX_PODTH3)
     mov    bx, ax
-    sal    bx, 1   ; x 4
-    add    bx, ax  ; x 6 (x4 + x2)
-    mov    al, byte ptr es:[bx + SFXINFO_T.sfxinfo_cache_position + 1] ; cachepage lookup. byte high!
-    cbw
+    sal    bx, 1   ; x 2
+    add    bx, ax  ; x 3
+    sal    bx, 1   ; x 6
+    mov    ah, byte ptr es:[bx + SFXINFO_T.sfxinfo_cache_position + 1] ; cachepage lookup. byte high!
+; al F0 BX 0x160??
+; basically FF not in cache is being pulled. 
+
+IFDEF DEBUG_SFX
+    cmp    ah, NUM_SFX_PAGES
+    jae    error_bad_ref_count_4 ; why is BX not multiple of go...?
+ENDIF
+    mov    al, ah
+    xor    ah, ah
     mov    bx, ax
+    add    sp, 2
     ; bl finally cachepage.
     ; dword lookup
     ;uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
@@ -351,8 +726,9 @@ PUBLIC  S_DecreaseRefCount_
     decreaserefcount_singlepage:
     xchg  ax, bx ; restore byte ptr
     dec   byte ptr ds:[_sfx_page_reference_count + bx]
+IFDEF DEBUG_SFX
     js    error_bad_ref_count
-
+ENDIF
     pop   bx
     ret
 
@@ -361,13 +737,14 @@ PUBLIC  S_DecreaseRefCount_
     mov   dx, word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
     ; dh stores numpages
     ; dl has page count. which should be linearly stored so we just decrease towards 1 as we go up the list.
+    
+    ; first, find page 1.
     loop_next_decreaserefcount_multipage:
-    cmp   dl, 1
-    je    done_with_decreaseref_multipage_loop
+    dec   dl
+    jz    done_with_decreaseref_multipage_loop
     mov   al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
     mov   bl, al
     SHIFT_MACRO sal   bx 2
-    dec   dx   ; dl go towards 1
     jmp   loop_next_decreaserefcount_multipage
 
     ; dl = pagecount
@@ -380,7 +757,9 @@ PUBLIC  S_DecreaseRefCount_
     loop_decrease_next_ref:
     xchg  ax, bx ; restore byte ptr
     dec   byte ptr ds:[_sfx_page_reference_count + bx]
-    js    error_bad_ref_count
+IFDEF DEBUG_SFX
+    js    error_bad_ref_count_2
+ENDIF
     xchg  ax, bx ; restore dword ptr
     mov   al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
     mov   bl, al
@@ -392,12 +771,36 @@ PUBLIC  S_DecreaseRefCount_
     pop   bx
     ret
 
+IFDEF DEBUG_SFX
     error_bad_ref_count:
+    push    bx
     push    cs
     mov     ax, OFFSET str_bad_sfx_refcount
     push    ax
     call    I_Error_
+    error_bad_ref_count_3:
+    push    bx
+    push    ax
+    push    cs
+    mov     ax, OFFSET str_bad_sfx_refcount_3
+    push    ax
+    call    I_Error_
+    error_bad_ref_count_4:
+    pop     ax
+    push    bx
+    push    ax
+    push    cs
+    mov     ax, OFFSET str_bad_sfx_refcount_4
+    push    ax
+    call    I_Error_
 
+    error_bad_ref_count_2:
+    push    bx
+    push    cs
+    mov     ax, OFFSET str_bad_sfx_refcount_2
+    push    ax
+    call    I_Error_
+ENDIF
 
 ENDP
 
@@ -1231,11 +1634,19 @@ mov    cl, byte ptr es:[bx + SFXINFO_T.sfxinfo_cache_position + 1]
 ;  S_IncreaseRefCount(cachepage);
 ;  S_MarkSFXPageMRU(cachepage);
 
-mov    ax, cx
+IFDEF DEBUG_SFX
+    cmp    cl, NUM_SFX_PAGES
+    jae    too_high_1
+ENDIF
 call   S_IncreaseRefCount_
 
-mov    ax, cx
-call   S_MarkSFXPageMRU_
+mov    ax, cx ; cx was bad?
+IFDEF DEBUG_SFX
+    cmp    al, NUM_SFX_PAGES
+    jae    too_high_2
+ENDIF
+
+call   S_MarkSFXPageMRU_  ; todo inline?
 
 ; todo sep not used?
 ;  sb_voicelist[i].volume     = vol;
@@ -1267,6 +1678,25 @@ clc
 pop  cx
 pop  si
 retf
+
+IFDEF DEBUG_SFX
+    str_too_high_1:
+    db "TH1 %i", 0
+    str_too_high_2:
+    db "TH2 %i", 0
+
+    too_high_1:
+    push cx
+    push cs
+    push OFFSET str_too_high_1
+    call I_Error_
+
+    too_high_2:
+    push ax
+    push cs
+    push OFFSET str_too_high_2
+    call I_Error_
+ENDIF
 
 
 
@@ -1417,6 +1847,11 @@ mov    es, si
 ;    sfx_data[sfx_id].cache_position.bu.bytelow = allocate_position.bu.bytehigh;
 ;    sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
 
+IFDEF DEBUG_SFX
+    cmp    al, NUM_SFX_PAGES
+    ja     error_bad_page
+ENDIF
+
 mov    byte ptr es:[di + SFXINFO_T.sfxinfo_cache_position + 0], bh
 mov    byte ptr es:[di + SFXINFO_T.sfxinfo_cache_position + 1], al
 mov    di, word ptr es:[di + SFXINFO_T.sfxinfo_lumpandflags]  ; get nump
@@ -1442,6 +1877,10 @@ mov    si, cx  ; si gets lumpsize
 mov    dx, 18  ; offset.skip header and padding
 ;mov    bx, bx  ; allocate_position already correct
 mov    cx, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
+IFDEF DEBUG_SFX
+    cmp    bx, 16384
+    jae    out_of_range
+ENDIF
 
 call   W_CacheLumpNumDirectWithOffset_       
 
@@ -1484,8 +1923,33 @@ do_return_minus_1:
 POPA_NO_AX_MACRO
 
 ret
+IFDEF DEBUG_SFX
+
+    out_of_range:
+
+    push ss
+    pop  ds
+    push bx
+    push cs
+    push OFFSET str_out_of_range  
+    call I_Error_
+
+    str_out_of_range:
+    db "bad range1! %i", 0
 
 
+    error_bad_page:
+
+    push dx
+    push cx
+    push bx
+    push ax
+    push cs
+    push OFFSET badpagestr  
+    call I_Error_
+    badpagestr:
+    db "bad page! %x %x %x %x", 0
+ENDIF
 
 
 handle_multipage_pagecount:
@@ -1560,12 +2024,18 @@ xchg   ax, bx   ; al gets sfx_id... bl gets sfx_page
 
 found_page_multiple:
 
+; bx = first page of allocation.
+
 mov    dx, SFX_DATA_SEGMENT
 mov    es, dx
 
 cbw    ; clear ah, al is sfx_id and < 7F
 xchg   ax, bx   ; bl gets sfx_id... al gets sfx_page
 
+IFDEF DEBUG_SFX
+    cmp    al, NUM_SFX_PAGES
+    ja     jump_to_error_bad_page
+ENDIF
 
 ; ch = pagecount
 ; bl = sfx_id
@@ -1680,6 +2150,13 @@ dont_cap_size_2:
 call  S_NormalizeSfxVolume_
 mov   dx, bx  ; restore offset
 
+IFDEF DEBUG_SFX
+    jmp  dont_normalize_sfx_multi
+    jump_to_error_bad_page:
+    jmp error_bad_page
+ENDIF
+
+
 dont_normalize_sfx_multi:
 
 ;   currentpage = sfxcache_nodes[currentpage].prev;
@@ -1708,7 +2185,20 @@ jmp   memset_and_exit
 
 
 ENDP
+IFDEF DEBUG_SFX
 
+    str_out_of_range_2:
+    db "bad range2! %i", 0
+
+    out_of_range_2:
+
+    push ss
+    pop  ds
+    push si
+    push cs
+    push OFFSET str_out_of_range_2  
+    call I_Error_
+ENDIF
 
 
 ; todo move W_CacheLumpNumDirectWithOffset here NEAR
@@ -1733,6 +2223,11 @@ imul cl
 sal  ax, 1
 add  ah, ch
 mov  byte ptr ds:[si-1], ah
+
+IFDEF DEBUG_SFX
+    cmp    si, 16384
+    ja     out_of_range_2
+ENDIF
 cmp  si, dx
 jb   do_next_byte
 exit_loop:
@@ -1768,7 +2263,7 @@ loop_next_channel_22:
 
 
 ;	if (sb_voicelist[i].sfx_id & PLAYING_FLAG){  
-test   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+test   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
 jne    play_this_sound_22
 
 
@@ -1792,9 +2287,8 @@ ret
 finish_sound_effect_22:
 ;                sb_voicelist[i].sfx_id &= SFX_ID_MASK; // turn off playing flag
 ;                S_DecreaseRefCount(i);                    
-and   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id], SFX_ID_MASK
+and   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id], SFX_ID_MASK
 mov   al, cl
-;cbw  ; cleared internally?
 call  S_DecreaseRefCount_
 jmp   check_next_sfx_loop_22
 
@@ -1826,7 +2320,7 @@ jmp   done_finding_sfx_page_22
 play_this_sound_22:
 
 ;			if (sb_voicelist[i].currentsample >= sb_voicelist[i].length){
-les   di, dword ptr ss:[bp + SB_VOICEINFO_T.sbvi_length]
+les   di, dword ptr ds:[bp + SB_VOICEINFO_T.sbvi_length]
 mov   ax, es   ; currentsample
 cmp   ax, di
 jge   finish_sound_effect_22
@@ -1840,7 +2334,7 @@ push   cx  ; unused, restore after playing sfx.
 mov    bx, SFX_DATA_SEGMENT
 mov    es, bx
 
-mov    bl, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id]
+mov    bl, byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id]
 and    bx, SFX_ID_MASK
 mov    si, bx 
 sal    si, 1  ; * 2
@@ -1897,9 +2391,9 @@ xchg  cx, di    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works ou
 
 ; es:di is now dest
 
-mov   al, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_volume]
+mov   al, byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_volume]
 cbw   ; ah is 0, max vol is 7F
-cmp   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_samplerate], ah ; 0
+cmp   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_samplerate], ah ; 0
 mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 je    handle_11_khz_playback_in_22
 jmp   handle_22_khz_playback_in_22
@@ -1910,9 +2404,7 @@ cmp   cx, (SB_TRANSFERLENGTH SHR 1) ; 128
 jb    used_capped_length_22_11
 mov   cx, (SB_TRANSFERLENGTH SHR 1)
 used_capped_length_22_11:
-IFDEF SKIP_SFX
-jmp   do_sfx_play_cleanup_22_11
-ENDIF
+
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
 
 ; al is volume
@@ -1939,9 +2431,9 @@ loop  loop_next_copy_22_11
 do_sfx_play_cleanup_22_11:
 
 inc   byte ptr cs:[_sound_played]
-add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], 128  ; add 128
-push  ss
-pop   ds
+mov   cx, FIXED_DS_SEGMENT
+mov   ds, cx
+add   word ptr ds:[bp + SB_VOICEINFO_T.sbvi_currentsample], 128  ; add 128
 
 
 ; done playing
@@ -2077,9 +2569,7 @@ test  ch, ch  ; is cx at least 256?
 jz    used_capped_length_22_22
 mov   cx, SB_TRANSFERLENGTH
 used_capped_length_22_22:
-IFDEF SKIP_SFX
-jmp   do_sfx_play_cleanup_22_22
-ENDIF
+
 
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
 
@@ -2107,9 +2597,9 @@ rep   movsb
 do_sfx_play_cleanup_22_22:
 
 inc   byte ptr cs:[_sound_played]
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-push  ss
-pop   ds
+mov   cx, FIXED_DS_SEGMENT
+mov   ds, cx
+inc   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
 
 
 ; done playing
@@ -2250,7 +2740,7 @@ loop_next_channel:
 
 
 ;	if (sb_voicelist[i].sfx_id & PLAYING_FLAG){  
-test   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+test   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
 jne    play_this_sound
 
 
@@ -2267,9 +2757,8 @@ ret
 finish_sound_effect:
 ;                sb_voicelist[i].sfx_id &= SFX_ID_MASK; // turn off playing flag
 ;                S_DecreaseRefCount(i);                    
-and   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id], SFX_ID_MASK
+and   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id], SFX_ID_MASK
 mov   al, cl
-;cbw  ; cleared internally?
 call  S_DecreaseRefCount_
 jmp   check_next_sfx_loop
 
@@ -2300,7 +2789,7 @@ jmp   done_finding_sfx_page
 play_this_sound:
 
 ;			if (sb_voicelist[i].currentsample >= sb_voicelist[i].length){
-les   di, dword ptr ss:[bp + SB_VOICEINFO_T.sbvi_length]
+les   di, dword ptr ds:[bp + SB_VOICEINFO_T.sbvi_length]
 mov   ax, es   ; currentsample
 cmp   ax, di
 jge   finish_sound_effect
@@ -2314,7 +2803,7 @@ push   cx  ; unused, restore after playing sfx.
 mov    bx, SFX_DATA_SEGMENT
 mov    es, bx
 
-mov    bl, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id]
+mov    bl, byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id]
 and    bx, SFX_ID_MASK
 mov    si, bx 
 sal    si, 1  ; * 2
@@ -2375,10 +2864,8 @@ test  ch, ch  ; is cx at least 256?
 jz    used_capped_length
 mov   cx, SB_TRANSFERLENGTH
 used_capped_length:
-IFDEF SKIP_SFX
-jmp   do_sfx_play_cleanup
-ENDIF
-mov   al, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_volume]
+
+mov   al, byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_volume]
 cbw   ; ah is 0, max vol is 7F
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
 mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
@@ -2406,9 +2893,9 @@ rep   movsb
 do_sfx_play_cleanup:
 
 inc   byte ptr cs:[_sound_played]
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-push  ss
-pop   ds
+mov   cx, FIXED_DS_SEGMENT
+mov   ds, cx
+inc   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
 
 
 ; done playing
@@ -2530,50 +3017,6 @@ jmp   do_sfx_play_cleanup
 
 ENDP
 
-
-; todo test?
-do_chain:
-les    cx, dword ptr cs:[_SB_OldInt]
-mov    ax, es
-;jmp    locallib_chain_intr_
-
-; inlined chain_intr for now. todo: suck less
-
-
-;flags bp + 018h
-; cs   bp + 016h
-; ip   bp + 014h
-
-; ax   bp + 012h    ; replaced with cs:ip for retf
-; cx   bp + 010h    ; replaced with cs:ip for retf
-; dx   bp + 0Eh
-; bx   bp + 0Ch
-; sp   bp + 0Ah
-; bp   bp + 8
-; si   bp + 6
-; di   bp + 4
-; ds   bp + 2
-; es   bp + 0
-
-
-mov   sp, bp
-xchg  word ptr [bp + 010h], cx
-xchg  word ptr [bp + 012h], ax
-mov   bx, word ptr [bp + 018h]   ; get old flags
-and   bx, 0FCFFh
-push  bx ; push flags
-
-popf  ; pop flags   ; bp + 01Eh
-pop   es ; bp + 0
-pop   ds ; bp + 2
-pop   di ; bp + 4
-pop   si ; bp + 6
-pop   bp ; bp + 8
-pop   bx ; bp + 0Ah
-pop   bx ; bp + 0Ch
-pop   dx ; bp + 0Eh
-retf  
-
 check_change_sampling_rate:
 ; either change to 22 or 11 this interrupt
 cmp     byte ptr cs:[_change_sampling_to_22_next_int], al ; known 0. check 22 case
@@ -2605,7 +3048,7 @@ not_our_interrupt_chain:
 ; check dmx_asm and OLDINT8 chain code..
 
 jmp     done_acking_interrupt
-USE_SAFE_SFX_STACK = 0
+;USE_SAFE_SFX_STACK = 0
 SFX_INTERRUPT_STACK_SIZE = 040h
 
 ALIGN_MACRO
@@ -2724,9 +3167,8 @@ done_with_dsp_1xx:
 mov   ax, SB_DMABUFFER_SEGMENT
 mov   es, ax
 mov   ax, 08080h
-xor   cx, cx
-mov   ch, byte ptr cs:[_in_second_buffer] ; todo in_second_buffer
-mov   di, cx    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works out to di being target buffer.
+
+mov   di, word ptr cs:[_in_second_buffer_low]  ; hi is 0 if firstbuffer, 1 if second. lo is 0, so this works out to di being target buffer.
 
 ; es:di is now dest
 
@@ -2740,7 +3182,7 @@ push  bx
 cmp   si, cx ; known 0 . cx == 11 khz
 
 ; common code for both SB_Service call types
-mov    cx, 0    ; dont mess with flag.
+; cx is 0...
 mov    word ptr cs:[_sound_played], cx      ; sound_played = 0, remaining_22khz = 0
 mov    ch, byte ptr ds:[_numChannels]
 
@@ -2788,9 +3230,8 @@ ENDIF
 iret   
 
 recover_sfx_page:
-xor    bh, bh
-xchg   ax, bx
-call   Z_QuickMapSFXPageFrame_
+
+call   Z_QuickMapSFXPageFrame_NoCheck_  ; todo inline?
 jmp    done_with_remap
 out_port_7_plus:
 out    0A0h, al
