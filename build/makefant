@@ -1,0 +1,86 @@
+# RealDOOM makefile
+
+# --------------------------------------------------------------------------
+#
+#      4r  use 80486 timings and register argument passing
+#       c  compile only
+#      d1  include line number debugging information
+#      d2  include full sybolic debugging information
+#      ei  force enums to be of type int
+#       j  change char default from unsigned to signed
+#      oa  relax aliasing checking
+#      od  do not optimize
+#  oe[=#]  expand functions inline, # = quads (default 20)
+#      oi  use the inline library functions
+#      om  generate inline 80x87 code for math functions
+#      ot  optimize for time
+#      os  optimize for size
+#      ox  maximum optimization
+#       s  remove stack overflow checks
+#     zp1  align structures on bytes
+#      zq  use quiet mode
+#  /i=dir  add include directories
+#
+#      mh huge memory model
+#      ml large memory model
+#     fpi inline 80x87 instructions with emulation
+#      -o optimization: a : relax aliasing constraints
+#	   zq operate quietly
+#	  zp1 pack structure members with alignment 1
+#     zt# set far data threshold (i.e., larger objects go in far memory)
+#      wx set maximum compiler warning level (helps find unused vars)
+#      zc store strings in code instead of DGROUP (large memory model only)
+#     zdp forces ds register to always point to dgroup. default for medium
+#     zdf allows ds register to point to other things. default for other modes
+# --------------------------------------------------------------------------
+
+
+# time optimized seems a LOT faster... ?
+# size optimized saves around 10k
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__FANT_BUILD=1 -d__CH_BLD=1
+#ASMOPTS =  /dCOMPISA=2 /dCOMP_CH=4
+
+GLOBOBJS = &
+ i_init.obj &
+ i_quit.obj &
+ d_init.obj &
+ d_net.obj &
+ g_setup.obj &
+ g_game.obj &
+ g_demo.obj &
+ m_misc.obj &
+ p_init.obj &
+ r_init.obj &
+ r_setup.obj &
+ w_init.obj &
+ f_file.obj &
+ i_start.obj &
+ w_wad.obj &
+ z_init.obj &
+ z_zone.obj &
+ z_fant.obj &
+ st_init.obj &
+ s_sbsfx.obj &
+ s_sbinit.obj &
+ d_dmx.obj &
+ d_int.obj &
+ memory.obj &
+ math.obj &
+ main.obj &
+ v_video.obj
+
+doomout.exe : $(GLOBOBJS) 
+ wlink @build/rdoomfa.lnk
+ copy doomout.exe bin\doom.exe
+ wstrip bin\doom.exe
+
+.c.obj :
+ wcc $(CCOPTS) $[*
+
+.asm.obj :
+ tasm /mx /m2 /w2 /q /zi @B_FANTC.TA $[*
+
+clean : .SYMBOLIC
+ del *.obj
+ del *.err
+ del doomout.exe

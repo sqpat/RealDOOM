@@ -11,6 +11,7 @@ IF "%1" == "186" GOTO MAKE_186
 IF "%1" == "SCAMP" GOTO MAKE_SCAMP
 IF "%1" == "SCAT" GOTO MAKE_SCAT
 IF "%1" == "HT18" GOTO MAKE_HT18
+IF "%1" == "FANTASY" GOTO MAKE_FANT
 
 GOTO PRINT_EXIT
 
@@ -117,9 +118,25 @@ GOTO END
 GOTO END
 
 
+:MAKE_FANT
+    wmake -f build\makefant clean 
+    wmake -f build\makebg COPT="-d__FANT_BUILD=1 -d__CH_BLD=1" ASMOPT="/dCOMPISA=2 /dCOMP_CH=4" 286C="4" USE_ISA="2"
+    bingen.exe
+    move doomcode.bin bin\doomcode.bin /Y
+    wmake -f build\makecg clean
+    wmake -f build\makecg COPT="-d__FANT_BUILD=1 -d__CH_BLD=1" ASMOPT="/dCOMPISA=2 /dCOMP_CH=4" 286C="4" USE_ISA="2"
+    codegen.exe
+    wmake -f build\makefant clean 
+    wmake -f build\makebg COPT="-d__FANT_BUILD=1 -d__CH_BLD=1" ASMOPT="/dCOMPISA=2 /dCOMP_CH=4" 286C="4" USE_ISA="2"
+    bingen.exe
+    wmake -f build\makefant
+GOTO END
+
+
+
 :PRINT_EXIT
     echo:
-    echo Usage: makeall [286] [8086] [186] [SCAMP] [SCAT] [HT18] [386]
+    echo Usage: makeall [286] [8086] [186] [SCAMP] [SCAT] [HT18] [386] [FANTASY]
     echo:
 GOTO END
 

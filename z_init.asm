@@ -363,7 +363,50 @@ IFDEF COMP_CH
     pop    dx
     ret
     ENDP
+  ELSEIF COMP_CH EQ CHIPSET_FANTASY
 
+    PROC    Z_InitEMS_ NEAR
+    PUBLIC  Z_InitEMS_
+
+    mov    word ptr ds:[_EMS_PAGE], 0D000h   ; TODO unhardcode
+
+
+    ; set default pages
+    mov     ax, 0Ch
+    loop_next_page_setup:
+
+    out    FANTASY_PAGE_SELECT_REGISTER, al
+    add    al, 4
+    out    FANTASY_PAGE_SET_REGISTER, ax  ; set default EMS pages for global stuff...
+    sub    al, 3     ; undo plus 4, inc ax 1    
+    cmp     al, 024h
+    jl      loop_next_page_setup
+
+
+
+    mov    al, FANTASY_PAGE_D000 + MUS_PAGE_FRAME_INDEX
+    out    FANTASY_PAGE_SELECT_REGISTER, al
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
+    out    FANTASY_PAGE_SET_REGISTER, ax
+    
+    mov    al, FANTASY_PAGE_D000 + SFX_PAGE_FRAME_INDEX
+    out    FANTASY_PAGE_SELECT_REGISTER, al
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
+    out    FANTASY_PAGE_SET_REGISTER, ax
+
+    mov    al, FANTASY_PAGE_D000 + WAD_PAGE_FRAME_INDEX
+    out    FANTASY_PAGE_SELECT_REGISTER, al
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
+    out    FANTASY_PAGE_SET_REGISTER, ax
+
+    mov    al, FANTASY_PAGE_D000 + BSP_PAGE_FRAME_INDEX
+    out    FANTASY_PAGE_SELECT_REGISTER, al
+    mov    ax, (EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE)
+    out    FANTASY_PAGE_SET_REGISTER, ax
+
+    ret
+
+    ENDP
 
   ENDIF
 
@@ -912,8 +955,6 @@ IFDEF COMP_CH
 
         mov  	dx, SCAT_PAGE_SELECT_REGISTER
         xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
         cli
         out  	dx, al
         mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs
@@ -925,20 +966,23 @@ IFDEF COMP_CH
 	ELSEIF COMP_CH EQ CHIPSET_SCAMP
 
         xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
         cli
         out     SCAMP_PAGE_SELECT_REGISTER, al
         mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
         out 	SCAMP_PAGE_SET_REGISTER, ax
         sti
+	ELSEIF COMP_CH EQ CHIPSET_FANTASY
 
+        xchg    ax, si
+        cli
+        out     FANTASY_PAGE_SELECT_REGISTER, al
+        mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
+        out 	FANTASY_PAGE_SET_REGISTER, ax
+        sti
 	ELSEIF COMP_CH EQ CHIPSET_HT18
 
         mov  	dx, HT18_PAGE_SELECT_REGISTER
         xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
         cli
         out  	dx, al
         mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs

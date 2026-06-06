@@ -1,0 +1,55 @@
+# RealDOOM linker file
+
+option quiet
+option map
+option start=_realdoomstart_
+option stack=1024
+debug all
+libpath %WATCOM%\lib286
+libpath %WATCOM%\lib286\dos
+format dos
+name doomout
+
+ 
+file i_start.obj
+file d_init.obj
+file st_init.obj
+file r_init.obj
+file w_init.obj
+file i_init.obj
+file z_init.obj
+file s_sbinit.obj
+file p_init.obj
+
+file i_quit.obj
+file d_net.obj
+file g_game.obj
+file g_demo.obj
+file m_misc.obj
+
+file d_dmx.obj
+file d_int.obj
+file memory.obj
+file math.obj
+file main.obj
+
+
+file g_setup.obj
+file r_setup.obj
+
+file s_sbsfx.obj
+file f_file.obj
+file w_wad.obj
+file v_video.obj
+file z_zone.obj
+file z_fant.obj
+
+
+
+
+
+ORDER      clname CODE 
+           clname BEGDATA segment _NULL 
+           clname DATA  segment _FIXEDDATA
+           clname STACK
+           clname START 

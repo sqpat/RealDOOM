@@ -749,6 +749,7 @@ CHIPSET_NONE  = 0
 CHIPSET_SCAMP = 1
 CHIPSET_SCAT  = 2
 CHIPSET_HT18  = 3
+CHIPSET_FANTASY  = 4
 
 
 ; should be in build params but if not...
@@ -1063,6 +1064,7 @@ ENDM
 ; EMS DEFINITIONS 
 ;
 SCAMP_PAGE_9000_OFFSET  =   020h
+FANTASY_PAGE_9000_OFFSET  =   020h
 
 IFDEF COMP_CH
 
@@ -1476,7 +1478,132 @@ IFDEF COMP_CH
 			mov     cx, 24
 			rep     outsw
 		ENDM
+	ELSEIF COMP_CH EQ CHIPSET_FANTASY
+		IF EMS_BUILD_SETTING EQ EMS_ONLY_2_MB_BUILD_SETTING
+			EMS_MEMORY_PAGE_OFFSET  = 0028h
+		ELSE
+			EMS_MEMORY_PAGE_OFFSET  = 0050h
+		ENDIF
 
+		FANTASY_PAGE_9000_OFFSET  =   020h
+		EMS_AUTOINCREMENT_FLAG  =   040h
+		CHIPSET_PAGE_9000       =   020h
+		FANTASY_PAGE_D000 = 04h    ; todo ??? d000?
+		FANTASY_PAGE_SELECT_REGISTER = 0E8h
+		FANTASY_PAGE_SET_REGISTER = 0EAh
+
+		Z_QUICKMAPAI1 MACRO pageswapindex, page
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			mov     ax, word ptr ds:[&pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs]
+			out 	FANTASY_PAGE_SET_REGISTER, ax
+			sti
+		ENDM
+
+		Z_QUICKMAPAI2 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			lodsw
+			out 	FANTASY_PAGE_SET_REGISTER, ax
+			lodsw
+			out 	FANTASY_PAGE_SET_REGISTER, ax
+			sti
+		ENDM
+
+		Z_QUICKMAPAI3 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			lodsw
+			out 	FANTASY_PAGE_SET_REGISTER, ax
+			lodsw
+			out 	FANTASY_PAGE_SET_REGISTER, ax
+			lodsw
+			out 	FANTASY_PAGE_SET_REGISTER, ax
+			sti
+		ENDM
+
+		Z_QUICKMAPAI4 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			mov	    dx, FANTASY_PAGE_SET_REGISTER
+			mov     cx, 4
+			rep     outsw			
+			sti
+		ENDM
+
+		Z_QUICKMAPAI5 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			mov	    dx, FANTASY_PAGE_SET_REGISTER
+			mov     cx, 5
+			rep     outsw			
+			sti
+		ENDM
+
+		Z_QUICKMAPAI6 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			mov	    dx, FANTASY_PAGE_SET_REGISTER
+			mov     cx, 6
+			rep     outsw			
+			sti
+		ENDM
+
+		Z_QUICKMAPAI7 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			mov	    dx, FANTASY_PAGE_SET_REGISTER
+			mov     cx, 7
+			rep     outsw			
+			sti
+		ENDM
+
+		Z_QUICKMAPAI8 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			mov	    dx, FANTASY_PAGE_SET_REGISTER
+			mov     cx, 8
+			rep     outsw			
+			sti
+		ENDM
+
+		Z_QUICKMAPAI16 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov     al, page OR EMS_AUTOINCREMENT_FLAG
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			mov	    dx, FANTASY_PAGE_SET_REGISTER
+			mov     cx, 16
+			rep     outsw			
+			sti
+		ENDM
+
+		Z_QUICKMAPAI24 MACRO pageswapindex, page
+			mov     si,  &pageswapindex * 2 * PAGE_SWAP_ARG_MULT + OFFSET _pageswapargs
+			mov  	al, 04Ch     ; 040h for autoincrement enable. 0Ch for page 4000 index
+
+			cli
+			out     FANTASY_PAGE_SELECT_REGISTER, al
+			mov	    dx, FANTASY_PAGE_SET_REGISTER
+			mov     cx, 24
+			rep     outsw			
+			sti
+		ENDM
 	ENDIF
 
 	EPR_MACRO MACRO var
@@ -1499,6 +1626,8 @@ IFDEF COMP_CH
 			dw 003FFh
 		ELSEIF COMP_CH EQ CHIPSET_SCAMP
 			dw (&arg + SCAMP_PAGE_9000_OFFSET + 4) AND 0FFFFh   ; shut up overflow warning
+		ELSEIF COMP_CH EQ CHIPSET_FANTASY
+			dw (&arg + FANTASY_PAGE_9000_OFFSET + 4) AND 0FFFFh   ; shut up overflow warning
 		ELSEIF COMP_CH EQ CHIPSET_HT18
 			dw 00000h
 		ENDIF

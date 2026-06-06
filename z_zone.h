@@ -129,6 +129,14 @@
 #define _EPR(a)           a + EMS_MEMORY_PAGE_OFFSET
 #define CHIPSET_PAGE_9000 0x14
 #define EMS_AUTOINCREMENT_FLAG 0x80
+#elif defined(__FANT_BUILD)
+#define EMS_MEMORY_PAGE_OFFSET  0x0050
+#define FANTASY_PAGE_9000_OFFSET   0x20
+#define _NPR(a)            a + FANTASY_PAGE_9000_OFFSET + 4
+// todo should this be minus?
+#define _EPR(a)            a + EMS_MEMORY_PAGE_OFFSET
+#define CHIPSET_PAGE_9000 0x20
+#define EMS_AUTOINCREMENT_FLAG 0x40
 
 #else
 #define EMS_MEMORY_PAGE_OFFSET 0x0000

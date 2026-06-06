@@ -410,6 +410,35 @@ IFDEF COMP_CH
         pop   si
         pop   dx
         ret  
+	ELSEIF COMP_CH EQ CHIPSET_FANTASY
+
+        push  dx
+        push  si
+        push  cx
+        push  bx
+        xor   ax, ax
+        mov   si, ax
+        mov   bx, OFFSET _ems_backfill_page_order
+        loop_next_page_to_unmap:
+    ; todo test
+        xor   ax, ax
+        xlat  byte ptr cs:[bx]
+        add   ax, (FANTASY_PAGE_9000_OFFSET + 4)
+
+        mov   word ptr ds:[si + _pageswapargs], ax
+        inc   bx
+        inc   si
+        inc   si
+        cmp   si, 48
+        jl    loop_next_page_to_unmap
+
+        Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+        
+        pop   bx
+        pop   cx
+        pop   si
+        pop   dx
+        ret  
 
 	ELSEIF COMP_CH EQ CHIPSET_HT18
         push  dx

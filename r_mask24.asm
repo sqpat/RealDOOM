@@ -3627,6 +3627,14 @@ IFDEF COMP_CH
         SHIFT_PAGESWAP_ARGS bx
         mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], dx
         mov   dx, -1
+    ELSEIF COMP_CH EQ CHIPSET_FANTASY
+        mov   byte ptr ds:[bx + si], dl   ; dl is -1
+        mov   dx, bx
+        sal   bx, 1
+        add   dx, ((FANTASY_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning   ; page offset
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], dx
+        mov   dx, -1
     ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
@@ -3898,6 +3906,14 @@ IFDEF COMP_CH
         mov   cx, bx
         sal   bx, 1                      ; startpage word offset.
         add   cx, ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning   ; page offset
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], cx
+        mov   cx, -1
+    ELSEIF COMP_CH EQ CHIPSET_FANTASY
+        mov   byte ptr ds:[bx + si], cl  ; -1
+        mov   cx, bx
+        sal   bx, 1                      ; startpage word offset.
+        add   cx, ((FANTASY_PAGE_9000_OFFSET + 4) - (010000h - PAGE_9000_OFFSET))   ; shut up compiler warning   ; page offset
         SHIFT_PAGESWAP_ARGS bx
         mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], cx
         mov   cx, -1

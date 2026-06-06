@@ -85,6 +85,8 @@ IFDEF COMP_CH
     NUMSPACES_27 = NUMSPACES_27 - (16 / 2)
   ELSEIF COMP_CH EQ CHIPSET_HT18
     NUMSPACES_27 = NUMSPACES_27 - (16 / 2)
+  ELSEIF COMP_CH EQ CHIPSET_FANTASY
+    NUMSPACES_27 = NUMSPACES_27 - (17 / 2)
   ENDIF
 ELSE
   IF COMPISA GE COMPILE_386
@@ -513,6 +515,12 @@ IFDEF COMP_CH
     jne    chipset_fail  ; tested on ht21
     ; todo double check ht12
     jmp    chipset_pass
+
+  ELSEIF COMP_CH EQ CHIPSET_FANTASY
+
+    ; todo: no trust
+    jmp    chipset_pass  ; i trust you
+
 
   ENDIF
 
@@ -1291,6 +1299,14 @@ IFDEF COMP_CH
     str_title_doom2: 
     db "DOOM 2: Hell on Earth v1.9 (RealDOOM HT18)"
     str_title_doom2_done:
+  ELSEIF COMP_CH EQ CHIPSET_FANTASY
+    str_title_ultimate:
+    db " The Ultimate DOOM Startup v1.9 (RealDOOM Fantasy)", 0
+    str_title_normal:
+    db " DOOM System Startup v1.9 (RealDOOM Fantasy)", 0
+    str_title_doom2: 
+    db "DOOM 2: Hell on Earth v1.9 (RealDOOM Fantasy)"
+    str_title_doom2_done:
   ENDIF
 ELSE
   IF COMPISA GE COMPILE_386
@@ -1375,6 +1391,8 @@ str_detected_chipset:
     db 0Ah, "SCAT Chipset Detection: ", 0
   ELSEIF COMP_CH EQ CHIPSET_HT18
     db 0Ah, "Headland Chipset Detection: ", 0
+  ELSEIF COMP_CH EQ CHIPSET_FANTASY
+    db 0Ah, "Fantasy Chipset Detection: ", 0
   ENDIF
   str_detected_chipset_pass:
   db "OK!", 0 

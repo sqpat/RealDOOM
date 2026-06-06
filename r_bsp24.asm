@@ -2676,7 +2676,14 @@ IFDEF COMP_CH
         mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
         out 	 SCAMP_PAGE_SET_REGISTER, ax
         sti
-
+   ELSEIF COMP_CH EQ CHIPSET_FANTASY
+        xchg    ax, si
+        cli
+        out     FANTASY_PAGE_SELECT_REGISTER, al
+        mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
+        out 	 FANTASY_PAGE_SET_REGISTER, ax
+        sti
+   
 	ELSEIF COMP_CH EQ CHIPSET_HT18
 
         mov  	dx, HT18_PAGE_SELECT_REGISTER
@@ -13008,7 +13015,15 @@ IFDEF COMP_CH
         SHIFT_PAGESWAP_ARGS bx
         mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_REND_TEXTURE_OFFSET * 2)], dx
         mov   dx, -1
-    ELSEIF COMP_CH EQ CHIPSET_HT18
+    ELSEIF COMP_CH EQ CHIPSET_FANTASY
+        mov   byte ptr ds:[bx + si], dl   ; dl is -1
+        mov   dx, bx
+        sal   bx, 1
+        add   dx, ((FANTASY_PAGE_9000_OFFSET + 4) - (010000h - PAGE_5000_OFFSET)) 
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_REND_TEXTURE_OFFSET * 2)], dx
+        mov   dx, -1
+   ELSEIF COMP_CH EQ CHIPSET_HT18
         mov   byte ptr ds:[bx + si], dl   ; dl is -1
         sal   bx, 1
         SHIFT_PAGESWAP_ARGS bx
@@ -13268,6 +13283,14 @@ IFDEF COMP_CH
         mov   cx, bx
         sal   bx, 1                      ; startpage word offset.
         add   cx, ((SCAMP_PAGE_9000_OFFSET + 4) - (010000h - PAGE_5000_OFFSET))  ; page offset
+        SHIFT_PAGESWAP_ARGS bx
+        mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_REND_TEXTURE_OFFSET * 2)], cx
+        mov   cx, -1
+    ELSEIF COMP_CH EQ CHIPSET_FANTASY
+        mov   byte ptr ds:[bx + si], cl  ; -1
+        mov   cx, bx
+        sal   bx, 1                      ; startpage word offset.
+        add   cx, ((FANTASY_PAGE_9000_OFFSET + 4) - (010000h - PAGE_5000_OFFSET))  ; page offset
         SHIFT_PAGESWAP_ARGS bx
         mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_REND_TEXTURE_OFFSET * 2)], cx
         mov   cx, -1

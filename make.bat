@@ -11,6 +11,7 @@ IF "%1" == "186" GOTO MAKE_186
 IF "%1" == "SCAMP" GOTO MAKE_SCAMP
 IF "%1" == "SCAT" GOTO MAKE_SCAT
 IF "%1" == "HT18" GOTO MAKE_HT18
+IF "%1" == "FANTASY" GOTO MAKE_FANT
 
 GOTO PRINT_EXIT
 
@@ -42,10 +43,14 @@ GOTO END
     wmake -f build\makeht %2 %3 %4 %5 %6 %7 %8 %9
 GOTO END
 
+:MAKE_FANT
+    wmake -f build\makefant %2 %3 %4 %5 %6 %7 %8 %9
+GOTO END
+
 
 :PRINT_EXIT
     echo:
-    echo Usage: make [286] [8086] [186] [SCAMP] [SCAT] [HT18] [386] [make options]
+    echo Usage: make [286] [8086] [186] [SCAMP] [SCAT] [HT18] [386] [FANTASY] [make options]
     echo:
 GOTO END
 

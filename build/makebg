@@ -73,6 +73,9 @@ GLOBOBJS = $(GLOBOBJS) z_scat.obj
 !ifeq build286chipset 3
 GLOBOBJS = $(GLOBOBJS) z_ht18.obj
 !endif
+!ifeq build286chipset 4
+GLOBOBJS = $(GLOBOBJS) z_fant.obj
+!endif
 
 
 GLOBOBJS = $(GLOBOBJS) &
@@ -171,6 +174,9 @@ bingen.exe : $(GLOBOBJS)
 !else
 !ifeq build286chipset 3
  wlink @build/bingenht.lnk 
+!else
+!ifeq build286chipset 4
+ wlink @build/bingenfa.lnk 
 !else
  wlink @build/bingen.lnk 
 !endif
