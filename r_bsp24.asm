@@ -2454,6 +2454,7 @@ PROC R_HandleEMSVisplanePagination_ NEAR
 push  bx
 ;push  cx
 
+
 mov   cl, dl        ; copy is_ceil to cl
 mov   ch, al
 xor   dx, dx
@@ -2609,16 +2610,14 @@ mov   al, cl
 cbw  
 cmp   al, 2
 jge   visplane_page_above_2
-add   ax, FIRST_VISPLANE_PAGE
+add   al, FIRST_VISPLANE_PAGE
 used_pagevalue_ready:
 
 ;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
 
 ; _EPR here
-IFDEF COMP_CH
-    add  ax, EMS_MEMORY_PAGE_OFFSET
-ELSE
-ENDIF
+EPR_MACRO ax
+
 mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * 2)], ax
 
 
@@ -2661,12 +2660,10 @@ IFDEF COMP_CH
 	IF COMP_CH EQ CHIPSET_SCAT
 
         mov  	dx, SCAT_PAGE_SELECT_REGISTER
-        xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        xchg   ax, si
         cli
         out  	dx, al
-        mov    ax,  ds:[(pageswapargs_visplanepage_offset * 2) + _pageswapargs]
+        mov    ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
         mov  	dx, SCAT_PAGE_SET_REGISTER
         out 	dx, ax
         sti
@@ -2674,8 +2671,6 @@ IFDEF COMP_CH
 	ELSEIF COMP_CH EQ CHIPSET_SCAMP
 
         xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
         cli
         out     SCAMP_PAGE_SELECT_REGISTER, al
         mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
@@ -2685,9 +2680,7 @@ IFDEF COMP_CH
 	ELSEIF COMP_CH EQ CHIPSET_HT18
 
         mov  	dx, HT18_PAGE_SELECT_REGISTER
-        xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        xchg   ax, si
         cli
         out  	dx, al
         mov    ax,  ds:[(pageswapargs_visplanepage_offset * 2) + _pageswapargs]
@@ -2699,10 +2692,7 @@ IFDEF COMP_CH
 
 ELSE
 
-
     Z_QUICKMAPAI1 pageswapargs_visplanepage_offset_size unused_param
-
-
 
 ENDIF
 
@@ -2715,7 +2705,7 @@ ret
 ALIGN_MACRO
 visplane_page_above_2:
 ;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
-add   ax, (EMS_VISPLANE_EXTRA_PAGE - 2)
+add   al, (EMS_VISPLANE_EXTRA_PAGE - 2)
 jmp   used_pagevalue_ready
 
 ALIGN_MACRO
@@ -13027,7 +13017,7 @@ IFDEF COMP_CH
 ELSE
     mov   byte ptr ds:[bx + si], dl   ; dl is -1
     sal   bx, 1
-        SHIFT_PAGESWAP_ARGS bx
+    SHIFT_PAGESWAP_ARGS bx
     mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_REND_TEXTURE_OFFSET * 2)], dx  ; dx is -1
 
 ENDIF

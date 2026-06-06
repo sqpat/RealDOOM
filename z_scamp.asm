@@ -231,12 +231,12 @@ PROC Z_QuickMapMusicPageFrame_ NEAR
 PUBLIC Z_QuickMapMusicPageFrame_
 
 
-cmp  al, byte ptr ds:[_currentpageframes]
+cmp  al, byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX]
 je   exit_page_frame
 
-mov  ds:[_currentpageframes], al
+mov  ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX], al
 mov  ah, al
-mov  al, SCAMP_PAGE_D000
+mov  al, SCAMP_PAGE_D000 + MUS_PAGE_FRAME_INDEX
 cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  al, ah
@@ -264,7 +264,7 @@ PUBLIC Z_QuickMapSFXPageFrame_NoCheck_
 mov  byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX], al
 
 mov  ah, al
-mov  al, SCAMP_PAGE_D000 + 1	; page D400
+mov  al, SCAMP_PAGE_D000 + SFX_PAGE_FRAME_INDEX	; page D400
 cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 

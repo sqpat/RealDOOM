@@ -867,10 +867,8 @@ used_pagevalue_ready:
 ;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
 
 ; _EPR here
-IFDEF COMP_CH
-    add  ax, EMS_MEMORY_PAGE_OFFSET
-ELSE
-ENDIF
+EPR_MACRO ax
+
 mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * 2)], ax
 
 
