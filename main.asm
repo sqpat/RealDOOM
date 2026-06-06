@@ -2107,7 +2107,6 @@ loop  loop_shifter
 inc   bh
 
 pop   ax  ; recover initial digit
-mov   al, 010h
 and   al, 0Fh
 call  locallib_createhexnibble_
 call  locallib_putchar_check_di
@@ -2350,15 +2349,12 @@ jmp   loop_next_arg
 
 do_hex:
 
-jcxz  do_hex_word
-do_hex_long:
 lodsw
+jcxz  do_hex_call ; word
+; do_hex_long
 xchg  ax, dx
 lodsw
 xchg  ax, dx
-jmp   do_hex_call
-do_hex_word:
-lodsw
 do_hex_call:
 
 xchg  bx, si   ; put string ptr back

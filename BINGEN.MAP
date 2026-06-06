@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/05 14:56:27
+Created on:       26/06/06 09:21:27
 Warning! W1027: file r_mask24.obj(r_mask24.ASM): redefinition of found_multipage ignored
 Executable Image: bingen.exe
 creating a DOS executable
@@ -1061,9 +1061,9 @@ Module: st_stuff.obj(st_stuff.ASM)
 2445:adff*     STlib_updateflag_
 2445:a95a      _st_oldhealth
 2445:a954*     ST_STUFF_STARTMARKER_
-2445:b2f9*     ST_STUFF_ENDMARKER_
 2445:a972      _tallnum_
 2445:aa66      _w_faces
+2445:b2f9*     ST_STUFF_ENDMARKER_
 2445:aa2e      _w_armsbg
 2445:ad6e      ST_Ticker_
 2445:ab28*     ST_calcPainOffset_
