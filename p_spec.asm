@@ -1699,19 +1699,14 @@ jl        loop_next_line_physics
 
 
 done_with_lines:
-; todo put these in fixeddata and make them all adajcent?
+; all adjacent in fixeddata 
 
-mov       cx, MAXCEILINGS 
+mov       cx, MAXCEILINGS + MAXPLATS + ((MAXBUTTONS * (SIZE BUTTON_T)) / 2)
 mov       di, OFFSET _activeceilings
 xor       ax, ax
 push      ds
 pop       es
 rep stosw 
-mov       cl, MAXPLATS
-mov       di, OFFSET _activeplats
-rep stosw 
-mov       cl, (MAXBUTTONS * (SIZE BUTTON_T)) / 2
-mov       di, OFFSET _buttonlist
 
 
 POPA_NO_AX_OR_BP_MACRO

@@ -298,8 +298,7 @@ _viewheight =	                    _NULL_OFFSET + 0019Ah
 _sb_port =              	      	_NULL_OFFSET + 0019Ch
 _sb_dma =           	         	_NULL_OFFSET + 0019Eh
 _sb_irq =                       	_NULL_OFFSET + 0019Fh
-_sfxcache_head =                    _NULL_OFFSET + 001A0h
-_sfxcache_tail =                    _NULL_OFFSET + 001A1h
+_oldentertics =					    _NULL_OFFSET + 001A0h
 _lastanim =				             _NULL_OFFSET + 01A2h
 _R_TextureNumForName_addr =         _NULL_OFFSET + 001A4h
 _tmthing_pos =                      _NULL_OFFSET + 001A8h
@@ -423,8 +422,24 @@ _demo_p =            				 _NULL_OFFSET + 003D8h
 _DEMO_SEGMENT_PTR =  				 _NULL_OFFSET + 003DAh
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 003DCh
 
-;3c or 60 bytes
-_activeceilings =                    _NULL_OFFSET + 003E0h
+_lineopening =				         _NULL_OFFSET + 003E0h
+
+_playerMobjRef =				     _NULL_OFFSET + 003E6h
+_intercept_p =				         _NULL_OFFSET + 003E8h
+_aimslope = 				         _NULL_OFFSET + 003ECh
+_bestslidefrac =				     _NULL_OFFSET + 003F0h
+_bulletslope = 			 			 _NULL_OFFSET + 003F4h
+_newend = 				         	 _NULL_OFFSET + 003F8h
+
+_shootthing =				 		 _NULL_OFFSET + 003FAh
+_leveltime =     		   			 _NULL_OFFSET + 003FCh
+
+; NFILES * SIZE DOSFILE_INFO_T bytes = 3 * 8 = 24 = 018h
+___iob = 							 _NULL_OFFSET + 00400h
+
+_pspritescale = 		         	 _NULL_OFFSET + 00418h
+_am_max_scale_mtof =       		     _NULL_OFFSET + 0041Ah
+
 
 _centerx = 							 _NULL_OFFSET + 0041Ch
 _centery = 							 _NULL_OFFSET + 0041Eh
@@ -526,109 +541,74 @@ _loops_enabled =    			     _NULL_OFFSET + 0051Eh
 _inhelpscreens =    			     _NULL_OFFSET + 0051Fh
 
 _sightzstart =				         _NULL_OFFSET + 00524h
-_topslope =				         	 _NULL_OFFSET + 00528h
-_bottomslope =					     _NULL_OFFSET + 0052Ch
-_cachedt2x =				         _NULL_OFFSET + 00530h
-_cachedt2y =					     _NULL_OFFSET + 00534h
-_strace =					         _NULL_OFFSET + 00538h
-;24 or 36 bytes
-_buttonlist =                        _NULL_OFFSET + 00548h
+_topslope =				         	 _NULL_OFFSET + 00528h ; THESE HAVE TO BE ADJACENT
+_bottomslope =					     _NULL_OFFSET + 0052Ch ; THESE HAVE TO BE ADJACENT
+_cachedt2x =				         _NULL_OFFSET + 00530h ; THESE HAVE TO BE ADJACENT
+_cachedt2y =					     _NULL_OFFSET + 00534h ; THESE HAVE TO BE ADJACENT
+_strace =					         _NULL_OFFSET + 00538h ; THESE HAVE TO BE ADJACENT
+
+_gametime = 				         _NULL_OFFSET + 00548h
+_maketic = 				             _NULL_OFFSET + 0054Ch
+_starttime = 				         _NULL_OFFSET + 0054Eh
 
 
-_mtof_zoommul =        			     _NULL_OFFSET + 0056Ch
-_ftom_zoommul =        			     _NULL_OFFSET + 0056Eh
-
-_activespritepages =                 _NULL_OFFSET + 00570h
-_activespritenumpages =              _NULL_OFFSET + 00574h
-_spriteL1LRU =                 		 _NULL_OFFSET + 00578h
-_spritecache_l2_head =               _NULL_OFFSET + 0057Ch
-_spritecache_l2_tail =               _NULL_OFFSET + 0057Dh
-_texturecache_l2_head =              _NULL_OFFSET + 0057Eh
-_texturecache_l2_tail =              _NULL_OFFSET + 0057Fh
-_activetexturepages =                _NULL_OFFSET + 00580h
-_activenumpages =                 	 _NULL_OFFSET + 0058Ah
-_textureL1LRU =                 	 _NULL_OFFSET + 00594h
-; up to 59E
-; IS 59E TO 5AD FREE?
-_flatcache_l2_head =                 _NULL_OFFSET + 005AEh
-_flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
-
-_gametime = 				         _NULL_OFFSET + 005B0h
-_maketic = 				             _NULL_OFFSET + 005B4h
-_starttime = 				         _NULL_OFFSET + 005B6h
-_oldentertics =					     _NULL_OFFSET + 005B8h
-_pspritescale = 		         	 _NULL_OFFSET + 005BAh
-; 5BC free
-_am_max_scale_mtof =       		     _NULL_OFFSET + 005BEh
+;550-560 free todo
 
 
-_lineopening =				         _NULL_OFFSET + 005C0h
-
-_playerMobjRef =				     _NULL_OFFSET + 005C6h
-_intercept_p =				         _NULL_OFFSET + 005C8h
-_aimslope = 				         _NULL_OFFSET + 005CCh
-_bestslidefrac =				     _NULL_OFFSET + 005D0h
-_bulletslope = 			 			 _NULL_OFFSET + 005D4h
-
-_newend = 				         	 _NULL_OFFSET + 005D8h
-
-_shootthing =				 		 _NULL_OFFSET + 005DAh
-_leveltime =     		   			 _NULL_OFFSET + 005DCh
-
-; 5EA-600
-
-
-
-
-
-
-_solidsegs = 			         	 _NULL_OFFSET + 00600h
-
-
-_player = 						 	 _NULL_OFFSET + 006A0h
-
-
-
-
-
-
-
-;703-7EC
-
-
-
-
-
-
+; ceilings plats buttonlist
 
 ;3c or 60 bytes
-_activeplats =                       _NULL_OFFSET + 00828h
-; up to 864
-; todo move hi?
-_anims =				     		 _NULL_OFFSET + 00890h
+_activeceilings =                    _NULL_OFFSET + 00550h  ; THESE HAVE TO BE ADJACENT
+;24 or 36 bytes
+_buttonlist =                        _NULL_OFFSET + 0058Ch  ; THESE HAVE TO BE ADJACENT
+;3c or 60 bytes
+_activeplats =                       _NULL_OFFSET + 005B0h  ; THESE HAVE TO BE ADJACENT
 
-; todo move hi?
-_switchlist =				         _NULL_OFFSET + 00950h
-; a18-a40 free
+; 5FC
+
+_mtof_zoommul =        			     _NULL_OFFSET + 005ECh
+_ftom_zoommul =        			     _NULL_OFFSET + 005EFh
 
 
-
-
-_hu_font =	 	      			     _NULL_OFFSET + 00A40h
-
-;abe
-
-; ad7
+_solidsegs = 			         	 _NULL_OFFSET + 005F0h
+_player = 						 	 _NULL_OFFSET + 00690h
 
 
 
 
-; NFILES * SIZE DOSFILE_INFO_T bytes = 3 * 8 = 24 = 018h
-___iob = 							 _NULL_OFFSET + 00ADCh
+;6F3 free todo
 
+
+_anims =				     		 _NULL_OFFSET + 006F4h  ; todo good candidate to move to physics c0 in size
+_switchlist =				         _NULL_OFFSET + 007B4h  ; todo good candidate to move to physics c8 in size
+; 87C
+_hu_font =	 	      			     _NULL_OFFSET + 0087Ch ; 7E in size
+
+; 8FA
+
+
+_sfxcache_head =                    _NULL_OFFSET + 008FAh
+_sfxcache_tail =                    _NULL_OFFSET + 008FBh
+; todo 8Fc-8F0 free
+_activespritepages =                 _NULL_OFFSET + 00900h
+_activespritenumpages =              _NULL_OFFSET + 00904h
+_spriteL1LRU =                 		 _NULL_OFFSET + 00908h
+_spritecache_l2_head =               _NULL_OFFSET + 0090Ch
+_spritecache_l2_tail =               _NULL_OFFSET + 0090Dh
+_texturecache_l2_head =              _NULL_OFFSET + 0090Eh
+_texturecache_l2_tail =              _NULL_OFFSET + 0090Fh
+_activetexturepages =                _NULL_OFFSET + 00910h
+_activenumpages =                 	 _NULL_OFFSET + 0091Ah
+_textureL1LRU =                 	 _NULL_OFFSET + 00924h ; 8 or 10 in size.. 
+_flatcache_l2_head =                 _NULL_OFFSET + 0092Eh
+_flatcache_l2_tail =                 _NULL_OFFSET + 0092Fh
+
+
+; 930
 ; max args = 20 including program name i guess. should be enough? maybe too much.
-_myargv = 	   	  					 _NULL_OFFSET + 00AF4h
+_myargv = 	   	  					 _NULL_OFFSET + 00930h ; 3c currently... including 010 gap?
 
+; 96c-b20 free
 ; b20-b30 free
 ; b30
 
