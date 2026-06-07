@@ -209,7 +209,7 @@ ENDP
 SECTOR_SIZE = 512
 
 error_overallocated:
-mov     ax, OFFSET _OVERALLOCATED_STR
+;mov     ax, OFFSET _OVERALLOCATED_STR
 got_error_str:
 push    cs
 push    ax

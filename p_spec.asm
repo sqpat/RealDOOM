@@ -61,6 +61,9 @@ PROC    P_SPEC_STARTMARKER_
 PUBLIC  P_SPEC_STARTMARKER_
 ENDP
 
+ALIGN_MACRO
+_numlinespecials:
+dw 0
 
 
 
@@ -1296,7 +1299,7 @@ jb        loop_next_anim_outer
 
 done_with_anims_loop:
 xor       cx, cx
-cmp       word ptr ds:[_numlinespecials], cx
+cmp       word ptr cs:[_numlinespecials], cx
 jle       done_with_line_specials
 mov       dx, LINESPECIALLIST_SEGMENT
 
@@ -1326,7 +1329,7 @@ inc       word ptr es:[bx + SIDE_T.s_textureoffset]
 not_line_special_48:
 inc       cx
 
-cmp       cx, word ptr ds:[_numlinespecials]
+cmp       cx, word ptr cs:[_numlinespecials]
 jl        loop_next_line_special
 
 done_with_line_specials:
@@ -1681,7 +1684,7 @@ done_with_sectors:
 xor       ax, ax
 mov       si, OFFSET LINE_PHYSICS_T.lp_special
 mov       di, ax
-mov       word ptr ds:[_numlinespecials], ax
+mov       word ptr cs:[_numlinespecials], ax
 mov       cx, LINES_PHYSICS_SEGMENT
 mov       dx, LINESPECIALLIST_SEGMENT  ; todo get rid of this once DS 3D00
 
@@ -1695,7 +1698,7 @@ jne       not_line_special_48_spawn
 do_line_special_48:
 mov       es, dx
 stosw     ; mov word ptr es:[di], ax
-inc       word ptr ds:[_numlinespecials]
+inc       word ptr cs:[_numlinespecials]
 
 not_line_special_48_spawn:
 
@@ -1711,12 +1714,17 @@ jl        loop_next_line_physics
 done_with_lines:
 ; todo put these in fixeddata and make them all adajcent?
 
-mov       cx, MAXCEILINGS + MAXPLATS +  (MAXBUTTONS * (SIZE BUTTON_T)) / 2   ; *2, 0x3C + 0x3c + 0x24
+mov       cx, MAXCEILINGS 
 mov       di, OFFSET _activeceilings
 xor       ax, ax
 push      ds
 pop       es
 rep stosw 
+mov       cl, MAXPLATS
+mov       di, OFFSET _activeplats
+rep stosw 
+mov       cl, (MAXBUTTONS * (SIZE BUTTON_T)) / 2
+mov       di, OFFSET _buttonlist
 
 
 POPA_NO_AX_OR_BP_MACRO

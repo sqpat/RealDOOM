@@ -246,6 +246,11 @@ db 0
 _markpointnum:
 dw 0
 
+_old_screen_viewport_width:
+dw 0
+_old_screen_viewport_height:
+dw 0
+
 
 
 ;#pragma aux trig16params \
@@ -522,7 +527,7 @@ PUBLIC  AM_restoreScaleAndLoc_
 ;push      bx
 push      cx
 ;push      dx
-les       ax, dword ptr ds:[_old_screen_viewport_width]
+les       ax, dword ptr cs:[_old_screen_viewport_width]
 mov       word ptr ds:[_screen_viewport_width], ax
 mov       word ptr ds:[_screen_viewport_height], es
 cmp       byte ptr ds:[_followplayer], ch ; 0 known from outer func scope..
@@ -811,8 +816,8 @@ les       ax, dword ptr ds:[_screen_botleft_x]
 mov       word ptr ds:[_old_screen_botleft_x], ax
 mov       word ptr ds:[_old_screen_botleft_y], es
 les       ax, dword ptr ds:[_screen_viewport_width]
-mov       word ptr ds:[_old_screen_viewport_width], ax
-mov       word ptr ds:[_old_screen_viewport_height], es
+mov       word ptr cs:[_old_screen_viewport_width], ax
+mov       word ptr cs:[_old_screen_viewport_height], es
 
 ret
 

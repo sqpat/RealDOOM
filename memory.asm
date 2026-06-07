@@ -23,7 +23,7 @@ INSTRUCTION_SET_MACRO
 
 SEGMENT _FIXEDDATA  USE16 PARA PUBLIC 'DATA'
 ; 000   _segloopnextlookup 00
-dw  -1, -1, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, MOBJPOSLIST_SEGMENT, 00, 00
 
 
 
@@ -77,13 +77,23 @@ dw 0, 0, 1, 0, 0, 0, 0, 0
 ; 0x100:
 dw 00, 00, 00h, XTOVIEWANGLE_SEGMENT, 00h, 00h, 00h, BSP_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET SHR 4
 ; 0x110
-dw  00, 00, 00, 00, 00, 00, 00, 00
+
+; 0x100 R_DrawPlanesCall
+dw R_DrawPlanes24Offset, SPANFUNC_SEGMENT
+; 0x104 R_DrawMaskedCall
+dw R_DrawMasked24Offset, drawfuzzcol_area_segment
+
+; 0x108 R_WriteBackMaskedFrameConstants
+dw R_WriteBackMaskedFrameConstants24Offset, maskedconstants_funcarea_segment
+; 0x10c _NetUpdate_addr
+dw 00, 00
+
 ; 0x120
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0x130
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0x140
-dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, R_DRAWSKYPLANE_DYNAMIC_OFFSET, DRAWSKYPLANE_AREA_SEGMENT
 ; 0x150
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0x160
@@ -189,19 +199,16 @@ db 00, 00, 00, 00, 00
 ; 3D0  ; 3d8 = demo_p, so 3da is its segment
 dw  00, 00, 00, 00, 00, DEMO_SEGMENT, 00, 00
 
-; 3E0 braintargets[32]
+; 3E0 
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 3F0 braintargets
+; 3F0 
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 400 braintargets
+; 400 
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 410 braintargets
+; 410 
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 420
 dw  00, 00, 00, 00, 00, 00, 00, 00
-
-
-
 ; 430
 dw  SECTORS_SEGMENT, LINES_PHYSICS_SEGMENT, VERTEXES_SEGMENT, LINEFLAGSLIST_SEGMENT, SEENLINES_6800_SEGMENT, SIDES_SEGMENT, LINES_SEGMENT, 00
 ; 440
@@ -221,7 +228,7 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 4B0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 4C0
-dw  00, 00, R_DRAWSKYPLANE_DYNAMIC_OFFSET, DRAWSKYPLANE_AREA_SEGMENT, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 4D0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 4E0
@@ -280,19 +287,9 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 6F0 
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 700
-dw  00, 00, 00, 00
-; 708 R_DrawPlanesCall
-dw R_DrawPlanes24Offset, SPANFUNC_SEGMENT
-; 70C R_DrawMaskedCall
-dw R_DrawMasked24Offset, drawfuzzcol_area_segment
-
-; 710 R_WriteBackMaskedFrameConstants
-dw R_WriteBackMaskedFrameConstants24Offset, maskedconstants_funcarea_segment
-; 714 R_WriteBackViewConstantsSpan
-;dw R_WriteBackViewConstantsSpan24Offset, SPANFUNC_SEGMENT
-
-; 714
-dw  00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 710
+dw  00, 00, 00, 00, 00, 00, 00, 00
 
 ; 720
 dw  00, 00, 00, 00

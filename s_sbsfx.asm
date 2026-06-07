@@ -3056,12 +3056,13 @@ jmp     done_acking_interrupt
 ;USE_SAFE_SFX_STACK = 0
 SFX_INTERRUPT_STACK_SIZE = 040h
 
+IFDEF USE_SAFE_SFX_STACK
 ALIGN_MACRO
 old_ss_sp:
 dw 0, 0
 safe_ss_sp:
 dw _SFX_INTERRUPT_STACK_FRAME + SFX_INTERRUPT_STACK_SIZE, FIXED_DS_SEGMENT
-
+ENDIF
 PROC   SB_ServiceInterrupt_ FAR
 PUBLIC SB_ServiceInterrupt_
 

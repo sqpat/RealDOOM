@@ -197,6 +197,8 @@ _singletics:
 db  0
 _timingdemo:
 db  0
+_fullscreen:
+db 0
 
 
 PUBLIC _oldkeyboardisr
@@ -2553,7 +2555,7 @@ cwd
 test   bl, bl ; wipe state
 jne    draw_status_bar
 
-cmp   byte ptr ds:[_fullscreen], al ; 0
+cmp   byte ptr cs:[_fullscreen], al ; 0
 je    screen_too_big_for_statusbar
 cmp   byte ptr ds:[_viewheight], SCREENHEIGHT
 jne   draw_status_bar
@@ -2588,7 +2590,7 @@ cmp   byte ptr ds:[_viewheight], SCREENHEIGHT
 jne   fulscreen_zero
 inc   ax
 fulscreen_zero:
-mov   byte ptr ds:[_fullscreen], al
+mov   byte ptr cs:[_fullscreen], al
 
 done_with_gs_level_case:
 
@@ -2663,7 +2665,7 @@ je    skip_border_checks
 
 cmp   byte ptr ds:[_menuactive], bh ; 0
 jne   set_border_draw_count
-cmp   byte ptr ds:[_fullscreen], bh ; 0
+cmp   byte ptr cs:[_fullscreen], bh ; 0
 jne   set_border_draw_count
 cmp   byte ptr ds:[_viewactivestate], bh ; 0
 jne   skip_set_border_draw_count

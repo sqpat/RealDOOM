@@ -72,6 +72,7 @@ _seglooptexrepeat    = 0
 _segloopprevlookup = 0
 _segloopcachedbasecol = 0
 _cachedsegmenttex = 0
+_r_cachedplayerMobjsecnum = 0
 _segloopcachedsegment = 0
 
 _cachedsegmentlumps =  0
