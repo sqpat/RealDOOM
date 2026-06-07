@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/07 08:19:31
+Created on:       26/06/07 08:24:38
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0648:0000            000012a0
+DGROUP                          0648:0000            000010e0
 
 
 
@@ -51,9 +51,9 @@ W_WAD_TEXT             CODE           AUTO           0000:5d9e       0000031b
 V_VIDEO_TEXT           CODE           AUTO           0000:60ba       000000f8
 Z_ZONE_TEXT            CODE           AUTO           0000:61b2       000002ce
 _NULL                  BEGDATA        DGROUP         0648:0000       00000010
-_FIXEDDATA             DATA           DGROUP         0649:0000       00000e90
-_DATA                  DATA           DGROUP         0732:0000       00000000
-STACK                  STACK          DGROUP         0732:0000       00000400
+_FIXEDDATA             DATA           DGROUP         0649:0000       00000cd0
+_DATA                  DATA           DGROUP         0716:0000       00000000
+STACK                  STACK          DGROUP         0716:0000       00000400
 
 
                         +----------------+
@@ -374,6 +374,6 @@ Module: z_zone.obj(z_zone.ASM)
                         +-----------------------+
 
 Stack size:  0400 (1024.)
-Memory size:  7720 (30496.)
+Memory size:  7560 (30048.)
 Entry point address: 0000:0000
 Link time: 00:00.10

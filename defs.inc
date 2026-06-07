@@ -608,11 +608,9 @@ _flatcache_l2_tail =                 _NULL_OFFSET + 0092Fh
 ; max args = 20 including program name i guess. should be enough? maybe too much.
 _myargv = 	   	  					 _NULL_OFFSET + 00930h ; 3c currently... including 010 gap?
 
-; 96c-b20 free
-; b20-b30 free
-; b30
+; 96c-970 free todo
 
-_flatcache_nodes =				     _NULL_OFFSET + 00B30h
+_flatcache_nodes =				     _NULL_OFFSET + 00970h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
