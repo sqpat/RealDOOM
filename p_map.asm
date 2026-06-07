@@ -1056,9 +1056,16 @@ cmp  ax, 0FFFFh
 je   return_lineopening
 mov  ax, SECTORS_SEGMENT
 mov  ds, ax
-SHIFT_MACRO_SMALL shl  dx 4
-SHIFT_MACRO_SMALL shl  bx 4
-
+IF COMPISA GE COMPILE_186
+	SHIFT_MACRO_SMALL shl  dx 4
+	SHIFT_MACRO_SMALL shl  bx 4
+ELSE
+    push cx
+	mov  cx, 4
+	shl  dx, cl
+	shl  bx, cl
+	pop  cx
+ENDIF
 ;	front = &sectors[linefrontsecnum];
 ;	back = &sectors[linebacksecnum];
 
@@ -3022,7 +3029,7 @@ mov   al, byte ptr es:[bx]	; get lineflags in al
 mov   dx, LINES_PHYSICS_SEGMENT
 mov   di, bx
 SHIFT_MACRO_SMALL shl   di 2
-SHIFT_MACRO_SMALL shl   bx 4
+SHIFT_MACRO_SMALL_NOPUSH shl   bx 4
 
 ;    if ( ! (lineflags & ML_TWOSIDED) ) {
 mov   es, dx
@@ -5568,7 +5575,7 @@ adc   di, dx
 
 les   bx, dword ptr [bp - 8]			; linephys ptr
 mov   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]		; frontsecnum
-SHIFT_MACRO_SMALL shl   bx 4
+SHIFT_MACRO_SMALL_NOPUSH shl   bx 4
 
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
@@ -5604,7 +5611,7 @@ cmp   word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum], SECNUM_NULL
 je    do_puff
 
 mov   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]   ; todo was this stored
-SHIFT_MACRO_SMALL shl   bx 4
+SHIFT_MACRO_SMALL_NOPUSH shl   bx 4
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
 mov   dl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic]
@@ -5659,12 +5666,12 @@ call  P_GetAttackRangeMult_
 
 les   bx, dword ptr [bp - 8] 	 ; li_physics
 les   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum] ; frontsec
-SHIFT_MACRO_SMALL shl   bx 4 			
+SHIFT_MACRO_SMALL_NOPUSH shl   bx 4 			
 
 push  dx	; push dist
 push  ax
 mov   di, es 				 	 ; backsec
-SHIFT_MACRO_SMALL shl   di 4
+SHIFT_MACRO_SMALL_NOPUSH shl   di 4
 
 push  di
 push  bx	 ; store front/backsec lookups
@@ -6133,10 +6140,10 @@ push  ax
 push  dx  ; store dist
 les   di, LINE_PHYSICS_T ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum] ; frontsector
 mov   si, es					  ; backsector
-SHIFT_MACRO_SMALL shl   di 4
+SHIFT_MACRO_SMALL_NOPUSH shl   di 4
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
-SHIFT_MACRO_SMALL shl   si 4
+SHIFT_MACRO_SMALL_NOPUSH shl   si 4
 
 
 mov   cx, word ptr es:[di + SECTOR_T.sec_floorheight]

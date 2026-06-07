@@ -58,8 +58,7 @@ xor   bp, bp
 add   al, SECTOR_T.sec_ceilingheight  ; this is safe because they are 16 byte structs that are paragraph aligned. will never overflow.
 xchg  ax, si
 
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 ;	if (sector->ceilingheight - speed < dest) {
 
@@ -89,8 +88,7 @@ xchg  ax, si
 
 ;	if (sector->ceilingheight + speed > dest) {
 
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   di, word ptr es:[si]
 mov   ax, di
 add   ax, dx
@@ -141,8 +139,7 @@ call  P_ChangeSector_
 jnc   exit_moveplanefloordown_return_floorpastdest
 ; something crushed
 
-mov   dx, SECTORS_SEGMENT
-mov   es, dx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   word ptr es:[si], di
 mov   bx, cx
 xchg  ax, si
@@ -178,8 +175,7 @@ jne   exit_moveplaneceilingdown_return_floorcrushed
 
 
 do_second_floor_changesector_call:
-mov   dx, SECTORS_SEGMENT
-mov   es, dx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   word ptr es:[si], di
 mov   bx, cx ; crush
 xchg  ax, si
@@ -217,8 +213,7 @@ xchg  ax, si
 ;	if (sector->floorheight + speed > dest) {
 
 
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   di, word ptr es:[si]
 mov   ax, di
 add   ax, dx
@@ -273,7 +268,7 @@ call  S_StartSoundWithSecnum_
 dont_play_floor_sound:
 
 mov   ax, di
-SHIFT_MACRO_SMALL shl   ax 4
+SHIFT_MACRO_SMALL_NOPUSH shl   ax 4
 push  ax  ; bp - 4
 cmp   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], 0
 je    exit_move_floor
@@ -417,8 +412,7 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 mov   di, (SIZE THINKER_T)
 div   di
 
-mov   di, SECTORS_SEGMENT
-mov   es, di
+mov   es, ds:[_SECTORS_SEGMENT_PTR]
 
 mov   di, cx
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return], STC_OPCODE
@@ -468,8 +462,7 @@ mov   dl, -1 ; dir negative.
 cmp   bx, (FLOOR_TURBOLOWER * 2)
 jne   write_floordestheight_secnum_dir
 ;turbo case
-mov   bx, SECTORS_SEGMENT
-mov   es, bx
+mov   es, ds:[_SECTORS_SEGMENT_PTR]
 cmp   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
 je    write_floordestheight_secnum_dir
 
@@ -601,14 +594,12 @@ loop_next_secnum_raisetotexture:
 ; if twosided?
 mov   cx, word ptr ds:[bx]
 xchg  cx, bx  ; cx gets old loop iter
-mov   dx, LINEFLAGSLIST_SEGMENT
-mov   es, dx
+mov   es, ds:[_LINEFLAGSLIST_SEGMENT_PTR]
 test  byte ptr es:[bx], ML_TWOSIDED
 je    continue_secnum_raisetotextureloop
 
 
-mov   dx, LINES_SEGMENT
-mov   es, dx
+mov   es, ds:[_LINES_SEGMENT_PTR]
 
 
 SHIFT_MACRO_SMALL shl       bx 2
@@ -619,8 +610,7 @@ SHIFT_MACRO_SMALL shl       bx 2
 
 les   bx, dword ptr es:[bx + LINE_T.l_sidenum + (0 * 2)] ; side 0
 mov   di, es ; side 1
-mov   dx, SIDES_SEGMENT
-mov   es, dx
+mov   es, ds:[_SIDES_SEGMENT_PTR]
 
 SHIFT_MACRO_SMALL sal bx 3
 mov   bx, word ptr es:[bx + SIDE_T.s_bottomtexture] ; side0bottomtexture

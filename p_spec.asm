@@ -84,11 +84,8 @@ mov       di, ax
 mov       word ptr cs:[OFFSET SELFMODIFY_pspec_secnum+2], dx
 mov       word ptr cs:[OFFSET SELFMODIFY_pspec_subtract_secnums_base+1], bx
 
-
-mov       ax, LINEFLAGSLIST_SEGMENT
-mov       es, ax
-mov       ax, LINES_PHYSICS_SEGMENT
-mov       ds, ax
+mov   es, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
+mov   ds, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
 xor       ax, ax   ; ax stores i
 
@@ -258,8 +255,7 @@ push      di
 push      bp
 mov       bp, sp
 sub       sp, MAX_ADJOINING_SECTORS_IN_WORDS
-mov       cx, SECTORS_SEGMENT
-mov       es, cx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 mov       bx, ax
 SHIFT_MACRO_SMALL shl       bx 4
@@ -285,8 +281,7 @@ mov       dx, 08000h
 xchg      ax, cx ; cx gets linecount
 
 
-mov       ax, SECTORS_SEGMENT
-mov       es, ax
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 ; for this loop ds is sectors for lodsw and es is ds for stosw to stack.    
 
 lea       si, [bp - MAX_ADJOINING_SECTORS_IN_WORDS]
@@ -345,8 +340,7 @@ sub       sp, MAX_ADJOINING_SECTORS_IN_WORDS
 mov       cx, ax
 xchg      ax, bx
 SHIFT_MACRO_SMALL shl       bx 4
-mov       ax, SECTORS_SEGMENT
-mov       es, ax
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 mov       ax, word ptr es:[bx + SECTOR_T.sec_linesoffset]
 mov       di, 07FFFh        ; MAXSHORT
@@ -383,8 +377,7 @@ mov       cx, ax
 jcxz      skip_loop_ceiling
 lea       si, [bp - (MAX_ADJOINING_SECTORS_IN_WORDS)]
 
-mov       dx, SECTORS_SEGMENT
-mov       es, dx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 
 loop_next_sector_ceiling:
@@ -619,8 +612,7 @@ xchg      ax, si  ; si gets linenum.
 SHIFT_MACRO_SMALL shl       si 4
 
 
-mov       ax, LINES_PHYSICS_SEGMENT
-mov       es, ax
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 push      es ; bp - 2 in case needed
 push      si ; bp - 4 in case needed
 
@@ -1013,8 +1005,7 @@ mov       di, dx  ; di gets linenum
 mov       bx, dx  ; bx/si will be line pointers
 mov       dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]  ; dl holds thing type.
 
-mov       ax, LINES_PHYSICS_SEGMENT
-mov       es, ax
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 SHIFT_MACRO_SMALL shl       bx 2
 mov       si, bx
 
@@ -1309,8 +1300,7 @@ sal       bx, 1
 mov       es, dx
 mov       di, word ptr es:[bx]
 SHIFT_MACRO_SMALL shl       di 4
-mov       ax, LINES_PHYSICS_SEGMENT
-mov       es, ax
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 cmp       byte ptr es:[di + LINE_PHYSICS_T.lp_special], 48
 jne       not_line_special_48
 ;    // EFFECT FIRSTCOL SCROLL +
@@ -1472,8 +1462,7 @@ sal       si, 1
 mov       bx, word ptr ds:[si + _linebuffer]
 ; bx is s1->line[0]
 SHIFT_MACRO_SMALL shl       bx, 4
-mov       ax, LINES_PHYSICS_SEGMENT
-mov       es, ax
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 mov       ax, es:[bx + LINE_PHYSICS_T.lp_backsecnum]
 cmp       ax, word ptr [bp - 4] 
 jne       use_backsecnum
@@ -1501,13 +1490,11 @@ lodsw
 ;		(s2->lines[i]->backsector == s1))
 ;		continue;
 xchg    ax, di
-mov     ax, LINEFLAGSLIST_SEGMENT
-mov     es, ax
+mov   es, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
 test    byte ptr es:[di], ML_TWOSIDED
 jz      iter_inner_loop
 SHIFT_MACRO_SMALL shl       di, 4
-mov     ax, LINES_PHYSICS_SEGMENT
-mov     es, ax
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 mov     dx, es:[di + LINE_PHYSICS_T.lp_backsecnum]  ; dx is s3.
 cmp     dx, [bp - 4]  ; s3 != s1 check
 jne     make_thinkers

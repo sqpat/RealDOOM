@@ -963,6 +963,25 @@ ENDIF
 
 ENDM
 
+; optimized for size
+SHIFT_MACRO_SMALL_NOPUSH MACRO instruction, register, count
+
+
+IF COMPISA GE COMPILE_186
+	&instruction &register, &count
+ELSE
+	IF &count GE 3
+		mov   cx, &count
+		&instruction &register, cl
+	ELSE
+		REPT &count
+			&instruction &register, 1
+		ENDM
+	ENDIF
+ENDIF
+
+ENDM
+
 
 SHIFT32_MACRO_LEFT MACRO register_hi, register_lo, count
   IF COMPISA GE COMPILE_386

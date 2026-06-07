@@ -2145,7 +2145,7 @@ mov   ax, SUBSECTORS_SEGMENT
 mov   es, ax
 mov   ax, word ptr es:[bx + SUBSECTOR_T.ss_secnum]
 ; todo make this work without shift
-SHIFT_MACRO_SMALL sar ax 4
+SHIFT_MACRO_SMALL_NOPUSH sar ax 4
 push  ax
 
 PUSH_MACRO MT_TFOG
@@ -2480,7 +2480,7 @@ mov   byte ptr ds:[_prndindex], bl
 
 ;		temp  <<= 4;
 
-SHIFT_MACRO_SMALL shl   ax 4
+SHIFT_MACRO_SMALL_NOPUSH shl   ax 4
 ;		an.hu.intbits += temp;
 
 add   dx, ax

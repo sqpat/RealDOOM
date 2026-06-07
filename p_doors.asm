@@ -75,7 +75,7 @@ mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 mov   di, ax
 
-SHIFT_MACRO_SMALL shl   ax 4
+SHIFT_MACRO_SMALL_NOPUSH shl   ax 4
 
 xor   cx, cx
 mov   bx, cx
@@ -496,7 +496,7 @@ push  bp
 mov   bp, sp
 
 xchg  ax, di  
-SHIFT_MACRO_SMALL shl   di 4
+SHIFT_MACRO_SMALL_NOPUSH shl   di 4
 
 
 push  dx

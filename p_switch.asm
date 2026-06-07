@@ -75,8 +75,8 @@ push  bp
 mov   bp, sp
 xchg  bx, dx
 
-mov   si, SIDES_SEGMENT
-mov   es, si
+mov   es, word ptr ds:[_SIDES_SEGMENT_PTR]
+
 
 mov   si, SFX_SWTCHN
 SHIFT_MACRO_SMALL shl   bx 3
@@ -105,8 +105,7 @@ mov   si, word ptr es:[bx + SIDE_T.s_bottomtexture]
 mov   ax, 0c089h  ; 2 byte nop
 jne   dont_mark_unusable
 
-mov   bx, LINES_PHYSICS_SEGMENT
-mov   es, bx
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 mov   bx, word ptr [bp - 6]
 SHIFT_MACRO_SMALL shl   bx 4
 mov   byte ptr es:[bx + LINE_PHYSICS_T.lp_special], 0
@@ -159,8 +158,7 @@ push  ax ; word ptr [bp - 8]  ; put back for later
 call  S_StartSoundWithSecnum_
 
 
-mov   ax, SIDES_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_SIDES_SEGMENT_PTR]
 
 ;			sides[lineside0].[di]texture = switchlist[i^1];
 xor   bl, 2  ; ^1 word ptr
@@ -303,8 +301,7 @@ mov   bp, sp
 
 mov   di, dx
 
-mov   bx, LINES_PHYSICS_SEGMENT
-mov   es, bx
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 mov   bx, di  ; linenum
 SHIFT_MACRO_SMALL sal bx 4
 
@@ -314,8 +311,7 @@ mov   bl, byte ptr es:[bx + LINE_PHYSICS_T.lp_tag]     ; could get these both in
 
 cmp   cx, ds:[_playerMobjRef]
 je    skip_player_check
-mov   si, LINEFLAGSLIST_SEGMENT
-mov   es, si
+mov   es, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
 test  byte ptr es:[di], ML_SECRET
 jne   monster_secret_return_false
 cmp   al, 1
@@ -340,8 +336,7 @@ skip_player_check:
 xor   ah, ah
 xchg  ax, bx ; put linetag, special back where it needs to be
 xor   ah, ah
-mov   si, LINES_SEGMENT
-mov   es, si
+mov   es, word ptr ds:[_LINES_SEGMENT_PTR]
 mov   si, di
 SHIFT_MACRO_SMALL sal   si 2
 push  bx    ; bp - 2 linespecial 

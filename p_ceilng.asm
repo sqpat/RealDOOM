@@ -75,7 +75,7 @@ mov   di, word ptr ds:[si + CEILING_T.ceiling_secnum]
 push  di ; bp - 2
 push  dx ; bp - 4
 
-SHIFT_MACRO_SMALL shl di 4
+SHIFT_MACRO_SMALL_NOPUSH shl di 4
 
 ; do a few thing used in both T_MovePlane call cases
 
