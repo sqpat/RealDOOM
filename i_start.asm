@@ -263,7 +263,7 @@ mov cx, FIXED_DS_SEGMENT
 
 mov es, cx
 
-mov cx, 1000h    ; 2000h bytes
+mov cx, _END_OF_FIXED_DATA
 rep movsw
 
 mov cx, es

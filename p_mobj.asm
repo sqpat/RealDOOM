@@ -72,9 +72,6 @@ PROC    P_MOBJ_STARTMARKER_
 PUBLIC  P_MOBJ_STARTMARKER_
 ENDP
 
-ALIGN_MACRO
-_maxammo:
-dw 200, 50, 300, 50
 
 ;void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
 
@@ -216,11 +213,12 @@ mov    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_PISTOL], al ; tru
 mov    word ptr ds:[_player + PLAYER_T.player_ammo + 2 * AM_CLIP], 50
 
 mov    di, OFFSET _player + PLAYER_T.player_maxammo
-mov    si, OFFSET _maxammo
-movs   word ptr es:[di], cs:[si]  
-movs   word ptr es:[di], cs:[si]  
-movs   word ptr es:[di], cs:[si]  
-movs   word ptr es:[di], cs:[si]  
+
+mov   word ptr ds:[di+0], 200 
+mov   word ptr ds:[di+2], 50
+mov   word ptr ds:[di+4], 300
+mov   word ptr ds:[di+6], 50
+
 
 dont_player_reborn:
 

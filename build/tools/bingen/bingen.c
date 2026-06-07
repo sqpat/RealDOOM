@@ -64,7 +64,8 @@ void __far R_WriteBackViewConstantsFL();
 void __far R_RenderPlayerViewFL();
 void __far R_GetCompositeTexture_FarFL();
 void __far R_GetPatchTexture_FarFL();
-
+void __far R_SetupColfuncsForBSP();
+void __far R_SetupColfuncsForMasked();
 
 void __far R_MASK24_STARTMARKER();
 void __far R_MASK24_ENDMARKER();
@@ -784,10 +785,13 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "SELFMODIFY_COLFUNC_JUMP_OFFSETFL_OFFSET             = 0%Xh\n", FP_OFF(MARKER_SM_COLFUNC_jump_offsetFL)           - FP_OFF(R_BSPFL_STARTMARKER));
 	fprintf(fp, "SELFMODIFY_COLFUNC_JUMP_OFFSETFL_OFFSET             = 0%Xh\n", FP_OFF(MARKER_SM_COLFUNC_jump_offsetFL)           - FP_OFF(R_BSPFL_STARTMARKER));
     fprintf(fp, "COLFUNC_NORMAL_FUNCTION_AREA_OFFSET                 = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET)        - FP_OFF(R_BSP24_STARTMARKER));
-    fprintf(fp, "COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET                 = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET)        - FP_OFF(R_BSP24_STARTMARKER));
+    fprintf(fp, "COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET          = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET)        - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET                 = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET)        - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "BSP_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET                 = 0%Xh\n", FP_OFF(bsp_local_dc_yl_lookup_table)        - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "MASKED_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET              = 0%Xh\n", FP_OFF(masked_local_dc_yl_lookup_table)        - FP_OFF(R_BSP24_STARTMARKER));
+    fprintf(fp, "R_SETUPCOLFUNCSFORBSP_OFFSET                        = 0%Xh\n", FP_OFF(R_SetupColfuncsForBSP)           - FP_OFF(R_BSP0_STARTMARKER));
+    fprintf(fp, "R_SETUPCOLFUNCSFORMASKED_OFFSET                     = 0%Xh\n", FP_OFF(R_SetupColfuncsForMasked)        - FP_OFF(R_BSP0_STARTMARKER));
+
 
 //;BSP_DC_YL_LOOKUP_SEGMENT
 

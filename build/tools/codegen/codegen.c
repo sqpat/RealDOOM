@@ -1041,14 +1041,13 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"MAX_ADJOINING_SECTORS_IN_WORDS",
 
 
-	"_flatcache_nodes",
-	"_spritecache_nodes",
-	"_texturecache_nodes",
-	"_allocatedflatsperpage",
-	"_usedspritepagemem",
-	"_usedtexturepagemem",
-
-	"_pageswapargs",
+	";_flatcache_nodes",
+	";_spritecache_nodes",
+	";_texturecache_nodes",
+	";_allocatedflatsperpage",
+	";_usedspritepagemem",
+	";_usedtexturepagemem",
+	";_pageswapargs",
 	"LUMPINFOINITSEGMENT",
 
 	"VISPLANES_8400_SEGMENT",
@@ -1061,16 +1060,16 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"FILEFLAG_APPEND",
 
 
-	"CURRENT_POSITION_1",
-	"CURRENT_POSITION_2",
-	"CURRENT_POSITION_3",
-	"CURRENT_POSITION_4",
-	"CURRENT_POSITION_5",
-	"CURRENT_POSITION_6",
-	"CURRENT_POSITION_7",
-	"CURRENT_POSITION_8",
-	"CURRENT_POSITION_9",
-	"_END_OF_FIXED_DATA",
+	";CURRENT_POSITION_1",
+	";CURRENT_POSITION_2",
+	";CURRENT_POSITION_3",
+	";CURRENT_POSITION_4",
+	";CURRENT_POSITION_5",
+	";CURRENT_POSITION_6",
+	";CURRENT_POSITION_7",
+	";CURRENT_POSITION_8",
+	";CURRENT_POSITION_9",
+	";_END_OF_FIXED_DATA",
 
 	"MAX_SIDES_SIZE",
 	"MAX_SECTORS_SIZE",

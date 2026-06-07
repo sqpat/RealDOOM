@@ -3510,7 +3510,7 @@ PUBLIC R_GetSpritePage_
 
 
 mov   si, OFFSET _activespritepages
-cbw
+xor   ah, ah ; al is pagenum * 4. cbw not safe
 
 
 

@@ -31,9 +31,7 @@ CACHETYPE_PATCH = 0
 
 ;EXTRN R_SetupColfuncsForBSP_:FAR
 ;EXTRN R_SetupColfuncsForMasked_:FAR
-; todo constant-ize
-R_SetupColfuncsForBSP_ = 0236Ch
-R_SetupColfuncsForMasked_ = 2388h
+
 
 
 ANG90_HIGHBITS =		04000h
@@ -12895,7 +12893,7 @@ mov   si, OFFSET _activetexturepages
 mov   di, OFFSET _activenumpages
 mov   cx, NUM_TEXTURE_L1_CACHE_PAGES
 
-xor   ah, ah
+xor   ah, ah ; al is pagenum * 4. cbw not safe
 
 ;	uint8_t realtexpage = texpage >> 2;
 mov   dx, ax
@@ -14321,7 +14319,7 @@ mov       al, 15
 out       dx, al  ; for the potato case, which will skip OUTs later
 
 db        09Ah
-dw        R_SetupColfuncsForBSP_, COLFUNC_SEGMENT
+dw        R_SETUPCOLFUNCSFORBSP_OFFSET, COLFUNC_SEGMENT
 
 mov       ax, word ptr ds:[_numnodes]
 dec       ax
@@ -14330,7 +14328,7 @@ call      R_RenderBSPNode_
 call      dword ptr ds:[_NetUpdate_addr]
 
 db        09Ah
-dw        R_SetupColfuncsForMasked_, COLFUNC_SEGMENT
+dw        R_SETUPCOLFUNCSFORMASKED_OFFSET, COLFUNC_SEGMENT   ; this was just a retf?
 
 
 call      R_PrepareMaskedPSprites_  ; todo inline
