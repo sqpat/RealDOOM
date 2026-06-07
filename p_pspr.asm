@@ -136,7 +136,7 @@ jne   readyweapon_not_bfg
 mov   dx, BFGCELLS ; use 40 ammo per shot
 jmp   count_determined
 readyweapon_not_bfg:
-cmp   byte ptr ds:[bx], WP_SUPERSHOTGUN
+cmp   byte ptr ds:[_player + PLAYER_T.player_readyweapon], WP_SUPERSHOTGUN
 jne   not_super_shotgun
 mov   dx, 2 ; use two ammo per shot
 jmp   count_determined
