@@ -70,7 +70,7 @@ EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN divexception_handler_:FAR
 
 EXTRN locallib_strcmp_:NEAR
-
+EXTRN __old_int00:NEAR
 .DATA
 
 ; related to spacing for printing title based on chipset name...
@@ -2308,8 +2308,8 @@ mov     word ptr ds:[00 * 4 + 0], OFFSET divexception_handler_
 mov     word ptr ds:[00 * 4 + 2], cs
 push    ss
 pop     ds
-mov     word ptr ds:[__old_int00+0], ax
-mov     word ptr ds:[__old_int00+0], es
+mov     word ptr cs:[__old_int00+0], ax
+mov     word ptr cs:[__old_int00+2], es
 
 jmp     Z_ClearDeadCode_
 

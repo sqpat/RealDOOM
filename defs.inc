@@ -37,9 +37,14 @@ DO_DELAYED_INVIS_CHEAT  = 2
 CHECK_FOR_DELAYED_CHEAT = 4
 
 
-EMS_2_MB_PLUS_BUILD_SETTING = 1
-EMS_4_MB_BUILD_SETTING      = 2
-EMS_ONLY_2_MB_BUILD_SETTING = 3
+EMS_2_MB_PLUS_BUILD_SETTING = 1 ; fits in 256 KB plus 2MB EMS (like a 5150 + 2MB above board)
+EMS_4_MB_BUILD_SETTING      = 2 ; requires a little over 4 MB and is about as optimized as this can get
+EMS_ONLY_2_MB_BUILD_SETTING = 3 ; fits in 2 mb including conventional (like a 2 mb laptop)
+EMS_4_MB_PLUS_BUILD_SETTING = 4 ; fits in a 4 mb system
+
+
+
+
 
 
 IFDEF COMP_CH
@@ -92,26 +97,20 @@ _cachedsegmenttex =                 _NULL_OFFSET + 0005Ch
 
 ; 6 bytes
 _visplanelookupsegments =           _NULL_OFFSET + 00060h
-; 66 free
-;_baseyscale = 						_NULL_OFFSET + 00064h
-;_viewx = 							_NULL_OFFSET + 00068h
-;_viewy = 							_NULL_OFFSET + 0006Ch
-;_viewz = 							_NULL_OFFSET + 00070h  ; unused now
-;_centeryfrac_shiftright4 = 		_NULL_OFFSET + 00074h ; unused now
-;_viewangle =                		_NULL_OFFSET + 00078h
-;_viewz_shortheight = 				_NULL_OFFSET + 0007Ch  ; unused now
+; 66-7E free
+
 _screen_segments = 					_NULL_OFFSET + 0007Eh
 
 _maskedtexture = 					_NULL_OFFSET + 00088h
 _map31_exists =                     _NULL_OFFSET + 00089h
 
 _spechit =       					_NULL_OFFSET + 0008Ah
-_bombsource =       				_NULL_OFFSET + 0009Ah
-_bombspot =       					_NULL_OFFSET + 0009Ch
-_bombdamage =       				_NULL_OFFSET + 0009Eh
-_bombspot_pos = 					_NULL_OFFSET + 000A0h
+;_bombsource =       				_NULL_OFFSET + 0009Ah
+;_bombspot =       					_NULL_OFFSET + 0009Ch
+;_bombdamage =       				_NULL_OFFSET + 0009Eh
+;_bombspot_pos = 					_NULL_OFFSET + 000A0h
 
-__old_int00 = 						_NULL_OFFSET + 000A4h
+;__old_int00 = 						_NULL_OFFSET + 000A4h
 ;__old_int13 =	 					_NULL_OFFSET + 000A8h
 _nomonsters =                       _NULL_OFFSET + 000ACh
 _respawnmonsters =                  _NULL_OFFSET + 000ADh
@@ -122,8 +121,8 @@ _pendingmusicenumlooping =          _NULL_OFFSET + 000AFh
 
 _skipdirectdraws = 					_NULL_OFFSET + 000B0h
 _is_ultimate = 						_NULL_OFFSET + 000B1h
-_dc_yl = 							_NULL_OFFSET + 000B2h
-_dc_yh = 							_NULL_OFFSET + 000B4h
+;_dc_yl = 							_NULL_OFFSET + 000B2h
+;_dc_yh = 							_NULL_OFFSET + 000B4h
 
 _firstspritelump = 					_NULL_OFFSET + 000B6h
 
@@ -136,11 +135,11 @@ _finale_laststage =              	_NULL_OFFSET + 000BEh
 _playingstate = 	                _NULL_OFFSET + 000BFh
 
 ;_MULT_4096 =                    	_NULL_OFFSET + 000C0h
-_tmceilingz =                       _NULL_OFFSET + 000C8h
-_tmdropoffz =                       _NULL_OFFSET + 000CAh
+;_tmceilingz =                       _NULL_OFFSET + 000C8h
+;_tmdropoffz =                       _NULL_OFFSET + 000CAh
 
-_viletryx =                         _NULL_OFFSET + 000CCh
-_viletryy =                         _NULL_OFFSET + 000D0h
+;_viletryx =                         _NULL_OFFSET + 000CCh
+;_viletryy =                         _NULL_OFFSET + 000D0h
 _shiftedfixedcolormap = 			_NULL_OFFSET + 000D4h
 _snd_SfxDevice = 					_NULL_OFFSET + 000D6h
 _snd_MusicDevice =				    _NULL_OFFSET + 000D7h
@@ -171,8 +170,8 @@ _gameskill =	                    _NULL_OFFSET + 00101h
 _TaskServiceCount =	                _NULL_OFFSET + 00102h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 ; 106h is a segment used for LES
-_tmflags1 =                         _NULL_OFFSET + 00108h
-_tmfloorz =                         _NULL_OFFSET + 0010Ah
+;_tmflags1 =                         _NULL_OFFSET + 00108h
+;_tmfloorz =                         _NULL_OFFSET + 0010Ah
 ; 10c free
 _BSP_MUL_80_LOOKUP_SEGMENT = 		_NULL_OFFSET + 0010Eh
 

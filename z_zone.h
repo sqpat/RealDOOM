@@ -275,13 +275,15 @@ void __far Z_SetOverlay(int8_t wipeId);
 // 2_MB_PLUS: 256kb plus 2 MB
 // ONLY_2_MB: 2 MB including 256kb
 
-#define EMS_2_MB_PLUS_BUILD_SETTING                      1
-#define EMS_4_MB_BUILD_SETTING                           2
-#define EMS_ONLY_2_MB_BUILD_SETTING                      3
+#define EMS_2_MB_PLUS_BUILD_SETTING                      1 // fits in 256 KB plus 2MB EMS (like a 5150 + 2MB above board)
+#define EMS_4_MB_BUILD_SETTING                           2 // requires a little over 4 MB and is about as optimized as this can get
+#define EMS_ONLY_2_MB_BUILD_SETTING                      3 // fits in 2 mb including conventional (like a 2 mb laptop)
+#define EMS_4_MB_PLUS_BUILD_SETTING                      4 // fits in a 4 mb system
 
 #define EMS_BUILD_SETTING                              EMS_2_MB_PLUS_BUILD_SETTING
 // #define EMS_BUILD_SETTING                              EMS_4_MB_BUILD_SETTING
 // #define EMS_BUILD_SETTING                              EMS_ONLY_2_MB_BUILD_SETTING
+// #define EMS_BUILD_SETTING                              EMS_4_MB_PLUS_BUILD_SETTING
 
 
 
@@ -293,8 +295,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_TEXTURE_PAGES                           27
 #define NUM_MUSIC_PAGES                             4
 #define NUM_SFX_PAGES                               7
-#elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
-// TODO
+#elif EMS_BUILD_SETTING == EMS_4_MB_PLUS_BUILD_SETTING  
 #define NUM_FLAT_CACHE_PAGES                        16
 #define NUM_SPRITE_CACHE_PAGES                      64
 #define NUM_TEXTURE_PAGES                           64
@@ -310,6 +311,13 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_TEXTURE_PAGES                           23 // -4
 #define NUM_MUSIC_PAGES                             0  // -4
 #define NUM_SFX_PAGES                               0  // -7
+
+#elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
+#define NUM_FLAT_CACHE_PAGES                        12
+#define NUM_SPRITE_CACHE_PAGES                      56
+#define NUM_TEXTURE_PAGES                           50
+#define NUM_MUSIC_PAGES                             4
+#define NUM_SFX_PAGES                               28
 
 #endif
 

@@ -184,6 +184,11 @@ dw  018h, 028h
 _oldkeyboardisr:
 dw 0, 0
 
+__old_int00:
+public  __old_int00
+dw 0, 0
+
+
 _oldgamestate:
 db -1
 

@@ -62,7 +62,7 @@ EXTRN FixedMulTrigSpeedNoShiftSine_MapLocal_:NEAR
 EXTRN FixedMulTrigSpeedNoShiftCosine_MapLocal_:NEAR
 EXTRN FastDiv3216u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
-
+EXTRN _tmfloorz:WORD
 .DATA
 
 
@@ -106,6 +106,8 @@ FLOATSPEED_HIGHBITS = 4
 
 
 
+
+
 SKULLSPEED_SMALL = 20
 
 
@@ -130,6 +132,12 @@ dw  00000h, 02000h, 04000h, 06000h, 08000h, 0A000h, 0C000h, 0E000h
 
 ; optimized to use a bit less stack as a recursive function
 ; destroys bx, si
+
+ALIGN_MACRO
+_viletryx:
+dw 0, 0
+_viletryy:
+dw 0, 0
 
 
 
@@ -640,7 +648,7 @@ je    check_for_specials_hit_in_move
 
 ;			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
 xor   ax, ax
-mov   dx, word ptr ds:[_tmfloorz]
+mov   dx, word ptr cs:[_tmfloorz]
 sar   dx, 1
 rcr   ax, 1
 sar   dx, 1
@@ -2898,8 +2906,8 @@ add   cx, ax
 
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-sub   ax, word ptr ds:[_viletryx + 0]
-sbb   dx, word ptr ds:[_viletryx + 2]
+sub   ax, word ptr cs:[_viletryx + 0]
+sbb   dx, word ptr cs:[_viletryx + 2]
 or    dx, dx
 jge   skip_labs_x
 neg   ax
@@ -2915,8 +2923,8 @@ ja    exit_pit_vilecheck_return_1_pop3
 check_vile_y:
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-sub   ax, word ptr ds:[_viletryy + 0]
-sbb   dx, word ptr ds:[_viletryy + 2]
+sub   ax, word ptr cs:[_viletryy + 0]
+sbb   dx, word ptr cs:[_viletryy + 2]
 or    dx, dx
 jge   skip_labs_y
 neg   ax
@@ -3032,14 +3040,20 @@ push  word ptr ds:[bx + MOBJ_POS_T.mp_x + 2]
 push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 0]
 push  word ptr ds:[bx + MOBJ_POS_T.mp_y + 2]
 
-push  ss
+push  cs
 pop   ds
+
+ASSUME DS:P_ENEMY_TEXT
 
 pop   word ptr ds:[_viletryy + 2]
 pop   word ptr ds:[_viletryy + 0]
 pop   word ptr ds:[_viletryx + 2]
 pop   word ptr ds:[_viletryx + 0]
 
+ASSUME DS:DGROUP
+
+push  ss
+pop   ds
 
 ;fixed_t	xspeed[8] = {FRACUNIT,47000,0,-47000,-FRACUNIT,-47000,0,47000};
 ;fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
@@ -3069,8 +3083,11 @@ skip_diag_mult2:
 xor   bh, bh
 sal   bx, 1 ; jump word index...
 mov   si, OFFSET _viletryx
-
-jmp   word ptr cs:[bx + OFFSET _vilechase_lookup_table - OFFSET P_SIGHT_STARTMARKER_]
+push  cs
+pop   ds
+ASSUME DS:P_ENEMY_TEXT
+jmp   word ptr ds:[bx + OFFSET _vilechase_lookup_table - OFFSET P_SIGHT_STARTMARKER_]
+ASSUME DS:DGROUP
 jump_to_do_chase_and_exit:
 jmp   do_chase_and_exit
 vile_switch_movedir_0:
@@ -3083,6 +3100,7 @@ lodsw
 ;xchg  ax, dx ; lo word not used!
 lodsw
 
+
 ; si is now _viletryy.
 ; ax:dx viletryx
 
@@ -3091,7 +3109,7 @@ lodsw
 
 mov   di, (MAXRADIUSNONFRAC * 2)
 
-sub   ax, word ptr ds:[_bmaporgx]
+sub   ax, word ptr ss:[_bmaporgx]
 
 mov   bx, ax
 
@@ -3120,6 +3138,9 @@ push  ax  ; bp - 8 ; xh
 
 lodsw           ; viletryy
 lodsw
+push   ss
+pop    ds
+
 mov   si, bx ; si gets xl now
 
 sub   ax, word ptr ds:[_bmaporgy]
@@ -3278,7 +3299,9 @@ jmp   done_with_vile_switch_block
 vile_switch_movedir_5:
 sub   word ptr ds:[si], ax
 sbb   word ptr ds:[si + 2], dx
+ASSUME DS:P_ENEMY_TEXT
 sub   word ptr ds:[_viletryy], ax
+ASSUME DS:DGROUP
 sbb   word ptr ds:[si + 6], dx
 jmp   done_with_vile_switch_block
 vile_switch_movedir_6:

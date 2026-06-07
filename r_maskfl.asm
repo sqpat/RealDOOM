@@ -60,6 +60,8 @@ _lastvisspritepatch = 0
 _lastvisspritepatch2 = 0
 _lastvisspritesegment = 0
 _lastvisspritesegment2 = 0
+_dc_yl = 0
+_dc_yh = 0
 
 ;=================================
 

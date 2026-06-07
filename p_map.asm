@@ -44,6 +44,10 @@ EXTRN FixedMulTrigNoShiftCosine_MapLocal_:NEAR
 EXTRN FixedMul2432_MapLocal_:NEAR
 EXTRN R_PointToAngle2_16_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
+
+
+
+
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
 
@@ -60,7 +64,24 @@ PROC    P_MAP_STARTMARKER_
 PUBLIC  P_MAP_STARTMARKER_
 ENDP
 
+_bombsource:
+dw 0
+_bombspot:
+dw 0
+_bombdamage:
+dw 0
+_bombspot_pos:
+dw 0, 0
+_tmceilingz:
+dw 0
+_tmfloorz:
+dw 0
+_tmdropoffz:
+dw 0
+_tmflags1:
+dw 0
 
+public _tmfloorz
 
 
 
@@ -3182,8 +3203,8 @@ jne   move_ok_do_unset_position
 ;			return false;	// doesn't fit
 ;		}
 
-mov   ax, word ptr ds:[_tmceilingz]
-sub   ax, word ptr ds:[_tmfloorz]
+mov   ax, word ptr cs:[_tmceilingz]
+sub   ax, word ptr cs:[_tmfloorz]
 
 IF COMPISA GE COMPILE_186
 	SHIFT_MACRO sar   ax 3
@@ -3209,7 +3230,7 @@ inc   byte ptr ds:[_floatok]
 test  dl, (MF_TELEPORT SHR 8)     ; check both of these teleport flags once. 
 jne   skip_checks_for_teleport
 
-mov   ax, word ptr ds:[_tmceilingz]
+mov   ax, word ptr cs:[_tmceilingz]
 xor   cx, cx
 SHIFT32_MACRO_RIGHT ax cx 3
 
@@ -3224,7 +3245,7 @@ jb    exit_trymove_return0  ; mobj must lower itself to fit
 mobj_top_ok:
 
 
-mov   ax, word ptr ds:[_tmfloorz]
+mov   ax, word ptr cs:[_tmfloorz]
 xor   cx, cx
 SHIFT32_MACRO_RIGHT ax cx 3
 
@@ -3239,20 +3260,15 @@ jbe   mobj_bot_ok
 exit_trymove_return0:
 clc
 exit_trymove_return:
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-ret   8
-
+jmp   do_trymove_exit
 ALIGN_MACRO
 mobj_bot_ok:
 skip_checks_for_teleport:
 
 test  dl, ((MF_DROPOFF + MF_FLOAT) SHR 8)
 jne   move_ok_do_unset_position
-mov   ax, word ptr ds:[_tmfloorz]
-sub   ax, word ptr ds:[_tmdropoffz]
+mov   ax, word ptr cs:[_tmfloorz]
+sub   ax, word ptr cs:[_tmdropoffz]
 cmp   ax, 0C0h  ; (24<<SHORTFLOORBITS)
 jg    exit_trymove_return0
 
@@ -3272,9 +3288,9 @@ call  P_UnsetThingPosition_
 ;   thing->floorz = tmfloorz;
 ;   thing->ceilingz = tmceilingz;	
 
-mov   ax, word ptr ds:[_tmfloorz]
+mov   ax, word ptr cs:[_tmfloorz]
 mov   word ptr ds:[si.m_floorz], ax
-mov   ax, word ptr ds:[_tmceilingz]
+mov   ax, word ptr cs:[_tmceilingz]
 mov   word ptr ds:[si.m_ceilingz], ax
 
 ; selfmodify oldx/oldx as immediates in loop
@@ -3350,6 +3366,9 @@ mov   si, bx
 je    loop_next_num_spec
 exit_trymove_return1:
 stc
+
+
+do_trymove_exit:
 LEAVE_MACRO
 pop   di
 pop   si
@@ -3992,11 +4011,11 @@ call  P_LineOpening_
 ;    } 
 
 mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
-cmp   ax, word ptr ds:[_tmceilingz]
+cmp   ax, word ptr cs:[_tmceilingz]
 
 jge   dont_adjust_ceil
 mov   bx, word ptr [bp - 4]
-mov   word ptr ds:[_tmceilingz], ax
+mov   word ptr cs:[_tmceilingz], ax
 mov   word ptr ds:[_ceilinglinenum], bx
 dont_adjust_ceil:
 
@@ -4005,9 +4024,9 @@ dont_adjust_ceil:
 ;	}
 
 mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
-cmp   ax, word ptr ds:[_tmfloorz]
+cmp   ax, word ptr cs:[_tmfloorz]
 jle   dont_adjust_floor
-mov   word ptr ds:[_tmfloorz], ax
+mov   word ptr cs:[_tmfloorz], ax
 dont_adjust_floor:
 
 ;	if (lineopening.lowfloor < tmdropoffz) {
@@ -4015,9 +4034,9 @@ dont_adjust_floor:
 ;	}
 
 mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_lowfloor]
-cmp   ax, word ptr ds:[_tmdropoffz]
+cmp   ax, word ptr cs:[_tmdropoffz]
 jge   dont_adjust_dropoff
-mov   word ptr ds:[_tmdropoffz], ax
+mov   word ptr cs:[_tmdropoffz], ax
 dont_adjust_dropoff:
 
 ;    if (ld_physics->special) {
@@ -4227,7 +4246,7 @@ push  cx
 
 ;		if (tmflags1&MF_PICKUP) {
 
-test  byte ptr ds:[_tmflags1+1], (MF_PICKUP SHR 8)
+test  byte ptr cs:[_tmflags1+1], (MF_PICKUP SHR 8)
 je    dont_touch_anything
 
 ;			P_TouchSpecialThing (thing, tmthing, thing_pos, tmthing_pos);
@@ -4504,7 +4523,7 @@ mov   word ptr ds:[_tmthing_pos+2], ax  ;todo remove once fixed?
 mov   es, ax
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_flags1]
 
-mov   word ptr ds:[_tmflags1], ax
+mov   word ptr cs:[_tmflags1], ax
 
 
 mov   ax, word ptr [bp + 8]
@@ -4567,14 +4586,14 @@ mov   ax, SECTORS_SEGMENT
 SHIFT_MACRO shl   bx 4
 mov   es, ax
 mov   ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
-mov   word ptr ds:[_tmdropoffz], ax
-mov   word ptr ds:[_tmfloorz], ax
+mov   word ptr cs:[_tmdropoffz], ax
+mov   word ptr cs:[_tmfloorz], ax
 mov   ax, word ptr es:[bx+ + SECTOR_T.sec_ceilingheight]
-mov   word ptr ds:[_tmceilingz], ax
+mov   word ptr cs:[_tmceilingz], ax
 xor   ax, ax
 inc   word ptr ds:[_validcount_global]
 mov   word ptr ds:[_numspechit], ax
-test  byte ptr ds:[_tmflags1+1], (MF_NOCLIP SHR 8 )
+test  byte ptr cs:[_tmflags1+1], (MF_NOCLIP SHR 8 )
 je    set_up_blockmap_loop
 exit_checkposition_return_1:
 stc
@@ -6492,7 +6511,7 @@ mov   es, cx
 ; todo when _tmx _tmy etc are guaranteed adjacent do movsw
 
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_flags1]
-mov   word ptr ds:[_tmflags1], ax
+mov   word ptr cs:[_tmflags1], ax
 
 mov   ax, word ptr [bp + 0Ch]
 mov   word ptr ds:[_tmx+0], ax
@@ -6558,9 +6577,9 @@ mov   ax, SECTORS_SEGMENT
 mov   es, ax
 
 les   ax, dword ptr es:[bx + SECTOR_T.sec_floorheight]			; sector floorheight
-mov   word ptr ds:[_tmdropoffz], ax
-mov   word ptr ds:[_tmfloorz],   ax
-mov   word ptr ds:[_tmceilingz], es ; sector ceilingheight
+mov   word ptr cs:[_tmdropoffz], ax
+mov   word ptr cs:[_tmfloorz],   ax
+mov   word ptr cs:[_tmceilingz], es ; sector ceilingheight
 
 xor   ax, ax
 inc   word ptr ds:[_validcount_global]
@@ -6662,9 +6681,9 @@ call  P_UnsetThingPosition_
 ;    thing->floorz = tmfloorz;
 ;    thing->ceilingz = tmceilingz;	
 
-mov   ax, word ptr ds:[_tmfloorz]	; todo LES once floor/ceiling adjacent 
+mov   ax, word ptr cs:[_tmfloorz]	; todo LES once floor/ceiling adjacent 
 mov   word ptr ds:[bx + 6], ax
-mov   ax, word ptr ds:[_tmceilingz]
+mov   ax, word ptr cs:[_tmceilingz]
 mov   word ptr ds:[bx + 8], ax
 les   di, dword ptr [bp - 6]
 lea   si, [bp + 0Ch]
@@ -7384,7 +7403,7 @@ not_boss_unit:
 les   ax, dword ptr es:[bx]
 mov   dx, es
 
-les   di, dword ptr ds:[_bombspot_pos + 0]
+les   di, dword ptr cs:[_bombspot_pos + 0]
 
 sub   ax, word ptr es:[di]
 sbb   dx, word ptr es:[di + 2]
@@ -7400,11 +7419,12 @@ bombspot_x_already_positive:
 ;es:bx still good
 
 
-les   cx, dword ptr es:[bx + 4]
-mov   ax, es
+mov   cx, word ptr es:[bx + 4]
+mov   ax, word ptr es:[bx + 6]
+
 
 ; ax:cx is dy
-les   di, dword ptr ds:[_bombspot_pos + 0]
+
 sub   cx, word ptr es:[di + 4]
 sbb   ax, word ptr es:[di + 6]
 
@@ -7447,7 +7467,7 @@ dont_zero_dist:
 ;	}
 
 
-cmp   dx, word ptr ds:[_bombdamage]
+cmp   dx, word ptr cs:[_bombdamage]
 jge   exit_radiusattack_return_1
 
 
@@ -7458,18 +7478,18 @@ jge   exit_radiusattack_return_1
 
 ;    bx already thingpos?
 
-mov   cx, word ptr ds:[_bombspot_pos + 0]
+mov   cx, word ptr cs:[_bombspot_pos + 0]
 mov   ax, si
 mov   di, dx  ; backup dist intbits
-mov   dx, word ptr ds:[_bombspot]
+mov   dx, word ptr cs:[_bombspot]
 call  P_CheckSight_
 
 jnc   exit_radiusattack_return_1
 xchg  ax, si
-mov   dx, word ptr ds:[_bombspot]
-mov   cx, word ptr ds:[_bombdamage]
+mov   dx, word ptr cs:[_bombspot]
+mov   cx, word ptr cs:[_bombdamage]
 sub   cx, di
-mov   bx, word ptr ds:[_bombsource] ; todo les. reorder?
+mov   bx, word ptr cs:[_bombsource] ; todo les. reorder?
 
 call  P_DamageMobj_
 
@@ -7503,15 +7523,15 @@ push  di
 ;	bombsource = source;
 ;	bombdamage = damage;
 
-mov   word ptr ds:[_bombspot], ax
-mov   word ptr ds:[_bombspot_pos + 0], dx
-mov   word ptr ds:[_bombsource], bx
-mov   word ptr ds:[_bombdamage], cx
+mov   word ptr cs:[_bombspot], ax
+mov   word ptr cs:[_bombspot_pos + 0], dx
+mov   word ptr cs:[_bombsource], bx
+mov   word ptr cs:[_bombdamage], cx
 
 mov   si, cx  ; si gets damage
 
 mov   ax, MOBJPOSLIST_SEGMENT
-mov   word ptr ds:[_bombspot_pos + 2], ax   ; todo hardcode
+mov   word ptr cs:[_bombspot_pos + 2], ax   ; todo hardcode
 
 
 mov   es, ax
@@ -7658,9 +7678,9 @@ les   bx, dword ptr es:[di] ; load thing_pos->x
 mov   cx, es
 call  P_CheckPosition_
 
-mov   ax, word ptr ds:[_tmfloorz]
+mov   ax, word ptr cs:[_tmfloorz]
 mov   word ptr ds:[si + 6], ax
-mov   dx, word ptr ds:[_tmceilingz]
+mov   dx, word ptr cs:[_tmceilingz]
 mov   word ptr ds:[si + 8], dx
 
 mov   cx, MOBJPOSLIST_SEGMENT

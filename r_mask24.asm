@@ -1710,7 +1710,7 @@ mov       ah, cl   ; restore blocksize in ah
 
 
 found_multipage:
-PUBLIC  found_multipage
+
 ; reminder:
 ; al is prev page
 ; cl is now free (currenly 0FFh)

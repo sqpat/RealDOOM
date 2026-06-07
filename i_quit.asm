@@ -31,6 +31,7 @@ EXTRN locallib_printf_:NEAR
 EXTRN locallib_dos_setvect_:NEAR
 
 EXTRN DEBUG_PRINT_:NEAR
+EXTRN __old_int00:NEAR
 
 
 
@@ -200,6 +201,7 @@ ret
 ENDP
 
 
+
 PROC    CallQuitFunctions_  NEAR
 
 ;call  I_ShutdownGraphics_
@@ -270,7 +272,7 @@ mov    ds, ax
 ;les    ax, dword ptr ss:[__old_int13+0]
 ;mov    word ptr ds:[13 * 4 + 0], ax
 ;mov    word ptr ds:[13 * 4 + 2], es
-les    ax, dword ptr ss:[__old_int00+0]
+les    ax, dword ptr cs:[__old_int00+0]
 mov    word ptr ds:[00 * 4 + 0], ax
 mov    word ptr ds:[00 * 4 + 2], es
 push   ss
