@@ -1711,6 +1711,7 @@ jmp   done_with_span_fixedcolormap_selfmodify
 ALIGN_MACRO	
 
 check_next_visplane_page:
+public check_next_visplane_page
 ; do next visplane page
 sub   bp, VISPLANE_BYTES_PER_PAGE
 ; di = sp

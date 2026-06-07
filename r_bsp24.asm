@@ -14337,7 +14337,7 @@ call      R_PrepareMaskedPSprites_  ; todo inline
 
 ;call      Z_QuickMapRenderPlanes_
 Z_QUICKMAPAI3       pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
-Z_QUICKMAPAI3_NO_DX (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_8800_OFFSET
+Z_QUICKMAPAI3_NO_DX (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_8C00_OFFSET
 Z_QUICKMAPAI1_NO_DX (pageswapargs_renderplane_offset_size+6) INDEXED_PAGE_9C00_OFFSET
 Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+7) INDEXED_PAGE_7000_OFFSET
 
