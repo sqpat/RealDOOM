@@ -50,6 +50,7 @@ EXTRN FastDiv3216u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 EXTRN HU_Start_:NEAR
 EXTRN ST_Start_:NEAR
+EXTRN _ceilinglinenum:WORD
 
 .DATA
 
@@ -833,7 +834,7 @@ call      P_SetThingPosition_
 
 
 mov       bx, word ptr ds:[si + MOBJ_T.m_secnum]
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 mov       ax, SECTORS_SEGMENT
 mov       es, ax
 mov       ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
@@ -1316,7 +1317,7 @@ jbe   continue_fracunit_over_4_momentum_check
 check_floor_height:
 mov   di, word ptr [bp - 0Ah]
 mov   ax, SECTORS_SEGMENT
-SHIFT_MACRO shl   di 4
+SHIFT_MACRO_SMALL shl   di 4
 mov   es, ax
 mov   ax, word ptr es:[di]
 cmp   ax, word ptr ds:[bx + 6]  ; ? MOBJ_T.m_floorz
@@ -1434,17 +1435,17 @@ mov   cx, es
 mov   bx, dx
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_MISSILE
 je    not_missile_dont_explode
-mov   bx, word ptr ds:[_ceilinglinenum]
+mov   bx, word ptr cs:[_ceilinglinenum]
 cmp   bx, SECNUM_NULL
 je    do_explosion
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 mov   ax, LINES_PHYSICS_SEGMENT
 mov   es, ax
 mov   bx, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
 
 cmp   bx, SECNUM_NULL
 je    do_explosion
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx + 5]
@@ -2032,7 +2033,7 @@ div   bx
 lea   di, [bp - 010h]
 mov   si, ax
 
-SHIFT_MACRO shl   si 2
+SHIFT_MACRO_SMALL shl   si 2
 add   si, ax
 sal   si, 1  ; si * 10
 mov   dx, 0FFFFh
@@ -2098,7 +2099,7 @@ les   di, dword ptr es:[di + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
 
 xchg  ax, di
-SHIFT_MACRO shl   di 4
+SHIFT_MACRO_SMALL shl   di 4
 
 ;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[mobjsecnum].floorheight);
 mov   si, SECTORS_SEGMENT
@@ -2137,12 +2138,12 @@ call R_PointInSubsector_
 
 
 mov   bx, ax
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 mov   ax, SUBSECTORS_SEGMENT
 mov   es, ax
 mov   ax, word ptr es:[bx + SUBSECTOR_T.ss_secnum]
 ; todo make this work without shift
-SHIFT_MACRO sar ax 4
+SHIFT_MACRO_SMALL sar ax 4
 push  ax
 
 PUSH_MACRO MT_TFOG
@@ -2198,7 +2199,7 @@ mov   dx, word ptr [bp - 010h]
 call  P_SpawnMobj_
 
 mov   di, ax
-SHIFT_MACRO shl   di 2
+SHIFT_MACRO_SMALL shl   di 2
 add   di, ax
 sal   di, 1    ; di * 10
 lea   si, [bp - 010h]
@@ -2477,7 +2478,7 @@ mov   byte ptr ds:[_prndindex], bl
 
 ;		temp  <<= 4;
 
-SHIFT_MACRO shl   ax 4
+SHIFT_MACRO_SMALL shl   ax 4
 ;		an.hu.intbits += temp;
 
 add   dx, ax
@@ -2624,7 +2625,7 @@ push   ax      ; bp - 2
 les    si, dword ptr ds:[_playerMobj_pos]
 mov    si, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 
-SHIFT_MACRO shr    si 3
+SHIFT_MACRO_SMALL shr    si 3
 
 ;	slope = P_AimLineAttack (playerMobj, an, HALFMISSILERANGE);
 
@@ -2676,7 +2677,7 @@ mov    di, ax
 mov    cx, ax
 les    bx, dword ptr ds:[_playerMobj_pos]
 mov    si, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
-SHIFT_MACRO shr    si 3
+SHIFT_MACRO_SMALL shr    si 3
 
 no_line_target:
 push   cx  ; push hi bp - 4
@@ -2741,7 +2742,7 @@ mov    es, bx
 mov    bx, word ptr [bp - 8]
 mov    word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], 0
 mov    dx, si
-SHIFT_MACRO shl dx 3
+SHIFT_MACRO_SMALL shl dx 3
 mov    word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
 mov    dx, si
 

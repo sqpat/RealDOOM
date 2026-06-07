@@ -54,11 +54,11 @@ dec   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count]
 jnz   exit_t_fireflicker_early
 call  P_Random_
 and   al, 3
-SHIFT_MACRO sal ax 4
+SHIFT_MACRO_SMALL sal ax 4
 mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count], 4
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   dx, word ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum]
-SHIFT_MACRO sal dx 4
+SHIFT_MACRO_SMALL sal dx 4
 mov   ah, byte ptr ds:[bx + FIREFLICKER_T.fireflicker_maxlight]
 mov   bl, byte ptr ds:[bx + FIREFLICKER_T.fireflicker_minlight]
 xchg  dx, bx
@@ -99,7 +99,7 @@ PUBLIC  P_SpawnFireFlicker_
 push  bx
 
 mov   bx, ax
-SHIFT_MACRO  shl bx 4
+SHIFT_MACRO_SMALL  shl bx 4
 xchg  ax, dx
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
@@ -145,7 +145,7 @@ call  P_Random_
 
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   dx, word ptr ds:[bx + LIGHTFLASH_T.lightflash_secnum]
-SHIFT_MACRO sal dx 4
+SHIFT_MACRO_SMALL sal dx 4
 push  bx ; same lightflash...
 mov   ah, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxlight]
 mov   bl, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_minlight]
@@ -187,7 +187,7 @@ PUBLIC  P_SpawnLightFlash_
 push  bx
 
 mov   bx, ax
-SHIFT_MACRO  shl bx 4
+SHIFT_MACRO_SMALL  shl bx 4
 xchg  ax, dx
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
@@ -229,7 +229,7 @@ dec   word ptr ds:[bx + STROBE_T.strobe_count]
 jnz   exit_t_strobeflash_early
 
 mov   dx, word ptr ds:[bx + STROBE_T.strobe_secnum]
-SHIFT_MACRO shl dx 4
+SHIFT_MACRO_SMALL shl dx 4
 
 mov   ax, word ptr ds:[bx + STROBE_T.strobe_minlight]
 ; minlight al
@@ -295,7 +295,7 @@ mov   word ptr ds:[bx + STROBE_T.strobe_count], ax
 
 mov   ax, si ; secnum
 mov   word ptr ds:[bx + STROBE_T.strobe_secnum], ax
-SHIFT_MACRO   sal si 4
+SHIFT_MACRO_SMALL   sal si 4
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 mov   byte ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
@@ -390,7 +390,7 @@ mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 
 mov   di, ax
-SHIFT_MACRO shl di 4
+SHIFT_MACRO_SMALL shl di 4
 ; di holds sector offset
 
 SELFMODIFY_set_on_bright:
@@ -435,7 +435,7 @@ xchg  ax, dx ; dx gets unshifted secnum
 loop_next_secnum_find_surrounding_light:
 lodsw
 mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
-SHIFT_MACRO shl ax 4
+SHIFT_MACRO_SMALL shl ax 4
 xchg  ax, di
 ; ax has old sector offset. di has line ptr...
 
@@ -446,7 +446,7 @@ jmp   got_sec_ptr
 use_front:
 mov   di, word ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum]
 got_sec_ptr:
-SHIFT_MACRO shl di 4
+SHIFT_MACRO_SMALL shl di 4
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 mov   ch, byte ptr es:[di + SECTOR_T.sec_lightlevel]
@@ -497,7 +497,7 @@ push  bx
 xchg  ax, bx
 
 mov   ax, word ptr ds:[bx + GLOW_T.glow_secnum]
-SHIFT_MACRO shl   ax 4
+SHIFT_MACRO_SMALL shl   ax 4
 ;mov   dl, byte ptr ds:[bx + GLOW_T.glow_minlight]
 ;mov   dh, byte ptr ds:[bx + GLOW_T.glow_maxlight]
 mov   dx, word ptr ds:[bx + GLOW_T.glow_minlight]
@@ -547,7 +547,7 @@ PUBLIC  P_SpawnGlowingLight_
 
 push  bx
 mov   bx, ax
-SHIFT_MACRO  shl bx 4
+SHIFT_MACRO_SMALL  shl bx 4
 xchg  ax, dx ; preserve secnum in dx.
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0

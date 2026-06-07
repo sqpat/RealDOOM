@@ -63,6 +63,8 @@ EXTRN FixedMulTrigSpeedNoShiftCosine_MapLocal_:NEAR
 EXTRN FastDiv3216u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 EXTRN _tmfloorz:WORD
+EXTRN _spechit:WORD
+EXTRN _numspechit:WORD
 .DATA
 
 
@@ -138,8 +140,23 @@ _viletryx:
 dw 0, 0
 _viletryy:
 dw 0, 0
+_numbraintargets:
+dw 0
+_braintargeton:
+dw 0
+_braintargets:
+REPT 32
+dw 0 
+ENDM
 
+_brainspit_easy:
+db 0
+_floatok:
+db 0
+_corpsehitRef:
+dw 0
 
+PUBLIC _floatok
 
 PROC    P_RecursiveSound_ NEAR
 PUBLIC  P_RecursiveSound_
@@ -642,7 +659,7 @@ mov   es, cx
 jc    try_ok
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_FLOAT SHR 8)
 je    check_for_specials_hit_in_move
-cmp   byte ptr ds:[_floatok], 0
+cmp   byte ptr cs:[_floatok], 0
 je    check_for_specials_hit_in_move
 ; must adjust height.
 
@@ -692,7 +709,7 @@ pop   dx
 ret 
 
 check_for_specials_hit_in_move:
-cmp   word ptr ds:[_numspechit], 0
+cmp   word ptr cs:[_numspechit], 0
 jne  specials_hit
 exit_p_move_return_0:
 clc
@@ -710,11 +727,11 @@ mov   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 
 do_next_spechit:
 mov   bx, OFFSET _numspechit
-dec   word ptr ds:[bx]  
+dec   word ptr cs:[bx]  
 js    end_spechit_loop
-mov   bx, ds:[bx]
+mov   bx, cs:[bx]
 sal   bx, 1
-mov   dx, word ptr ds:[bx + _spechit]
+mov   dx, word ptr cs:[bx + _spechit]
 mov   cx, di
 mov   ax, si
 xor   bx, bx
@@ -2938,7 +2955,7 @@ test  ax, ax
 ja    exit_pit_vilecheck_return_1_pop3
 do_further_check:
 
-pop   word ptr ds:[_corpsehitRef]
+pop   word ptr cs:[_corpsehitRef]
 xor   ax, ax
 
 ;    thing->momx.w = thing->momy.w = 0;
@@ -3210,7 +3227,7 @@ jmp   A_Chase_
 got_vile_target:
 mov   bx, word ptr [bp - 2]
 mov   dx, word ptr ds:[bx + MOBJ_T.m_targetRef] ; tempref
-push  word ptr ds:[_corpsehitRef]
+push  word ptr cs:[_corpsehitRef]
 pop   word ptr ds:[bx + MOBJ_T.m_targetRef]
 mov   ax, bx
 call  A_FaceTarget_
@@ -3222,7 +3239,7 @@ mov   dx, S_VILE_HEAL1
 call  P_SetMobjState_
 
 
-mov   bx, word ptr ds:[_corpsehitRef]
+mov   bx, word ptr cs:[_corpsehitRef]
 sal   bx, 1
 mov   si, word ptr ds:[bx + _mobjlookuptable]
 mov   bx, word ptr ds:[bx + _mobjposlookuptable]
@@ -4539,8 +4556,8 @@ PROC    A_BrainAwake_ NEAR
 PUBLIC  A_BrainAwake_
 
 mov   byte ptr ds:[si + MOBJ_T.m_tics], 181
-mov   word ptr ds:[_numbraintargets], 0
-mov   word ptr ds:[_braintargeton], 0
+mov   word ptr cs:[_numbraintargets], 0
+mov   word ptr cs:[_braintargeton], 0
 mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 
 loop_next_brainawake:
@@ -4562,10 +4579,10 @@ jne   mobj_not_braintarget
 cmp   byte ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_mobjtype], MT_BOSSTARGET
 jne   mobj_not_braintarget
 
-mov   bx, word ptr ds:[_numbraintargets]
+mov   bx, word ptr cs:[_numbraintargets]
 sal   bx, 1
-mov   word ptr ds:[bx + _braintargets], ax
-inc   word ptr ds:[_numbraintargets]
+mov   word ptr cs:[bx + _braintargets], ax
+inc   word ptr cs:[_numbraintargets]
 
 
 mobj_not_braintarget:
@@ -4789,10 +4806,10 @@ PUBLIC  A_BrainSpit_
 ; bp - 4   targ_pos
 mov   byte ptr ds:[si + MOBJ_T.m_tics], 150
 
-xor   byte ptr ds:[_brainspit_easy], 1
+xor   byte ptr cs:[_brainspit_easy], 1
 cmp   byte ptr ds:[_gameskill], SK_EASY
 ja    do_brainspit
-cmp   byte ptr ds:[_brainspit_easy], 0
+cmp   byte ptr cs:[_brainspit_easy], 0
 je    exit_brainspit
 
 do_brainspit:
@@ -4801,18 +4818,18 @@ do_brainspit:
 ; si has ptr already...
 mov   di, bx
 
-mov   bx, word ptr ds:[_braintargeton]
+mov   bx, word ptr cs:[_braintargeton]
 sal   bx, 1
-mov   cx, word ptr ds:[bx + _braintargets]
+mov   cx, word ptr cs:[bx + _braintargets]
 push  cx  ; bp - 2
 
-mov   ax, word ptr ds:[_braintargeton]
+mov   ax, word ptr cs:[_braintargeton]
 inc   ax
-cmp   ax, word ptr ds:[_numbraintargets]
+cmp   ax, word ptr cs:[_numbraintargets]
 jl    dont_mod_braintargets
 xor   ax, ax
 dont_mod_braintargets:
-mov   word ptr ds:[_braintargeton], ax
+mov   word ptr cs:[_braintargeton], ax
 
 mov   bx, cx
 sal   bx, 1

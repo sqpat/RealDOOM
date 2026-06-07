@@ -273,7 +273,7 @@ call  S_StartSoundWithSecnum_
 dont_play_floor_sound:
 
 mov   ax, di
-SHIFT_MACRO shl   ax 4
+SHIFT_MACRO_SMALL shl   ax 4
 push  ax  ; bp - 4
 cmp   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], 0
 je    exit_move_floor
@@ -423,7 +423,7 @@ mov   es, di
 mov   di, cx
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return], STC_OPCODE
 ; ax is floor ref
-SHIFT_MACRO shl  di 4  
+SHIFT_MACRO_SMALL shl  di 4  
 mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax ;floor ref
 
 ; di is sectors offset
@@ -548,7 +548,7 @@ jmp   do_raisefloor
 do_floor_switch_case_type_raiseFloor24AndChange:
 SELFMODIFY_set_frontsector:
 mov   ax, 01000h
-SHIFT_MACRO shl   ax 4
+SHIFT_MACRO_SMALL shl   ax 4
 xchg  ax, di
 mov   dh, byte ptr es:[di + SECTOR_T.sec_floorpic]
 mov   di, word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special] ; high byte garbage.
@@ -611,7 +611,7 @@ mov   dx, LINES_SEGMENT
 mov   es, dx
 
 
-SHIFT_MACRO shl       bx 2
+SHIFT_MACRO_SMALL shl       bx 2
 
 
 ; cx has old loop iter
@@ -622,10 +622,10 @@ mov   di, es ; side 1
 mov   dx, SIDES_SEGMENT
 mov   es, dx
 
-SHIFT_MACRO sal bx 3
+SHIFT_MACRO_SMALL sal bx 3
 mov   bx, word ptr es:[bx + SIDE_T.s_bottomtexture] ; side0bottomtexture
 
-SHIFT_MACRO sal di 3
+SHIFT_MACRO_SMALL sal di 3
 mov   di, word ptr es:[di + SIDE_T.s_bottomtexture] ; side1bottomtexture
 
 ; bx has side 0 bottom tex
@@ -668,7 +668,7 @@ jl    loop_next_secnum_raisetotexture
 ; al was a byte, minsize - 1
 
 inc   ax
-SHIFT_MACRO shl ax SHORTFLOORBITS
+SHIFT_MACRO_SMALL shl ax SHORTFLOORBITS
 SELFMODIFY_add_floorheight:
 add   ax, 01000h ;   word ptr es:[di+ SECTOR_T.sec_floorheight] 
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax
@@ -724,7 +724,7 @@ je    continue_secnum_lowerandchangeloop
 mov   es, ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
 
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 
 
 mov   di, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
@@ -736,7 +736,7 @@ mov   di, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
 set_sector_values_and_break_loop:
 
 
-SHIFT_MACRO shl di 4
+SHIFT_MACRO_SMALL shl di 4
 mov   es, ds:[_SECTORS_SEGMENT_PTR]
 ; !! check the floor heights. 
 ;			if (sec->floorheight == floor->floordestheight)
@@ -833,7 +833,7 @@ mov   es, ds:[_SECTORS_SEGMENT_PTR]
 mov   word ptr [bp - 2], cx
 
 mov   di, cx  
-SHIFT_MACRO shl   di 4    ; di is sector offset
+SHIFT_MACRO_SMALL shl   di 4    ; di is sector offset
 
 mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
 
@@ -940,7 +940,7 @@ test  byte ptr es:[bx], ML_TWOSIDED
 je    continue_inner_secnum_buildstairs_loop
 mov   es, ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
-SHIFT_MACRO  sal bx 4
+SHIFT_MACRO_SMALL  sal bx 4
 
 mov   ax, word ptr [bp - 2]
 
@@ -955,7 +955,7 @@ mov   es, ds:[_SECTORS_SEGMENT_PTR]
 
 
 mov   bx, ax ; ax hold onto unshifted secnum for a bit...
-SHIFT_MACRO shl bx 4  ;bx is new sec
+SHIFT_MACRO_SMALL shl bx 4  ;bx is new sec
 
 
 ;    if (sectors[tsecOffset].floorpic != sectorfloorpic)

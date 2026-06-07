@@ -1386,7 +1386,7 @@ do_player_damage_stuff:
 
 
 mov    di, word ptr ds:[si + MOBJ_T.m_secnum]
-SHIFT_MACRO shl    di 4
+SHIFT_MACRO_SMALL shl    di 4
 
 ;		// end of game hell hack
  

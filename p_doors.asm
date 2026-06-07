@@ -75,7 +75,7 @@ mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 mov   di, ax
 
-SHIFT_MACRO shl   ax 4
+SHIFT_MACRO_SMALL shl   ax 4
 
 xor   cx, cx
 mov   bx, cx
@@ -199,7 +199,7 @@ jmp   set_dir_to_1_and_call_sound_and_exit
 switch_case_verticaldoor_2_blazeraise:
 switch_case_verticaldoor_2_blazeclose:
 mov   bx, word ptr ds:[si + VLDOOR_T.vldoor_secnum]
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 
 xor   ax, ax
 
@@ -383,7 +383,7 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 div   di  ; get doorref in ax
 
 mov   di, cx
-SHIFT_MACRO shl   di 4  ; di has sector offset
+SHIFT_MACRO_SMALL shl   di 4  ; di has sector offset
 
 
 mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
@@ -496,7 +496,7 @@ push  bp
 mov   bp, sp
 
 xchg  ax, di  
-SHIFT_MACRO shl   di 4
+SHIFT_MACRO_SMALL shl   di 4
 
 
 push  dx
@@ -573,7 +573,7 @@ switch_block_verticaldoor_case_default:
 mov   bx, word ptr es:[di + LINE_PHYSICS_T.lp_backsecnum]
 
 mov   si, bx
-SHIFT_MACRO shl   si 4
+SHIFT_MACRO_SMALL shl   si 4
 push  si  ; store sector offset for later
 mov   ax, word ptr ds:[si + _sectors_physics+ SECTOR_PHYSICS_T.secp_specialdataRef]
 test  ax, ax
@@ -728,7 +728,7 @@ mov   word ptr ds:[bx + VLDOOR_T.vldoor_speed], VDOORSPEED
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_topcountdown],  30 * 35
 
 
-SHIFT_MACRO SHL si 4
+SHIFT_MACRO_SMALL SHL si 4
 mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dx
 
 
@@ -777,7 +777,7 @@ mov   word ptr ds:[bx + VLDOOR_T.vldoor_topwait], VDOORWAIT
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_topcountdown],  5 * 60 * 35;
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_topheight],  ax
 
-SHIFT_MACRO SHL si 4
+SHIFT_MACRO_SMALL SHL si 4
 
 xor   dx, dx
 mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dx

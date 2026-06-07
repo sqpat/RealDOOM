@@ -45,7 +45,7 @@ EXTRN FixedMul2432_MapLocal_:NEAR
 EXTRN R_PointToAngle2_16_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 
-
+EXTRN _floatok:BYTE
 
 
 ; hack but oh well
@@ -72,16 +72,36 @@ _bombdamage:
 dw 0
 _bombspot_pos:
 dw 0, 0
-_tmceilingz:
-dw 0
 _tmfloorz:
+dw 0
+_tmceilingz:
 dw 0
 _tmdropoffz:
 dw 0
 _tmflags1:
 dw 0
+_tmx:
+dw 0, 0
+_tmy:
+dw 0, 0
+_tmxmove:
+dw 0, 0
+_tmymove:
+dw 0, 0
+_spechit:
+dw 0, 0, 0, 0, 0, 0, 0, 0
+_numspechit:
+dw 0
+_lastcalculatedsector:
+dw 0
+_ceilinglinenum:
+dw 0
+
 
 public _tmfloorz
+public _spechit
+public _numspechit
+public _ceilinglinenum
 
 
 
@@ -1030,8 +1050,8 @@ cmp  ax, 0FFFFh
 je   return_lineopening
 mov  ax, SECTORS_SEGMENT
 mov  ds, ax
-SHIFT_MACRO shl  dx 4
-SHIFT_MACRO shl  bx 4
+SHIFT_MACRO_SMALL shl  dx 4
+SHIFT_MACRO_SMALL shl  bx 4
 
 ;	front = &sectors[linefrontsecnum];
 ;	back = &sectors[linebacksecnum];
@@ -1178,7 +1198,7 @@ jne   has_prev_ref			;		if (thingsprevRef) {
 ;			sectors[thingsecnum].thinglistRef = thingsnextRef;
 
 lodsw         ; si + 4  get secnum
-SHIFT_MACRO  shl ax 4
+SHIFT_MACRO_SMALL  shl ax 4
 xchg  ax, si  ; si gets secnum 
 
 mov   ax, SECTORS_SEGMENT
@@ -1424,7 +1444,7 @@ les   bx, dword ptr es:[si + MOBJ_POS_T.mp_y]
 mov   cx, es
 
 call  R_PointInSubsector_  ; todo return preshifted?
-SHIFT_MACRO shl   ax 2
+SHIFT_MACRO_SMALL shl   ax 2
 xchg  ax, bx
 mov   ax, SUBSECTORS_SEGMENT
 mov   es, ax
@@ -1453,7 +1473,7 @@ jne   done_setting_sector_stuff
 ;		sectors[thing->secnum].thinglistRef = thingRef;
 
 
-SHIFT_MACRO shl   bx  4
+SHIFT_MACRO_SMALL shl   bx  4
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 
@@ -1634,7 +1654,7 @@ push  dx   ; old ax. will be bp - 4
 ; todo this might get blown up by a bigger prefetch queue. if so then move this behind the function?
 continue_looping_point_on_side:
 
-SHIFT_MACRO shl ax 2
+SHIFT_MACRO_SMALL shl ax 2
 xchg  si, ax				; si gets nodenum
 
 mov   ax, NODE_CHILDREN_SEGMENT
@@ -1729,7 +1749,7 @@ cmp   bx, 0FFFFh
 je    exit_blocklinesiterator_return_1
 
 mov   si, bx
-SHIFT_MACRO shl   si 4
+SHIFT_MACRO_SMALL shl   si 4
 mov   dx, LINES_PHYSICS_SEGMENT	; dx needs to be this segment for the call....
 mov   es, dx
 SELFMODIFY_validcountglobal_1:
@@ -1890,7 +1910,7 @@ push  ax					; bp - 0Ah 0
 
 les   bx, dword ptr es:[si]
 mov   cx, es ; store si + 2 in cx for now
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
@@ -1943,7 +1963,7 @@ xor   ax, ax
 mov   bx, ax
 call  P_PointOnDivlineSide_
 pop   bx
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 mov   byte ptr cs:[SELFMODIFY_compares1s2 - OFFSET P_SIGHT_STARTMARKER_+1], al  ; store s1
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 les   dx, dword ptr es:[bx]
@@ -2888,9 +2908,9 @@ mov   di, bx	; linenum
 
 mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 mov   si, bx
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 cmp   byte ptr es:[bx + 0Fh], 0
 jne   no_line_special
 
@@ -2935,7 +2955,7 @@ push  word ptr es:[bx + 6]
 push  word ptr es:[bx + 4]
 
 mov   bx, word ptr es:[bx]  ; get vertex
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 push  word ptr es:[bx+2]
@@ -2995,8 +3015,8 @@ mov   al, byte ptr es:[bx]	; get lineflags in al
 
 mov   dx, LINES_PHYSICS_SEGMENT
 mov   di, bx
-SHIFT_MACRO shl   di 2
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   di 2
+SHIFT_MACRO_SMALL shl   bx 4
 
 ;    if ( ! (lineflags & ML_TWOSIDED) ) {
 mov   es, dx
@@ -3008,7 +3028,7 @@ push  word ptr es:[bx + LINE_PHYSICS_T.lp_dy]
 push  word ptr es:[bx + LINE_PHYSICS_T.lp_dx]
 
 mov   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.lp_v1Offset]
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
@@ -3051,7 +3071,7 @@ mov   bx, word ptr ds:[_playerMobj]
 mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
 sub   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
 
-SHIFT_MACRO sar   ax 3
+SHIFT_MACRO_SMALL sar   ax 3
 cmp   ax, word ptr ds:[bx + 0Ch]
 jl    is_blocking
 
@@ -3140,7 +3160,8 @@ ENDP
 ; cx:bx thingpos
 
 ; todo! thingpos ptr dx, use cx:bx as x?
-
+jump_to_move_ok_do_unset_position:
+jmp  move_ok_do_unset_position
 
 ; return in carry
 ALIGN_MACRO
@@ -3183,7 +3204,7 @@ sub   sp, 2
 push  word ptr [bp + 010h]
 push  word ptr [bp + 0Eh]
 
-mov   byte ptr ds:[_floatok], 0
+mov   byte ptr cs:[_floatok], 0
 les   bx, dword ptr [bp + 0Ah]
 mov   cx, es
 mov   dx, -1
@@ -3197,7 +3218,7 @@ jnc   exit_trymove_return
 mov   es, word ptr [bp - 2]  ; thispos
 mov   dl, byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1]  ; flags
 test  dl, (MF_NOCLIP SHR 8)
-jne   move_ok_do_unset_position
+jne   jump_to_move_ok_do_unset_position
 
 ;		if (temp.h.intbits < thing->height.h.intbits) { // 16 bit logic handles the fractional fine
 ;			return false;	// doesn't fit
@@ -3219,7 +3240,7 @@ jnge  exit_trymove_return0
 
 ;		floatok = true;
 
-inc   byte ptr ds:[_floatok]
+inc   byte ptr cs:[_floatok]
 
 ;		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmceilingz);
 ;		if (!(thing_pos->flags1&MF_TELEPORT) && temp.w - thing_pos->z.w < thing->height.w) {
@@ -3288,10 +3309,9 @@ call  P_UnsetThingPosition_
 ;   thing->floorz = tmfloorz;
 ;   thing->ceilingz = tmceilingz;	
 
-mov   ax, word ptr cs:[_tmfloorz]
+les   ax, dword ptr cs:[_tmfloorz]
 mov   word ptr ds:[si.m_floorz], ax
-mov   ax, word ptr cs:[_tmceilingz]
-mov   word ptr ds:[si.m_ceilingz], ax
+mov   word ptr ds:[si.m_ceilingz], es
 
 ; selfmodify oldx/oldx as immediates in loop
 
@@ -3337,7 +3357,7 @@ mov   ds, ax   ; restore ds
 
 mov   dx, di  ; thingpos
 mov   ax, si  ; thing ptr
-mov   bx, word ptr ds:[_lastcalculatedsector]
+mov   bx, word ptr cs:[_lastcalculatedsector]
 
 call  P_SetThingPosition_
 
@@ -3377,7 +3397,7 @@ ret   8
 
 ALIGN_MACRO
 loop_next_num_spec:
-dec   word ptr ds:[_numspechit]
+dec   word ptr cs:[_numspechit]
 ; todo jump direct
 js    exit_trymove_return1   ; jump if negative 1
 
@@ -3389,12 +3409,12 @@ js    exit_trymove_return1   ; jump if negative 1
 ;			v1y = vertexes[ldv1Offset].y;
 ;			ldspecial = ld_physics->special;
 
-mov   bx, word ptr ds:[_numspechit]
+mov   bx, word ptr cs:[_numspechit]
 sal   bx, 1
-mov   bx, word ptr ds:[bx + _spechit]
+mov   bx, word ptr cs:[bx + _spechit]
 mov   dx, LINES_PHYSICS_SEGMENT
 mov   es, dx
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 
 mov   al, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
 mov   byte ptr [bp - 4], al    ; ld->special   
@@ -3403,7 +3423,7 @@ push  word ptr es:[bx + LINE_PHYSICS_T.lp_dy]
 push  word ptr es:[bx + LINE_PHYSICS_T.lp_dx] 
 
 mov   bx, word ptr es:[bx + LINE_PHYSICS_T.lp_v1Offset] ; vertexes
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
 push  word ptr es:[bx+2]
@@ -3459,11 +3479,11 @@ je    loop_next_num_spec		; todo direct
 
 
 mov   cx, di ; offset
-mov   bx, word ptr ds:[_numspechit]
+mov   bx, word ptr cs:[_numspechit]
 sal   bx, 1
 cbw	  ; fill out ah from before
 mov   dx, ax
-mov   ax, word ptr ds:[bx + _spechit]
+mov   ax, word ptr cs:[bx + _spechit]
 mov   bx, si
 
 
@@ -3618,15 +3638,15 @@ ENDP
 
 zero_tmx_and_exit:
 xor   ah, ah
-mov   word ptr ds:[_tmxmove+0], ax
-mov   word ptr ds:[_tmxmove+2], ax
+mov   word ptr cs:[_tmxmove+0], ax
+mov   word ptr cs:[_tmxmove+2], ax
 exit_hitslideline:
 POPA_NO_AX_MACRO
 ret   
 ALIGN_MACRO
 zero_tmy_and_exit:
-mov   word ptr ds:[_tmymove+0], ax
-mov   word ptr ds:[_tmymove+2], ax
+mov   word ptr cs:[_tmymove+0], ax
+mov   word ptr cs:[_tmymove+2], ax
 jmp   exit_hitslideline
 
 ALIGN_MACRO
@@ -3635,7 +3655,7 @@ PROC P_HitSlideLine_ NEAR
 PUSHA_NO_AX_MACRO
 
 
-SHIFT_MACRO shl   ax 4
+SHIFT_MACRO_SMALL shl   ax 4
 xchg  ax, si  ; si gets linenum linephysics lookup
 mov   di, LINES_PHYSICS_SEGMENT
 mov   es, di
@@ -3671,7 +3691,7 @@ push  word ptr es:[si + 6]
 push  word ptr es:[si + 4]
 
 mov   bx, word ptr es:[si] ; get vertex
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
@@ -3705,10 +3725,10 @@ add   dh, (ANG180_HIGHBITS SHR 8)
 dont_add_hibits:
 
 mov   di, dx
-push  word ptr ds:[_tmymove+2]
-push  word ptr ds:[_tmymove+0]
-push  word ptr ds:[_tmxmove+2]
-push  word ptr ds:[_tmxmove+0]
+push  word ptr cs:[_tmymove+2]
+push  word ptr cs:[_tmymove+0]
+push  word ptr cs:[_tmxmove+2]
+push  word ptr cs:[_tmxmove+0]
 xor   ax, ax
 cwd
 mov   bx, ax
@@ -3742,9 +3762,9 @@ mov   si, dx     ; in si
 
 ;    movelen = P_AproxDistance (tmxmove.w, tmymove.w);
 
-les   bx, dword ptr ds:[_tmymove+0]
+les   bx, dword ptr cs:[_tmymove+0]
 mov   cx, es
-les   ax, dword ptr ds:[_tmxmove+0]
+les   ax, dword ptr cs:[_tmxmove+0]
 mov   dx, es
 call  P_AproxDistance_
 
@@ -3771,15 +3791,15 @@ mov   bx, si
 mov   cx, di
 
 call  FixedMulTrigNoShiftCosine_MapLocal_
-mov   word ptr ds:[_tmxmove+0], ax
-mov   word ptr ds:[_tmxmove+2], dx
+mov   word ptr cs:[_tmxmove+0], ax
+mov   word ptr cs:[_tmxmove+2], dx
 mov   bx, si
 mov   cx, di
 pop   dx
 
 call  FixedMulTrigNoShiftSine_MapLocal_
-mov   word ptr ds:[_tmymove+0], ax
-mov   word ptr ds:[_tmymove+2], dx
+mov   word ptr cs:[_tmymove+0], ax
+mov   word ptr cs:[_tmymove+2], dx
 POPA_NO_AX_MACRO
 ret   
 ENDP
@@ -3819,7 +3839,7 @@ push  dx  ; bp - 2
 push  bx  ; bp - 4
 
 mov   es, dx
-SHIFT_MACRO shl   bx 2		; lines lookup
+SHIFT_MACRO_SMALL shl   bx 2		; lines lookup
 
 mov   si, word ptr es:[di]   ; vertex
 mov   ax, word ptr es:[di + 2]
@@ -3831,7 +3851,7 @@ push  ax ; bp - 6  ; unused!
 les   dx, dword ptr es:[di + 4]    ; dx
 mov   cx, es                       ; dy
 
-SHIFT_MACRO shl   si 2
+SHIFT_MACRO_SMALL shl   si 2
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
 les   si, dword ptr es:[si]
@@ -4016,7 +4036,7 @@ cmp   ax, word ptr cs:[_tmceilingz]
 jge   dont_adjust_ceil
 mov   bx, word ptr [bp - 4]
 mov   word ptr cs:[_tmceilingz], ax
-mov   word ptr ds:[_ceilinglinenum], bx
+mov   word ptr cs:[_ceilinglinenum], bx
 dont_adjust_ceil:
 
 ;	if (lineopening.openbottom > tmfloorz) {
@@ -4048,11 +4068,11 @@ je    exit_checkline_return_1
 
 ;		spechit[numspechit] = linenum;
 ;		numspechit++;
-mov   bx, word ptr ds:[_numspechit]
+mov   bx, word ptr cs:[_numspechit]
 sal   bx, 1
 mov   ax, word ptr [bp - 4]
-inc   word ptr ds:[_numspechit]
-mov   word ptr ds:[bx + _spechit], ax
+inc   word ptr cs:[_numspechit]
+mov   word ptr cs:[bx + _spechit], ax
 exit_checkline_return_1:
 stc
 LEAVE_MACRO 
@@ -4179,8 +4199,8 @@ xchg  ax, di
 
 les   ax, dword ptr [bp - 0Eh]
 mov   dx, es
-sub   ax, word ptr ds:[_tmx+0]
-sbb   dx, word ptr ds:[_tmx+2]
+sub   ax, word ptr cs:[_tmx+0]
+sbb   dx, word ptr cs:[_tmx+2]
 
 jge   dont_neg_thing_x
 neg   ax
@@ -4192,8 +4212,8 @@ cmp   dx, di
 jge   exit_checkthing_return_1_3
 les   ax, dword ptr [bp - 0Ah]
 mov   dx, es
-sub   ax, word ptr ds:[_tmy+0]
-sbb   dx, word ptr ds:[_tmy+2]
+sub   ax, word ptr cs:[_tmy+0]
+sbb   dx, word ptr cs:[_tmy+2]
 
 jge   dont_neg_thing_y
 neg   ax
@@ -4528,12 +4548,12 @@ mov   word ptr cs:[_tmflags1], ax
 
 mov   ax, word ptr [bp + 8]
 mov   word ptr ds:[_tmbbox + (4 * BOXTOP)], ax
-mov   word ptr ds:[_tmy+0], ax
+mov   word ptr cs:[_tmy+0], ax
 mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)], ax
 xchg  ax, cx
 
 mov   ax, word ptr [bp - 4]
-mov   word ptr ds:[_tmx+0], ax
+mov   word ptr cs:[_tmx+0], ax
 mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT)], ax
 mov   word ptr ds:[_tmbbox + (4 * BOXLEFT)], ax
 
@@ -4547,13 +4567,13 @@ xchg  ax, dx
 
 mov   ax, word ptr [bp + 0Ah]
 add   word ptr ds:[_tmbbox + (4 * BOXTOP) + 2], ax
-mov   word ptr ds:[_tmy+2], ax
+mov   word ptr cs:[_tmy+2], ax
 
 sub   ax, dx
 mov   word ptr ds:[_tmbbox + (4 * BOXBOTTOM)+ 2], ax
 
 mov   word ptr ds:[_tmbbox + (4 * BOXRIGHT) + 2], di
-mov   word ptr ds:[_tmx+2], di
+mov   word ptr cs:[_tmx+2], di
 
 mov   al, byte ptr ds:[si + 01Eh]
 xor   ah, ah
@@ -4571,19 +4591,19 @@ mov   cx, word ptr [bp + 0Ah]
 call  R_PointInSubsector_
 mov   bx, ax
 mov   ax, SUBSECTORS_SEGMENT
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 mov   es, ax
 mov   ax, word ptr es:[bx + SUBSECTOR_T.ss_secnum]
 ; todo make this work without shifts
-SHIFT_MACRO sar ax 4
+SHIFT_MACRO_SMALL sar ax 4
 
 
 use_cached_secnum:
-mov   word ptr ds:[_lastcalculatedsector], ax
-mov   word ptr ds:[_ceilinglinenum], -1
-mov   bx, word ptr ds:[_lastcalculatedsector]
+mov   word ptr cs:[_lastcalculatedsector], ax
+mov   word ptr cs:[_ceilinglinenum], -1
+mov   bx, word ptr cs:[_lastcalculatedsector]
 mov   ax, SECTORS_SEGMENT
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 mov   es, ax
 mov   ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
 mov   word ptr cs:[_tmdropoffz], ax
@@ -4592,7 +4612,7 @@ mov   ax, word ptr es:[bx+ + SECTOR_T.sec_ceilingheight]
 mov   word ptr cs:[_tmceilingz], ax
 xor   ax, ax
 inc   word ptr ds:[_validcount_global]
-mov   word ptr ds:[_numspechit], ax
+mov   word ptr cs:[_numspechit], ax
 test  byte ptr cs:[_tmflags1+1], (MF_NOCLIP SHR 8 )
 je    set_up_blockmap_loop
 exit_checkposition_return_1:
@@ -5180,8 +5200,8 @@ mov   di, word ptr ds:[_bestslidefrac]
 mov   ax, di
 call  FixedMul16u32_MapLocal_
 
-mov   word ptr ds:[_tmxmove+0], ax
-mov   word ptr ds:[_tmxmove+2], dx
+mov   word ptr cs:[_tmxmove+0], ax
+mov   word ptr cs:[_tmxmove+2], dx
 
 les   bx, dword ptr ds:[si + 012h]
 mov   cx, es
@@ -5198,16 +5218,16 @@ bestslidefrac_f800:
 
 les   ax, dword ptr ds:[si + 0Eh]
 mov   dx, es
-mov   word ptr ds:[_tmxmove+0], ax
-mov   word ptr ds:[_tmxmove+2], dx
+mov   word ptr cs:[_tmxmove+0], ax
+mov   word ptr cs:[_tmxmove+2], dx
 les   ax, dword ptr ds:[si + 012h]
 mov   dx, es
 do_hitslideline:
 
 ;    P_HitSlideLine (bestslidelinenum);	// clip the moves
 
-mov   word ptr ds:[_tmymove+0], ax
-mov   word ptr ds:[_tmymove+2], dx
+mov   word ptr cs:[_tmymove+0], ax
+mov   word ptr cs:[_tmymove+2], dx
 
 ;    P_HitSlideLine (bestslidelinenum);	// clip the moves
 
@@ -5215,10 +5235,10 @@ mov   ax, word ptr ds:[_bestslidelinenum]
 call  P_HitSlideLine_
 
 
-les   ax, dword ptr ds:[_tmxmove+0]
+les   ax, dword ptr cs:[_tmxmove+0]
 mov   word ptr ds:[si + 0Eh], ax
 mov   word ptr ds:[si + 010h], es
-les   ax, dword ptr ds:[_tmymove+0]
+les   ax, dword ptr cs:[_tmymove+0]
 mov   word ptr ds:[si + 012h], ax
 mov   word ptr ds:[si + 014h], es
 les   bx, dword ptr ds:[_playerMobj_pos]
@@ -5226,15 +5246,15 @@ mov   cx, es
 
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-add   ax, word ptr ds:[_tmymove+0]
-adc   dx, word ptr ds:[_tmymove+2]
+add   ax, word ptr cs:[_tmymove+0]
+adc   dx, word ptr cs:[_tmymove+2]
 push  dx
 push  ax
 
 les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
-add   ax, word ptr ds:[_tmxmove+0]
-adc   dx, word ptr ds:[_tmxmove+2]
+add   ax, word ptr cs:[_tmxmove+0]
+adc   dx, word ptr cs:[_tmxmove+2]
 
 
 push  dx
@@ -5436,9 +5456,9 @@ mov   es, ax
 mov   cl, byte ptr es:[bx]			; lineflags
 mov   dx, bx
 
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 push  bx		    ; linenum shift 2  bp - 4
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 push  es		    ; bp - 6
 push  bx			; bp - 8 linenum shift 4
@@ -5541,7 +5561,7 @@ adc   di, dx
 
 les   bx, dword ptr [bp - 8]			; linephys ptr
 mov   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]		; frontsecnum
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
@@ -5577,7 +5597,7 @@ cmp   word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum], SECNUM_NULL
 je    do_puff
 
 mov   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]   ; todo was this stored
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
 mov   dl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic]
@@ -5632,12 +5652,12 @@ call  P_GetAttackRangeMult_
 
 les   bx, dword ptr [bp - 8] 	 ; li_physics
 les   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum] ; frontsec
-SHIFT_MACRO shl   bx 4 			
+SHIFT_MACRO_SMALL shl   bx 4 			
 
 push  dx	; push dist
 push  ax
 mov   di, es 				 	 ; backsec
-SHIFT_MACRO shl   di 4
+SHIFT_MACRO_SMALL shl   di 4
 
 push  di
 push  bx	 ; store front/backsec lookups
@@ -6069,9 +6089,9 @@ aimtraverse_is_a_line:
 ;		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
 
 mov   es, dx	; intercept_segment
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 mov   di, bx
-SHIFT_MACRO shl   di 2
+SHIFT_MACRO_SMALL shl   di 2
 
 mov   ax, LINES_SEGMENT
 mov   es, ax
@@ -6106,10 +6126,10 @@ push  ax
 push  dx  ; store dist
 les   di, LINE_PHYSICS_T ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum] ; frontsector
 mov   si, es					  ; backsector
-SHIFT_MACRO shl   di 4
+SHIFT_MACRO_SMALL shl   di 4
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
-SHIFT_MACRO shl   si 4
+SHIFT_MACRO_SMALL shl   si 4
 
 
 mov   cx, word ptr es:[di + SECTOR_T.sec_floorheight]
@@ -6419,8 +6439,8 @@ adc   ch, ch
 
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
-sub   ax, word ptr ds:[_tmx+0]
-sbb   dx, word ptr ds:[_tmx+2]
+sub   ax, word ptr cs:[_tmx+0]
+sbb   dx, word ptr cs:[_tmx+2]
 or    dx, dx
 jge   already_positive
 neg   ax
@@ -6432,8 +6452,8 @@ cmp   dx, cx
 jge   exit_stompthing_return_1
 les   ax, dword ptr es:[bx + 4]
 mov   dx, es
-sub   ax, word ptr ds:[_tmy+0]
-sbb   dx, word ptr ds:[_tmy+2]
+sub   ax, word ptr cs:[_tmy+0]
+sbb   dx, word ptr cs:[_tmy+2]
 or    dx, dx
 jge   already_positive_2
 neg   ax
@@ -6513,14 +6533,23 @@ mov   es, cx
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_flags1]
 mov   word ptr cs:[_tmflags1], ax
 
-mov   ax, word ptr [bp + 0Ch]
-mov   word ptr ds:[_tmx+0], ax
-mov   ax, word ptr [bp + 0Eh]
-mov   word ptr ds:[_tmx+2], ax
-mov   ax, word ptr [bp + 010h]
-mov   word ptr ds:[_tmy+0], ax
-mov   ax, word ptr [bp + 012h]
-mov   word ptr ds:[_tmy+2], ax
+push  cs
+pop   es
+mov   di, OFFSET _tmx
+lea   si, [bp + 0Ch]
+movsw
+movsw
+movsw
+movsw
+
+;mov   ax, word ptr [bp + 0Ch]
+;mov   word ptr cs:[_tmx+0], ax
+;mov   ax, word ptr [bp + 0Eh]
+;mov   word ptr cs:[_tmx+2], ax
+;mov   ax, word ptr [bp + 010h]
+;mov   word ptr cs:[_tmy+0], ax
+;mov   ax, word ptr [bp + 012h]
+;mov   word ptr cs:[_tmy+2], ax
 
 
 ;	tmbbox[BOXTOP] = y; 
@@ -6572,7 +6601,7 @@ mov   word ptr ds:[_tmbbox + (4 * BOXLEFT) + 2], si
 
 
 mov   bx, word ptr [bp + 014h]
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 
@@ -6583,9 +6612,9 @@ mov   word ptr cs:[_tmceilingz], es ; sector ceilingheight
 
 xor   ax, ax
 inc   word ptr ds:[_validcount_global]
-mov   word ptr ds:[_numspechit], ax
+mov   word ptr cs:[_numspechit], ax
 dec   ax
-mov   word ptr ds:[_ceilinglinenum], ax  ; -1
+mov   word ptr cs:[_ceilinglinenum], ax  ; -1
 
 ;    // stomp on any things contacted
 ;    xl = (tmbbox[BOXLEFT].h.intbits - bmaporgx - MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
@@ -7287,7 +7316,7 @@ les   bx, dword ptr es:[di +  MOBJ_POS_T.mp_y + 0]
 mov   cx, es		;			si:di y
 mov   di, ax        ; unmodified angle ??
 
-SHIFT_MACRO shr ax 2
+SHIFT_MACRO_SMALL shr ax 2
 and   al, 0FEh  ; word lookup
 xchg  ax, di    ; di has sine/cosine fineangle lookup
 				; ax has sign
@@ -7714,7 +7743,7 @@ do_final_heightcheck:
 
 mov   ax, word ptr ds:[si + 8]
 sub   ax, word ptr ds:[si + 6]
-SHIFT_MACRO sar   ax 3
+SHIFT_MACRO_SMALL sar   ax 3
 cmp   ax, word ptr ds:[si + 0Ch]
 jge   exit_thingheightclip_return_1
 ; return false
@@ -7858,7 +7887,7 @@ call  P_Random_
 ;		mo->momy.w = (P_Random() - P_Random ())<<12;
 
 sub   ax, dx
-SHIFT_MACRO  shl ax 4
+SHIFT_MACRO_SMALL  shl ax 4
 mov   ah, al
 xor   al, al
 cwd   
@@ -7870,7 +7899,7 @@ call  P_Random_
 mov   dx, ax
 call  P_Random_
 sub   ax, dx
-SHIFT_MACRO  shl ax 4
+SHIFT_MACRO_SMALL  shl ax 4
 mov   ah, al
 xor   al, al
 cwd

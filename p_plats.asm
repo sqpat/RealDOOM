@@ -63,7 +63,7 @@ push        dx ; bp - 2
 mov         di, word ptr ds:[si + PLAT_T.plat_secnum]
 mov         bx, di
 mov         es, word ptr ds:[_SECTORS_SEGMENT_PTR]
-SHIFT_MACRO shl         bx 4
+SHIFT_MACRO_SMALL shl         bx 4
 xor         cx, cx
 mov         ax, cx
 mov         dx, word ptr ds:[si + PLAT_T.plat_speed]
@@ -187,7 +187,7 @@ mov         bp, sp
 mov         bh, al   ; linetag in bh
 push        bx ; bp - 2
 mov         si, dx
-SHIFT_MACRO shl         si 4
+SHIFT_MACRO_SMALL shl         si 4
 add         si, SECTOR_T.sec_floorpic
 mov         word ptr cs:[SELFMODIFY_read_floorpic_hardcoded_offset+2], si
 sub         sp, (MAX_ADJOINING_SECTORS_IN_WORDS)
@@ -217,7 +217,7 @@ loop_next_secnum_doplat:
 lodsw
 mov         cx, ax 
 push        si
-SHIFT_MACRO shl         ax 4
+SHIFT_MACRO_SMALL shl         ax 4
 xchg        ax, si  ; si is sectors[secnum]
 mov         ax, TF_PLATRAISE_HIGHBITS
 cwd
@@ -482,7 +482,7 @@ mul         si ; dx zeroed.
 xchg        ax, si  ; si gets ptr. ax gets platref back. dx is zeroed from mul
 
 mov         si, word ptr ds:[si + _thinkerlist + THINKER_T.t_data + PLAT_T.plat_secnum]
-SHIFT_MACRO shl         si 4
+SHIFT_MACRO_SMALL shl         si 4
 
 call        P_RemoveThinker_
 

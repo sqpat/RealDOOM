@@ -853,7 +853,7 @@ mov   dl, ah
 inc   dx
 
 mov   ax, dx
-SHIFT_MACRO shl   dx 2
+SHIFT_MACRO_SMALL shl   dx 2
 add   dx, ax
 push  dx  ; push damage argument for later
 
@@ -862,7 +862,7 @@ xchg  ax, bx  ; ax gets accuracy back
 les   bx, dword ptr ds:[_playerMobj_pos]
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2] ; angle hibits..
 
-SHIFT_MACRO shr   dx 3
+SHIFT_MACRO_SMALL shr   dx 3
 test  al, al
 
 jne   do_shot
@@ -1015,7 +1015,7 @@ mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
 ;	angle = MOD_FINE_ANGLE( angle + ( ( P_Random()-P_Random() )<<(19-ANGLETOFINESHIFT)) );
 
 call  P_Random_
-SHIFT_MACRO shr   bx 3
+SHIFT_MACRO_SMALL shr   bx 3
 add   bx, ax   ; add rand1
 call  P_Random_
 sub   bx, ax   ; sub rand2
@@ -1032,7 +1032,7 @@ call  P_Random_
 
 sub   dx, ax
 xchg  ax, dx
-SHIFT_MACRO shl   ax 5
+SHIFT_MACRO_SMALL shl   ax 5
 cwd   
 add   ax, word ptr ds:[_bulletslope+0]
 adc   dx, word ptr ds:[_bulletslope+2]
@@ -1190,7 +1190,7 @@ mul   ah
 
 
 mov   dx, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
-SHIFT_MACRO shr   dx 3
+SHIFT_MACRO_SMALL shr   dx 3
 sub   dx, (FINE_ANG90/2)
 add   dx, ax; angle ready
 and   dh, (FINEMASK SHR 8)

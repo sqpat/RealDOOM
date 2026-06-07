@@ -230,11 +230,11 @@ xor   di, di
 load_next_sector:
 
 lodsw           
-SHIFT_MACRO shl ax 3
+SHIFT_MACRO_SMALL shl ax 3
 stosw           ; 00 -> 00
 
 lodsw           
-SHIFT_MACRO shl ax 3
+SHIFT_MACRO_SMALL shl ax 3
 stosw           ; 02 -> 02
 
 lodsw
@@ -294,7 +294,7 @@ sar   ax, cl    ; dl has the flag.
 mov   es, word ptr ss:[_SEENLINES_6800_SEGMENT_PTR]
 
 
-SHIFT_MACRO SAR BX 3
+SHIFT_MACRO_SMALL SAR BX 3
 or    byte ptr es:[bx], al
 
 
@@ -313,7 +313,7 @@ mov   byte ptr es:[di + LINE_PHYSICS_T.lp_tag], al
 xor   cx, cx  ; line count
 load_next_side:
 mov   bx, di
-SHIFT_MACRO SAR BX 2
+SHIFT_MACRO_SMALL SAR BX 2
 
 ; LINES offset
 
@@ -328,7 +328,7 @@ je    skip_side
 
 mov   ax, SIDES_RENDER_8000_SEGMENT
 mov   es, ax
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO_SMALL shl bx 2
 
 push  dx
 lodsw 
@@ -431,6 +431,7 @@ sub    word ptr ds:[_save_p], FILE_MAX_BUFFER_CHECK
 
 no_repage_load:
 ret
+ENDP    
 
 
 PROC   P_UnArchiveThinkers_  NEAR
@@ -700,7 +701,7 @@ dw    P_SETTHINGPOSITIONFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 mov       bx, word ptr ds:[di + 4]            ; get mobj secnum
 mov       ax, SECTORS_SEGMENT
 mov       es, ax
-SHIFT_MACRO shl bx 4
+SHIFT_MACRO_SMALL shl bx 4
 mov       ax, word ptr es:[bx]
 mov       word ptr ds:[di + 6], ax              ; floorz
 mov       ax, word ptr es:[bx + 2]
@@ -854,7 +855,7 @@ call   LoadInt8_
 
 mov    ax, word ptr ds:[di - 0Ch]        ; di is 0Dh, we want 1
 
-SHIFT_MACRO SHL AX 4
+SHIFT_MACRO_SMALL SHL AX 4
 
 
 xchg   ax, bx
@@ -898,7 +899,7 @@ call   LoadInt16_
 
 mov    ax, word ptr ds:[di - 0Ch]  ; di is 0Dh, we want 1
 
-SHIFT_MACRO     shl    ax 4
+SHIFT_MACRO_SMALL     shl    ax 4
 mov    di, ax
 mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
 jmp    load_next_special
@@ -934,7 +935,7 @@ call   LoadShortHeight16_
 
 mov    ax, word ptr ds:[di - 9]    ; di is + 0Bh, we want 2..
 
-SHIFT_MACRO SHL AX 4
+SHIFT_MACRO_SMALL SHL AX 4
 
 
 mov    di, ax
@@ -973,7 +974,7 @@ call   LoadInt8_
 
 
 mov    ax, word ptr es:[di-0Fh]  ; di is 0F, we want 0
-SHIFT_MACRO shl ax 4
+SHIFT_MACRO_SMALL shl ax 4
 
 
 ; todo xchg
@@ -1440,11 +1441,11 @@ loop_save_next_sector:
 do_save_next_sector:
 
 lodsw
-SHIFT_MACRO SAR AX 3
+SHIFT_MACRO_SMALL SAR AX 3
 stosw           ; floorheight
 
 lodsw
-SHIFT_MACRO SAR AX 3
+SHIFT_MACRO_SMALL SAR AX 3
 stosw           ; ceilingheight
 
 xor   ax, ax    ; zero high bit for next 5 writes.
@@ -1483,7 +1484,7 @@ mov   al, byte ptr ds:[bx]
 
 mov   ds, word ptr ss:[_SEENLINES_6800_SEGMENT_PTR]
 
-SHIFT_MACRO SAR BX 3
+SHIFT_MACRO_SMALL SAR BX 3
 mov   ah, byte ptr ds:[bx]   ; get seenlines bit in byte
 
 mov   cl, dl
@@ -1509,7 +1510,7 @@ stosw                           ; tag
 mov   ax, LINES_SEGMENT
 mov   ds, ax
 mov   bx, dx
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO_SMALL shl bx 2
 
 lds   ax, dword ptr ds:[bx + LINE_T.l_sidenum]      ; side1
 mov   bx, ds    ; side2
@@ -1520,7 +1521,7 @@ check_next_side:
 cmp   ax, -1
 je    done_checking_side
 
-SHIFT_MACRO shl ax 2
+SHIFT_MACRO_SMALL shl ax 2
 
 xchg  si, ax    ; shove this in si
 
@@ -1960,7 +1961,7 @@ je        iterate_to_next_special
 
 
 
-SHIFT_MACRO rol ax 5
+SHIFT_MACRO_SMALL rol ax 5
 
 
 ; put func bits (most sig 5) into least sig bits

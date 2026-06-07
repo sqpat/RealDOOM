@@ -75,7 +75,7 @@ mov   di, word ptr ds:[si + CEILING_T.ceiling_secnum]
 push  di ; bp - 2
 push  dx ; bp - 4
 
-SHIFT_MACRO shl di 4
+SHIFT_MACRO_SMALL shl di 4
 
 ; do a few thing used in both T_MovePlane call cases
 
@@ -280,7 +280,7 @@ div   di    ; calculate ceilingref
 
 
 mov   di, cx  ; set up di as secnum << 4 for sector/sector_physics lookups now
-SHIFT_MACRO shl   di, 4
+SHIFT_MACRO_SMALL shl   di, 4
 
 
 mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax

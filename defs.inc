@@ -104,7 +104,7 @@ _screen_segments = 					_NULL_OFFSET + 0007Eh
 _maskedtexture = 					_NULL_OFFSET + 00088h
 _map31_exists =                     _NULL_OFFSET + 00089h
 
-_spechit =       					_NULL_OFFSET + 0008Ah
+;_spechit =       					_NULL_OFFSET + 0008Ah
 ;_bombsource =       				_NULL_OFFSET + 0009Ah
 ;_bombspot =       					_NULL_OFFSET + 0009Ch
 ;_bombdamage =       				_NULL_OFFSET + 0009Eh
@@ -159,12 +159,12 @@ _TS_TimesInInterrupt = 				_NULL_OFFSET + 000F2h
 _TS_InInterrupt = 					_NULL_OFFSET + 000F3h
 _validcount_global =				_NULL_OFFSET + 000F4h
 _firstpatch =                       _NULL_OFFSET + 000F6h
-_numbraintargets = 					_NULL_OFFSET + 000F8h
-_braintargeton = 					_NULL_OFFSET + 000FAh
-_brainspit_easy = 					_NULL_OFFSET + 000FCh
-_floatok = 							_NULL_OFFSET + 000FDh
-_corpsehitRef = 					_NULL_OFFSET + 000FEh
-_vileobj = 							_NULL_OFFSET + 00100h
+;_numbraintargets = 					_NULL_OFFSET + 000F8h
+;_braintargeton = 					_NULL_OFFSET + 000FAh
+;_brainspit_easy = 					_NULL_OFFSET + 000FCh
+;_floatok = 							_NULL_OFFSET + 000FDh
+;_corpsehitRef = 					_NULL_OFFSET + 000FEh
+;_vileobj = 							_NULL_OFFSET + 00100h
 _fastparm =	                        _NULL_OFFSET + 00100h
 _gameskill =	                    _NULL_OFFSET + 00101h
 _TaskServiceCount =	                _NULL_OFFSET + 00102h
@@ -188,10 +188,10 @@ _screenblocks =            			_NULL_OFFSET + 0016Bh
 _lastvisplane =            			_NULL_OFFSET + 0016Ch
 _hudneedsupdate =                   _NULL_OFFSET + 0016Eh
 _gamestate =                        _NULL_OFFSET + 0016Fh
-_tmx =                             _NULL_OFFSET + 00170h
-_tmy =                             _NULL_OFFSET + 00174h
-_tmxmove =                         _NULL_OFFSET + 00178h
-_tmymove =                         _NULL_OFFSET + 0017Ch
+;_tmx =                             _NULL_OFFSET + 00170h
+;_tmy =                             _NULL_OFFSET + 00174h
+;_tmxmove =                         _NULL_OFFSET + 00178h
+;_tmymove =                         _NULL_OFFSET + 0017Ch
 
 _currentpageframes =     			_NULL_OFFSET + 00180h
 
@@ -339,7 +339,7 @@ _demo_p =            				 _NULL_OFFSET + 003D8h
 _DEMO_SEGMENT_PTR =  				 _NULL_OFFSET + 003DAh
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 003DCh
 
-_braintargets =                      _NULL_OFFSET + 003E0h
+;_braintargets =                      _NULL_OFFSET + 003E0h
 _tmbbox =                            _NULL_OFFSET + 00420h
 
 _SECTORS_SEGMENT_PTR =               _NULL_OFFSET + 00430h
@@ -464,7 +464,7 @@ _getStringByIndex_addr =             _NULL_OFFSET + 005B0h
 _M_AdvanceWriteFile_addr =           _NULL_OFFSET + 005B4h
 _M_AdvanceLoadFile_addr =            _NULL_OFFSET + 005B8h
 _playerMobj =                   	 _NULL_OFFSET + 005BCh
-_ceilinglinenum =                    _NULL_OFFSET + 005BEh
+;_ceilinglinenum =                    _NULL_OFFSET + 005BEh
 
 _lineopening =				         _NULL_OFFSET + 005C0h
 
@@ -473,8 +473,8 @@ _intercept_p =				         _NULL_OFFSET + 005C8h
 _aimslope = 				         _NULL_OFFSET + 005CCh
 _bestslidefrac =				     _NULL_OFFSET + 005D0h
 _bestslidelinenum =				     _NULL_OFFSET + 005D4h
-_numspechit =				         _NULL_OFFSET + 005D6h
-_lastcalculatedsector =				 _NULL_OFFSET + 005D8h
+;_numspechit =				         _NULL_OFFSET + 005D6h
+;_lastcalculatedsector =				 _NULL_OFFSET + 005D8h
 
 _shootthing =				 		 _NULL_OFFSET + 005DAh
 _shootz =				 			 _NULL_OFFSET + 005DCh
@@ -977,9 +977,16 @@ SHIFT_MACRO_SMALL MACRO instruction, register, count
 IF COMPISA GE COMPILE_186
 	&instruction &register, &count
 ELSE
-	REPT &count
-		&instruction &register, 1
-	ENDM
+	IF &count GE 4
+		push  cx
+		mov   cx, &count
+		&instruction &register, cl
+		pop   cx
+	ELSE
+		REPT &count
+			&instruction &register, 1
+		ENDM
+	ENDIF
 ENDIF
 
 ENDM
