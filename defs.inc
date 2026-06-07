@@ -472,19 +472,19 @@ _playerMobjRef =				     _NULL_OFFSET + 005C6h
 _intercept_p =				         _NULL_OFFSET + 005C8h
 _aimslope = 				         _NULL_OFFSET + 005CCh
 _bestslidefrac =				     _NULL_OFFSET + 005D0h
-_bestslidelinenum =				     _NULL_OFFSET + 005D4h
+;_bestslidelinenum =				     _NULL_OFFSET + 005D4h
 ;_numspechit =				         _NULL_OFFSET + 005D6h
 ;_lastcalculatedsector =				 _NULL_OFFSET + 005D8h
 
 _shootthing =				 		 _NULL_OFFSET + 005DAh
 _shootz =				 			 _NULL_OFFSET + 005DCh
-_la_damage = 		   			     _NULL_OFFSET + 005E0h
+;_la_damage = 		   			     _NULL_OFFSET + 005E0h
 
 _linetarget = 		   			     _NULL_OFFSET + 005E2h
 _linetarget_pos = 		   			 _NULL_OFFSET + 005E4h
 _attackrange16 = 		   			 _NULL_OFFSET + 005E8h
 _usergame =		   		         	 _NULL_OFFSET + 005EAh
-_crushchange = 		   			 	 _NULL_OFFSET + 005EBh
+;_crushchange = 		   			 	 _NULL_OFFSET + 005EBh
 _leveltime =     		   			 _NULL_OFFSET + 005ECh
 _I_SetPalette_FromMenu_addr = 		 _NULL_OFFSET + 005F0h
 
@@ -521,7 +521,7 @@ _am_max_scale_mtof =       		     _NULL_OFFSET + 0071Ch
 _newend = 				         	 _NULL_OFFSET + 00720h
 _pspritescale = 		         	 _NULL_OFFSET + 00722h
 _bulletslope = 			 			 _NULL_OFFSET + 00724h
-_weaponinfo = 			 			 _NULL_OFFSET + 00728h
+;_weaponinfo = 			 			 _NULL_OFFSET + 00728h
 _W_CheckNumForNameFar_addr =         _NULL_OFFSET + 0078Ch
 
 _gametime = 				         _NULL_OFFSET + 00790h
@@ -544,9 +544,9 @@ _doomsav0_string =  		       	 _NULL_OFFSET + 007C0h
 
 
 
-_startskill = 						 _NULL_OFFSET + 007CDh
-_startepisode = 					 _NULL_OFFSET + 007CEh
-_startmap = 						 _NULL_OFFSET + 007CFh
+;_startskill = 						 _NULL_OFFSET + 007CDh
+;_startepisode = 					 _NULL_OFFSET + 007CEh
+;_startmap = 						 _NULL_OFFSET + 007CFh
 
 
 _key_right =						 _NULL_OFFSET + 007D0h
@@ -569,7 +569,7 @@ _screen_oldloc =					 _NULL_OFFSET + 007E0h
 _old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
 _old_screen_botleft_y =				 _NULL_OFFSET + 007E6h
 
-_message_counter =					 _NULL_OFFSET + 007E8h
+;_message_counter =					 _NULL_OFFSET + 007E8h
 
 _levelTimer =						 _NULL_OFFSET + 007E9h
 _numlinespecials =					 _NULL_OFFSET + 007EAh

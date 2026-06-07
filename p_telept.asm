@@ -281,7 +281,7 @@ mov   es, bx
 
 mov   bx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 
-SHIFT_MACRO shr bx 2
+SHIFT_MACRO_SMALL shr bx 2
 
 and   bl, 0FEh  ; clear bottom bits. same as shr 3 shl 1
 

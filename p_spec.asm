@@ -128,7 +128,7 @@ found_sector_opening:
 
 ;		line_physics = &lines_physics[linenums[i]];
 
-SHIFT_MACRO shl       si, 4
+SHIFT_MACRO_SMALL shl       si, 4
 ; bx already has ptr.
 
 mov       dx, word ptr ds:[si + LINE_PHYSICS_T.lp_frontsecnum]
@@ -166,7 +166,7 @@ sub       sp, (MAX_ADJOINING_SECTORS_IN_WORDS)
 
 mov       cx, ax
 xchg      ax, bx
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 
@@ -215,7 +215,7 @@ loop_next_sector:
 lodsw   ; inc si 2
 
 xchg      ax, bx
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 
 mov       ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
 cmp       ax, di
@@ -259,7 +259,7 @@ mov       cx, SECTORS_SEGMENT
 mov       es, cx
 
 mov       bx, ax
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 
 mov       cx, word ptr es:[bx + SECTOR_T.sec_linecount]
 
@@ -293,7 +293,7 @@ xor       ch, ch
 loop_next_sector_floor:
 
 lodsw
-SHIFT_MACRO shl       ax 4
+SHIFT_MACRO_SMALL shl       ax 4
 xchg      ax, bx
 mov       ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
 cmp       ax, di ; compare to height..
@@ -341,7 +341,7 @@ sub       sp, MAX_ADJOINING_SECTORS_IN_WORDS
 
 mov       cx, ax
 xchg      ax, bx
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 mov       ax, SECTORS_SEGMENT
 mov       es, ax
 
@@ -388,7 +388,7 @@ loop_next_sector_ceiling:
 lodsw   ; inc si 2
 
 xchg      ax, bx
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 
 mov       ax, word ptr es:[bx + SECTOR_T.sec_ceilingheight]
 cmp       ax, di
@@ -485,7 +485,7 @@ sub       sp, MAX_ADJOINING_SECTORS_IN_WORDS  ; 400
 
 mov       cx, ax
 xchg      ax, bx
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 push      dx
 
@@ -525,7 +525,7 @@ loop_next_sector_light:
 lodsw   ; inc si 2
 
 xchg      ax, bx
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 
 mov       al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 cmp       al, dl
@@ -613,7 +613,7 @@ push      di
 push      bp
 mov       bp, sp
 xchg      ax, si  ; si gets linenum.
-SHIFT_MACRO shl       si 4
+SHIFT_MACRO_SMALL shl       si 4
 
 
 mov       ax, LINES_PHYSICS_SEGMENT
@@ -1012,7 +1012,7 @@ mov       dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]  ; dl holds thing type.
 
 mov       ax, LINES_PHYSICS_SEGMENT
 mov       es, ax
-SHIFT_MACRO shl       bx 2
+SHIFT_MACRO_SMALL shl       bx 2
 mov       si, bx
 
 mov       al, byte ptr es:[bx + si + LINE_PHYSICS_T.lp_tag]
@@ -1119,7 +1119,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 mov       di, word ptr ds:[_playerMobj]
 mov       bx, word ptr ds:[di + MOBJ_T.m_secnum]
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO_SMALL shl       bx 4
 mov       ax, SECTORS_SEGMENT
 mov       es, ax
 xor       ax, ax
@@ -1263,7 +1263,7 @@ jae       iter_next_anim_outer
 ;			pic = anim->basepic + (((leveltime.hu.fracbits >> 3)  + i) % anim->numpics);
 
 mov       ax, word ptr ds:[_leveltime]
-SHIFT_MACRO shr       ax 3
+SHIFT_MACRO_SMALL shr       ax 3
 
 xor       dx, dx
 add       ax, cx
@@ -1305,7 +1305,7 @@ mov       bx, cx
 sal       bx, 1
 mov       es, dx
 mov       di, word ptr es:[bx]
-SHIFT_MACRO shl       di 4
+SHIFT_MACRO_SMALL shl       di 4
 mov       ax, LINES_PHYSICS_SEGMENT
 mov       es, ax
 cmp       byte ptr es:[di + LINE_PHYSICS_T.lp_special], 48
@@ -1315,11 +1315,11 @@ jne       not_line_special_48
 
 mov       es, dx
 mov       bx, word ptr es:[bx]
-SHIFT_MACRO shl       bx 2
+SHIFT_MACRO_SMALL shl       bx 2
 mov       ax, LINES_SEGMENT
 mov       es, ax
 mov       bx, word ptr es:[bx + LINE_T.l_sidenum]
-SHIFT_MACRO shl       bx 3
+SHIFT_MACRO_SMALL shl       bx 3
 mov       ax, SIDES_SEGMENT
 mov       es, ax
 inc       word ptr es:[bx + SIDE_T.s_textureoffset]
@@ -1340,12 +1340,12 @@ je        iter_next_button
 dec       word ptr ds:[si + BUTTON_T.button_btimer]
 jne       iter_next_button
 mov       di, word ptr ds:[si + BUTTON_T.button_linenum]
-SHIFT_MACRO shl       di, 2
+SHIFT_MACRO_SMALL shl       di, 2
 mov       ax, LINES_SEGMENT
 mov       es, ax
 mov       di, word ptr es:[di + LINE_T.l_sidenum] ; side 0
 mov       dl, byte ptr ds:[si + BUTTON_T.button_where]
-SHIFT_MACRO shl       di, 3
+SHIFT_MACRO_SMALL shl       di, 3
 mov       cx, SIDES_SEGMENT
 mov       es, cx
 
@@ -1447,7 +1447,7 @@ jl        exit_evdodonut_return_1
 mov       word ptr [bp - 4], ax ; s1
 
 xchg      ax, bx
-SHIFT_MACRO shl       bx, 4
+SHIFT_MACRO_SMALL shl       bx, 4
 mov       [bp - 6], bx  ; s1 << 4
 
 ; bx is s1.
@@ -1468,7 +1468,7 @@ mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
 sal       si, 1
 mov       bx, word ptr ds:[si + _linebuffer]
 ; bx is s1->line[0]
-SHIFT_MACRO shl       bx, 4
+SHIFT_MACRO_SMALL shl       bx, 4
 mov       ax, LINES_PHYSICS_SEGMENT
 mov       es, ax
 mov       ax, es:[bx + LINE_PHYSICS_T.lp_backsecnum]
@@ -1478,7 +1478,7 @@ mov       ax, es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
 use_backsecnum:
 mov       [bp - 8], ax
 xchg      ax, bx
-SHIFT_MACRO shl       bx, 4
+SHIFT_MACRO_SMALL shl       bx, 4
 
 
 ; bx   is s2. s2 is s1's line[0] opposing side. nothing more..
@@ -1502,7 +1502,7 @@ mov     ax, LINEFLAGSLIST_SEGMENT
 mov     es, ax
 test    byte ptr es:[di], ML_TWOSIDED
 jz      iter_inner_loop
-SHIFT_MACRO shl       di, 4
+SHIFT_MACRO_SMALL shl       di, 4
 mov     ax, LINES_PHYSICS_SEGMENT
 mov     es, ax
 mov     dx, es:[di + LINE_PHYSICS_T.lp_backsecnum]  ; dx is s3.
@@ -1534,7 +1534,7 @@ mov       word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdata
 
 pop       bx  ; restore s3.
 
-SHIFT_MACRO shl       bx, 4  ; bx is s3.
+SHIFT_MACRO_SMALL shl       bx, 4  ; bx is s3.
 
 mov       es, word ptr [bp - 0Ah]
 mov       al, byte ptr es:[bx + SECTOR_T.sec_floorpic]

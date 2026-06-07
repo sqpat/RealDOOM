@@ -61,7 +61,7 @@ push   bx
 push   ax  ; backup lump
 call   dword ptr ds:[_W_LumpLength_addr]
 
-SHIFT_MACRO  shr ax 2   ; div by 4 size of numvertexes
+SHIFT_MACRO_SMALL  shr ax 2   ; div by 4 size of numvertexes
 mov    word ptr ds:[_numvertexes], ax  
 
 
@@ -151,10 +151,10 @@ mov    dx, SCRATCH_SEGMENT_8000
 mov    ds, dx
 
 lodsw
-SHIFT_MACRO shl ax 3
+SHIFT_MACRO_SMALL shl ax 3
 stosw  ; floorheight
 lodsw
-SHIFT_MACRO shl ax 3
+SHIFT_MACRO_SMALL shl ax 3
 stosw  ; ceilingheight
 
 push   ss
@@ -334,7 +334,7 @@ and    ax, 07Fh     ; rowoffsets only make sense being 0-7F
 stosw   ; siderender_t rowoffset        ; TODO store as byte somewhere else.
 mov    ax, word ptr ds:[si + (MAPSIDEDEF_T.mapsidedef_sector - MAPSIDEDEF_T.mapsidedef_toptexture)]  ; + 24, read ahead..
 
-SHIFT_MACRO rol ax 4   ; preserves negative 1 case
+SHIFT_MACRO_SMALL rol ax 4   ; preserves negative 1 case
 stosw   ; siderender_t secnum, done
 
 xchg   bx, di
@@ -543,12 +543,12 @@ xchg ax, bx
 
 
 
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO_SMALL shl bx 2
 mov  ds, word ptr ss:[_VERTEXES_SEGMENT_PTR]
 mov  ax, word ptr ds:[bx + 0]
 mov  bx, word ptr ds:[bx + 2]
 xchg bx, dx
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO_SMALL shl bx 2
 
 xor  cx, cx ; flags to OR to v2Offset
 
@@ -596,7 +596,7 @@ mov  dl, al ; dx = tag low special high
 ; line offset = (line_physics >> 2) - 2
 ; shift 2 to get the line index for a given line_physics
 mov   cx, di   ; back up
-SHIFT_MACRO shr di 2
+SHIFT_MACRO_SMALL shr di 2
 
 ; di was offset by 8, or 2 after 2 shifts. so undo that..
 dec   di
@@ -659,23 +659,23 @@ jmp   done_checking_flags
 
 calc_secnum_0:
 xchg ax, bx
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO_SMALL shl bx 2
 push es
 mov  ax, SIDES_RENDER_9000_SEGMENT
 mov  es, ax
 mov  ax, word ptr es:[bx + SIDE_RENDER_T.sr_secnum]
-SHIFT_MACRO sar ax 4   ; todo propagate shifted 4
+SHIFT_MACRO_SMALL sar ax 4   ; todo propagate shifted 4
 pop  es
 jmp  store_secnum_0
 
 calc_secnum_1:
 xchg ax, bx
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO_SMALL shl bx 2
 push es
 mov  ax, SIDES_RENDER_9000_SEGMENT
 mov  es, ax
 mov  ax, word ptr es:[bx + SIDE_RENDER_T.sr_secnum]
-SHIFT_MACRO sar ax 4   ; todo propagate shifted 4
+SHIFT_MACRO_SMALL sar ax 4   ; todo propagate shifted 4
 pop  es
 jmp  store_secnum_1
 
@@ -692,7 +692,7 @@ mov    si, ax  ; back up lump
 call   dword ptr ds:[_W_LumpLength_addr]
 
 
-SHIFT_MACRO  shr ax 2   ; SIZE MAPSUBSECTOR_T
+SHIFT_MACRO_SMALL  shr ax 2   ; SIZE MAPSUBSECTOR_T
 mov    word ptr ds:[_numsubsectors], ax      ; todo is this field ever actually used? 
 ;	FAR_memset(subsectors, 0, MAX_SUBSECTORS_SIZE);
 
@@ -742,7 +742,7 @@ shl    di, 1
 dec    di
 shl    di, 1   ; gets us offset 2 in the previous dword index
 stosw                   ; 		subsectors[i].firstline = (ms->firstseg);
-SHIFT_MACRO  shr di 2
+SHIFT_MACRO_SMALL  shr di 2
 
 
 loop   loop_next_subsector
@@ -898,11 +898,11 @@ push   cx
 push   es
 ; preshift v1/v2!
 lodsw 
-SHIFT_MACRO shl ax 2
+SHIFT_MACRO_SMALL shl ax 2
 stosw ; v1
 
 lodsw 
-SHIFT_MACRO shl ax 2
+SHIFT_MACRO_SMALL shl ax 2
 stosw ; v2
 
 mov    ax, SEG_NORMALANGLES_9000_SEGMENT
@@ -911,7 +911,7 @@ mov    es, ax
 
 ; seg_normalangles_9000[i] = MOD_FINE_ANGLE((mlangle >> SHORTTOFINESHIFT) + FINE_ANG90);
 lodsw  ; angle
-SHIFT_MACRO shr ax 3   
+SHIFT_MACRO_SMALL shr ax 3   
 add    ax, FINE_ANG90
 and    ah, FINE_ANGLE_HIGH_BYTE
 mov    word ptr es:[bx], ax
@@ -931,7 +931,7 @@ mov    byte ptr es:[bx + seg_sides_offset_in_seglines], al
 
 mov    es, word ptr ss:[_LINEFLAGSLIST_SEGMENT_PTR]
 mov    dl, byte ptr es:[bp]  ; get flags
-SHIFT_MACRO shl bp 2
+SHIFT_MACRO_SMALL shl bp 2
 
 
 mov    es, word ptr ss:[_LINES_SEGMENT_PTR]
@@ -949,7 +949,7 @@ pop    es  ;  ; base pointer for di
 
 movsw   ; sr_offset
 xchg   ax, bp
-SHIFT_MACRO shl ax 2
+SHIFT_MACRO_SMALL shl ax 2
 stosw   ; sr_sidedefOffset  preshifted 2
 
 ; ax has ldefsidenum
@@ -958,7 +958,7 @@ stosw   ; sr_sidedefOffset  preshifted 2
 ;    sidesecnum = sides_render_9000[ldefsidenum].secnum;
 ;    othersidesecnum = sides_render_9000[ldefothersidenum].secnum;
 
-SHIFT_MACRO  shl bx 2   ; for tempsecnums dword offset
+SHIFT_MACRO_SMALL  shl bx 2   ; for tempsecnums dword offset
 
 
 xchg   ax, bp
@@ -969,7 +969,7 @@ mov    cx, SIDES_RENDER_9000_SEGMENT
 mov    es, cx
 
 mov    bp, word ptr es:[bp + SIDE_RENDER_T.sr_secnum]
-SHIFT_MACRO sar bp 4   ; todo propagate shifted 4
+SHIFT_MACRO_SMALL sar bp 4   ; todo propagate shifted 4
 
 xchg   ax, bp   ; ax gets sidesecnum value. bp gets ldefothersidenum
 
@@ -984,7 +984,7 @@ pop    es
 mov    word ptr ds:[bx + TEMPSECNUMS_OFFSET + 0], ax  ; 5000 segment
 mov    word ptr ds:[bx + TEMPSECNUMS_OFFSET + 2], dx  ; 5000 segment
 
-SHIFT_MACRO  shr bx 1  ; word ptr again
+SHIFT_MACRO_SMALL  shr bx 1  ; word ptr again
 
 inc    bx   ; increment word offset
 inc    bx
@@ -1009,9 +1009,9 @@ ret
 
 calc_second_secnum:
 
-SHIFT_MACRO  shl bp 2
+SHIFT_MACRO_SMALL  shl bp 2
 mov    dx, word ptr es:[bp + SIDE_RENDER_T.sr_secnum]
-SHIFT_MACRO sar dx 4   ; todo propagate shifted 4
+SHIFT_MACRO_SMALL sar dx 4   ; todo propagate shifted 4
 
 
 jmp  got_second_secnum
@@ -1038,7 +1038,7 @@ loop_next_line_lookup:
 
 lodsw
 xchg   ax, bx
-SHIFT_MACRO shl bx 3
+SHIFT_MACRO_SMALL shl bx 3
 mov    es, dx ; SEGS_RENDER_9000_SEGMENT
 mov    bx, word ptr es:[bx + SEG_RENDER_T.sr_sidedefOffset] ; size 4 per. preshifted 2
 
@@ -1072,7 +1072,7 @@ lodsw
 mov    dx, ax  ; unshifted copy
 xchg   ax, bx  ; linefrontsecnum in bx
 lodsw          ; linebacksecnum  in ax
-SHIFT_MACRO  shl bx 4
+SHIFT_MACRO_SMALL  shl bx 4
 inc    word ptr es:[bx + di]
 
 test   ax, ax
@@ -1081,7 +1081,7 @@ cmp    ax, dx
 je     dont_count_backsecnum
 
 xchg   ax, bx  ; linebacksecnum
-SHIFT_MACRO  shl bx 4
+SHIFT_MACRO_SMALL  shl bx 4
 inc    word ptr es:[bx + di]
 
 
@@ -1139,7 +1139,7 @@ jb     loop_next_sector_line
 mov    ax, SECTORS_SOUNDORGS_SEGMENT
 mov    es, ax
 
-SHIFT_MACRO shl si 2  ; dword ptr
+SHIFT_MACRO_SMALL shl si 2  ; dword ptr
 
 pop    ax ; BOXTOP
 pop    dx ; BOXBOTTOM
@@ -1216,7 +1216,7 @@ les    bx, dword ptr es:[bx + LINE_PHYSICS_T.lp_v1Offset]
 mov    ax, es
 and    ax, VERTEX_OFFSET_MASK   ; v2
 mov    es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO_SMALL shl bx 2
 
 push   ax                     ; v2
 les    ax, dword ptr es:[bx]  ; v1.x
@@ -1227,7 +1227,7 @@ mov    bx, di                 ; bbox
 call   M_AddToBox16_PSetup_
 
 pop    bx                     ; v2
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO_SMALL shl bx 2
 mov    es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 les    ax, dword ptr es:[bx]  ; v2.x
 mov    dx, es                 ; v2.y
@@ -1253,7 +1253,7 @@ PROC    set_blockbox_high_ NEAR
 
 sub    ax, cx
 add    ax, MAXRADIUSNONFRAC
-SHIFT_MACRO sar ax 7
+SHIFT_MACRO_SMALL sar ax 7
 cmp    ax, si
 jl     dont_cap_high
 xchg   ax, si   ; only can happen once, xchg is fine
@@ -1278,7 +1278,7 @@ PROC    set_blockbox_low_ NEAR
 sub    ax, cx
 sub    ax, MAXRADIUSNONFRAC
 js     cap_low
-SHIFT_MACRO sar ax 7
+SHIFT_MACRO_SMALL sar ax 7
 jmp    dont_cap_low
 
 cap_low:

@@ -79,7 +79,7 @@ mov   si, SIDES_SEGMENT
 mov   es, si
 
 mov   si, SFX_SWTCHN
-SHIFT_MACRO shl   bx 3
+SHIFT_MACRO_SMALL shl   bx 3
 
 ; i think people dont like change... lets not fix this bug, and lets use the 'original' switch sfx. uncomment to fix the bug in vanilla
 COMMENT  @
@@ -108,7 +108,7 @@ jne   dont_mark_unusable
 mov   bx, LINES_PHYSICS_SEGMENT
 mov   es, bx
 mov   bx, word ptr [bp - 6]
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 mov   byte ptr es:[bx + LINE_PHYSICS_T.lp_special], 0
 mov   ax, ((OFFSET exit_p_changeswitchtexture - OFFSET SELFMODIFY_changeswitchtexture_useagain_AFTER) SHL 8) + 0EBh ; jump
 dont_mark_unusable:
@@ -117,7 +117,7 @@ mov   word ptr cs:[SELFMODIFY_changeswitchtexture_useagain], ax
 
 xor   bx, bx
 mov   ax, word ptr ds:[_numswitches]
-SHIFT_MACRO shl ax 2  ; word compare num switches * 2
+SHIFT_MACRO_SMALL shl ax 2  ; word compare num switches * 2
 
 ALIGN_MACRO
 check_next_switch:
@@ -306,7 +306,7 @@ mov   di, dx
 mov   bx, LINES_PHYSICS_SEGMENT
 mov   es, bx
 mov   bx, di  ; linenum
-SHIFT_MACRO sal bx 4
+SHIFT_MACRO_SMALL sal bx 4
 
 mov   dx, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
 mov   al, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
@@ -343,7 +343,7 @@ xor   ah, ah
 mov   si, LINES_SEGMENT
 mov   es, si
 mov   si, di
-SHIFT_MACRO sal   si 2
+SHIFT_MACRO_SMALL sal   si 2
 push  bx    ; bp - 2 linespecial 
 push  word ptr es:[si + LINE_T.l_sidenum]  ; bp - 4 lineside0
 mov   si, dx   ; linesecnum in si too

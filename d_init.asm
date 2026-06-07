@@ -710,9 +710,9 @@ not_demo:
 
 mov   cx, 1
 mov   byte ptr cs:[_autostart], ch     ; 0/false
-mov   byte ptr ds:[_startepisode], cl  ; 1
-mov   byte ptr ds:[_startmap], cl  ; 1
-mov   byte ptr ds:[_startskill], SK_MEDIUM
+mov   byte ptr cs:[_startepisode+1], cl  ; 1
+mov   byte ptr cs:[_startmap+1], cl  ; 1
+mov   byte ptr cs:[_startskill+1], SK_MEDIUM
 dec   dx  ; 1
 
 mov   ax, OFFSET str_skill
@@ -728,7 +728,7 @@ jnl   not_skill
     mov   si, word ptr ds:[bx + si]
     lodsb 
     sub   al, '1'
-    mov   byte ptr ds:[_startskill], al    ;    startskill = myargv[p + 1][0] - '1';
+    mov   byte ptr cs:[_startskill+1], al    ;    startskill = myargv[p + 1][0] - '1';
     mov   byte ptr cs:[_autostart], cl     ;    autostart = true;
 
 not_skill:
@@ -746,9 +746,9 @@ jnl   not_episode
     mov   si, word ptr ds:[bx + si]
     lodsb
     
-    mov   byte ptr ds:[_startepisode], al  ;    startepisode = myargv[p + 1][0] - '0';
-    mov   byte ptr ds:[_startmap], cl      ;    startmap = 1;
-    mov   byte ptr cs:[_autostart], cl     ;    autostart = true;
+    mov   byte ptr cs:[_startepisode+1], al  ;    startepisode = myargv[p + 1][0] - '0';
+    mov   byte ptr cs:[_startmap+1], cl      ;    startmap = 1;
+    mov   byte ptr cs:[_autostart+1], cl     ;    autostart = true;
 
 not_episode:
 
@@ -787,7 +787,7 @@ jnl   not_warp
     not_commercial_warp:
 
     sub   al, '0'
-    mov   byte ptr ds:[_startepisode], al  ;    startepisode = myargv[p + 1][0] - '0';
+    mov   byte ptr cs:[_startepisode+1], al  ;    startepisode = myargv[p + 1][0] - '0';
     mov   si, dx    ; myargv[p + 2]
     lodsb
     sub   al, '0'
@@ -795,7 +795,7 @@ jnl   not_warp
     ja    skip_warp_bad_param
 
     set_start_map:
-    mov   byte ptr ds:[_startmap], al      ;    startmap = 1;
+    mov   byte ptr cs:[_startmap+1], al      ;    startmap = 1;
 
     mov   byte ptr cs:[_autostart], cl     ;    autostart = true;
 
@@ -1243,9 +1243,12 @@ autostart:
 xor  ax, ax
 cwd
 mov  bx, ax
-mov  al, byte ptr ds:[_startskill]
-mov  dl, byte ptr ds:[_startepisode]
-mov  bl, byte ptr ds:[_startmap]
+_startskill:
+mov  al, 1
+_startepisode:
+mov  dl, 1
+_startmap:
+mov  bl, 1
 call G_InitNew_
 jmp  exit_doommain
 not_autostart:

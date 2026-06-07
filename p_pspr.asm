@@ -53,6 +53,39 @@ ENDP
 
 
 ALIGN_MACRO
+
+_weaponinfo:
+; fist
+db AM_NOAMMO
+dw S_PUNCHUP, S_PUNCHDOWN, S_PUNCH, S_PUNCH1, S_NULL
+; pistol
+db AM_CLIP
+dw S_PISTOLUP, S_PISTOLDOWN, S_PISTOL, S_PISTOL1, S_PISTOLFLASH
+; shotgun
+db AM_SHELL
+dw S_SGUNUP, S_SGUNDOWN, S_SGUN, S_SGUN1, S_SGUNFLASH1
+; chaingun
+db AM_CLIP
+dw S_CHAINUP, S_CHAINDOWN, S_CHAIN, S_CHAIN1, S_CHAINFLASH1
+; missile launcher
+db AM_MISL
+dw S_MISSILEUP, S_MISSILEDOWN, S_MISSILE, S_MISSILE1, S_MISSILEFLASH1
+; plasma rifle
+db AM_CELL
+dw S_PLASMAUP, S_PLASMADOWN, S_PLASMA, S_PLASMA1, S_PLASMAFLASH1
+; bfg 9000
+db AM_CELL
+dw S_BFGUP, S_BFGDOWN, S_BFG, S_BFG1, S_BFGFLASH1
+; chainsaw
+db AM_NOAMMO
+dw S_SAWUP, S_SAWDOWN, S_SAW, S_SAW1, S_NULL
+; super shotgun
+db AM_SHELL
+dw S_DSGUNUP, S_DSGUNDOWN, S_DSGUN, S_DSGUN1, S_DSGUNFLASH1
+
+public _weaponinfo
+
+ALIGN_MACRO
 PROC   P_BringUpWeapon_ NEAR
 PUBLIC P_BringUpWeapon_
  
@@ -66,7 +99,7 @@ mov   al, (SIZE WEAPONINFO_T)
 mul   byte ptr ds:[_player + PLAYER_T.player_pendingweapon]
 xchg  ax, bx
 
-mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_upstate]
+mov   dx, word ptr cs:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_upstate]
 mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_NOCHANGE
 xor   ax, ax
 mov   word ptr ds:[_psprites + (PS_WEAPON * (SIZE PSPDEF_T) + PSPDEF_T).pspdef_sy + 0], ax   ; WEAPONBOTTOM_LOW
@@ -97,7 +130,7 @@ push  dx
 mov   al, (SIZE WEAPONINFO_T)
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
-mov   al, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
+mov   al, byte ptr cs:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 cmp   byte ptr ds:[_player + PLAYER_T.player_readyweapon], WP_BFG
 jne   readyweapon_not_bfg
 mov   dx, BFGCELLS ; use 40 ammo per shot
@@ -208,7 +241,7 @@ xchg  ax, bx
 
 ; pending weapon has been set.
 ; set state to current weapon's down state.
-mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
+mov   dx, word ptr cs:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 
 xor   ax, ax
 call  P_SetPsprite_  ; change weapon anim
@@ -241,7 +274,7 @@ call  P_SetMobjState_
 mov   al, (SIZE WEAPONINFO_T)
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
-mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_atkstate]
+mov   dx, word ptr cs:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_atkstate]
 xor   ax, ax
 call  P_SetPsprite_
 call  P_NoiseAlert_
@@ -263,7 +296,7 @@ push  dx
 mov   al, (SIZE WEAPONINFO_T)
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
-mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
+mov   dx, word ptr cs:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 xor   ax, ax
 call  P_SetPsprite_
 pop   dx
@@ -327,7 +360,7 @@ mov   al, (SIZE WEAPONINFO_T)
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 xor   ax, ax
-mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
+mov   dx, word ptr cs:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_downstate]
 call  P_SetPsprite_
 ret   
 
@@ -450,7 +483,7 @@ mov   al, (SIZE WEAPONINFO_T)
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 xor   ax, ax
-mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_readystate]
+mov   dx, word ptr cs:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_readystate]
 call  P_SetPsprite_
 ret   
 
@@ -468,7 +501,7 @@ mov   al, (SIZE WEAPONINFO_T)
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 mov   ax, 1
-mov   dx, word ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
+mov   dx, word ptr cs:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_flashstate]
 call  P_SetPsprite_
 ret   
 
@@ -766,7 +799,7 @@ PUBLIC A_FirePlasma_
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)]
 call  P_Random_
 and   al, 1
-mov   dx, word ptr ds:[_weaponinfo + (WP_PLASMA * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
+mov   dx, word ptr cs:[_weaponinfo + (WP_PLASMA * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
 add   dx, ax
 mov   al, PS_FLASH
 call  P_SetPsprite_
@@ -909,7 +942,7 @@ call  P_SetMobjState_
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]
 mov   ax, PS_FLASH
-mov   dx, word ptr ds:[_weaponinfo + (WP_PISTOL * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
+mov   dx, word ptr cs:[_weaponinfo + (WP_PISTOL * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
 
 
 call  P_SetPsprite_
@@ -940,7 +973,7 @@ call  P_SetMobjState_
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)]
 mov   ax, PS_FLASH
-mov   dx, word ptr ds:[_weaponinfo + (WP_SHOTGUN * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
+mov   dx, word ptr cs:[_weaponinfo + (WP_SHOTGUN * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
 call  P_SetPsprite_
 call  P_BulletSlope_
 xor   dl, dl
@@ -984,7 +1017,7 @@ sub   word ptr ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)], 2
 
 
 mov   ax, PS_FLASH
-mov   dx, word ptr ds:[_weaponinfo + (WP_SUPERSHOTGUN * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
+mov   dx, word ptr cs:[_weaponinfo + (WP_SUPERSHOTGUN * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
 call  P_SetPsprite_
 
 ;    P_BulletSlope ();
@@ -1071,7 +1104,7 @@ mov   ax, word ptr ds:[_playerMobj]
 call  P_SetMobjState_
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]
-mov   dx, word ptr ds:[_weaponinfo + (WP_CHAINGUN * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
+mov   dx, word ptr cs:[_weaponinfo + (WP_CHAINGUN * (SIZE WEAPONINFO_T) + WEAPONINFO_T).weaponinfo_flashstate]
 add   dx, word ptr ds:[bx + PSPDEF_T.pspdef_statenum]
 sub   dx, S_CHAIN1
 mov   ax, PS_FLASH

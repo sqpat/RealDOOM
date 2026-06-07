@@ -37,7 +37,8 @@ EXTRN _w_title:NEAR
 
 .CODE
 
-
+_message_counter:
+db 0
 
 HU_MSGTIMEOUT = 4 * TICRATE
 HU_MSGREFRESH = KEY_ENTER
@@ -219,13 +220,13 @@ sub   sp, 0100h
 
 xor   ax, ax
 
-cmp   byte ptr ds:[_message_counter], al
+cmp   byte ptr cs:[_message_counter], al
 je    dont_reset_count
-dec   byte ptr ds:[_message_counter]
+dec   byte ptr cs:[_message_counter]
 jnz   dont_reset_count
 
 ; already zero
-;mov   byte ptr ds:[_message_counter], al ; 0
+;mov   byte ptr cs:[_message_counter], al ; 0
 mov   word ptr ds:[_message_on], ax      ; 0   ; gets both
 ; redraw hud ?
 mov   byte ptr ds:[_borderdrawcount], 3
@@ -287,7 +288,7 @@ mov   word ptr ds:[_player + PLAYER_T.player_message], -1
 skip_getting_string:
 
 mov   byte ptr ds:[_message_on], 1
-mov   byte ptr ds:[_message_counter], HU_MSGTIMEOUT
+mov   byte ptr cs:[_message_counter], HU_MSGTIMEOUT
 mov   al, byte ptr ds:[_message_dontfuckwithme]
 mov   byte ptr ds:[_message_nottobefuckedwith], al
 mov   byte ptr ds:[_message_dontfuckwithme], 0
@@ -322,7 +323,7 @@ jne   exit_hu_responder
 cmp   al, HU_MSGREFRESH
 jne   exit_hu_responder
 mov   byte ptr ds:[_message_on], 1
-mov   byte ptr ds:[_message_counter], HU_MSGTIMEOUT
+mov   byte ptr cs:[_message_counter], HU_MSGTIMEOUT
 exit_hu_responder:
 pop   bx
 retf   

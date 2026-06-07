@@ -403,7 +403,7 @@ je    not_on_ground_cant_move
 ; onground known true.
 
 mov   si, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
-SHIFT_MACRO shr si SHORTTOFINESHIFT
+SHIFT_MACRO_SMALL shr si SHORTTOFINESHIFT
 
 mov   dx, word ptr ds:[_player + PLAYER_T.player_cmd_forwardmove] ; sidemove in dh
 
@@ -682,7 +682,7 @@ done_with_player_movement:
 call  P_CalcHeight_
 
 mov   si, word ptr ds:[si + MOBJ_T.m_secnum]
-SHIFT_MACRO shl   si 4
+SHIFT_MACRO_SMALL shl   si 4
 
 cmp   byte ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dl ; 0 
 je    skip_player_sector_special
@@ -698,7 +698,7 @@ test  al, BT_CHANGE
 je   check_for_use
 
 and   ax, BT_WEAPONMASK  ; 8 + 16 + 32
-SHIFT_MACRO shr   ax, BT_WEAPONSHIFT
+SHIFT_MACRO_SMALL shr   ax, BT_WEAPONSHIFT
 test  al, al 
 jne   not_chainsaw
 cmp   byte ptr ds:[bx + PLAYER_T.player_weaponowned + WP_CHAINSAW], dl

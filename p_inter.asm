@@ -41,6 +41,7 @@ EXTRN FixedMulTrigNoShiftSine_MapLocal_:NEAR
 EXTRN FixedMulTrigNoShiftCosine_MapLocal_:NEAR
 EXTRN FastDiv32u16u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
+EXTRN _weaponinfo:WORD
 
 
 .DATA
@@ -214,7 +215,7 @@ mov    al, (SIZE WEAPONINFO_T)
 mul    bl
 xchg   ax, bx
 ; al has weapontype again
-mov    dh, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
+mov    dh, byte ptr cs:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
 cmp    dh, AM_NOAMMO
 jne    do_give_ammo
 xchg   ax, bx  ; bx has weapontype.

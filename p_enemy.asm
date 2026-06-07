@@ -172,7 +172,7 @@ push    di
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   di, ax ; di stores secnum for the function.
 xchg  ax, bx
-SHIFT_MACRO shl   bx 4
+SHIFT_MACRO_SMALL shl   bx 4
 mov   ax, word ptr es:[bx + SECTOR_T.sec_validcount]
 
 cmp   ax, word ptr ds:[_validcount_global]
@@ -240,9 +240,9 @@ test  dh, ML_TWOSIDED
 je    continue_recursive_sound_loop
 
 mov   es, word ptr ds:[_LINES_SEGMENT_PTR]
-SHIFT_MACRO shl   si 2  ; si has line number.
+SHIFT_MACRO_SMALL shl   si 2  ; si has line number.
 mov   ax, word ptr es:[si + LINE_T.l_sidenum + 2]    ; back side
-SHIFT_MACRO shl   si 2  ; si shifted 4
+SHIFT_MACRO_SMALL shl   si 2  ; si shifted 4
 
 mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
@@ -1775,7 +1775,7 @@ call  P_Random_
 
 sub   bx, ax
 mov   es, cx
-SHIFT_MACRO shl   bx 5
+SHIFT_MACRO_SMALL shl   bx 5
 add   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], bx
 exit_a_facetarget:
 POPA_NO_AX_OR_BP_MACRO
@@ -1804,7 +1804,7 @@ mov   dx, MOBJPOSLIST_SEGMENT
 mov   es, dx
 mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 mov   ax, si
-SHIFT_MACRO shr   cx, 3
+SHIFT_MACRO shr   cx 3
 mov   bx, MISSILERANGE
 mov   dx, cx
 
@@ -1888,7 +1888,7 @@ call  A_FaceTarget_
 mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-SHIFT_MACRO shr   dx 3
+SHIFT_MACRO_SMALL shr   dx 3
 
 ;    slope = P_AimLineAttack (actor, bangle, MISSILERANGE);
 
@@ -2245,7 +2245,7 @@ div   cl
 mov   al, ah
 cbw
 inc   ax
-SHIFT_MACRO sal  ax 2
+SHIFT_MACRO_SMALL sal  ax 2
 xchg  ax, cx
 
 

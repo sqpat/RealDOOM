@@ -96,6 +96,12 @@ _lastcalculatedsector:
 dw 0
 _ceilinglinenum:
 dw 0
+_la_damage:
+dw 0
+
+
+_crushchange:
+db 0
 
 
 public _tmfloorz
@@ -3113,7 +3119,7 @@ jae   exit_slidetraverse_return_0
 record_bestslide:
 mov   word ptr ds:[_bestslidefrac+2], ax
 mov   word ptr ds:[_bestslidefrac+0], dx
-mov   word ptr ds:[_bestslidelinenum], cx
+mov   word ptr cs:[_bestslidelinenum+1], cx
 exit_slidetraverse_return_0:
 clc
 POPA_NO_AX_OR_BP_MACRO   
@@ -3228,7 +3234,7 @@ mov   ax, word ptr cs:[_tmceilingz]
 sub   ax, word ptr cs:[_tmfloorz]
 
 IF COMPISA GE COMPILE_186
-	SHIFT_MACRO sar   ax 3
+	SHIFT_MACRO_SMALL sar   ax 3
 ELSE 
     ; this is here because on 8086 an above rel jump is too far... urgh. revisit?
 	mov cl, 3
@@ -5231,7 +5237,8 @@ mov   word ptr cs:[_tmymove+2], dx
 
 ;    P_HitSlideLine (bestslidelinenum);	// clip the moves
 
-mov   ax, word ptr ds:[_bestslidelinenum]
+_bestslidelinenum:
+mov   ax, 01000h
 call  P_HitSlideLine_
 
 
@@ -5918,7 +5925,7 @@ call  P_SpawnPuff_
 
 
 done_spawning_blood_or_puff:
-mov   cx, word ptr ds:[_la_damage]
+mov   cx, word ptr cs:[_la_damage]
 test  cx, cx
 je    exit_aimtraverse_return_0
 do_damage:
@@ -6018,7 +6025,7 @@ jbe   dont_set_tics_to_1_blood
 set_tics_to_1_blood:
 mov   byte ptr ds:[bx + 01Bh], 1
 dont_set_tics_to_1_blood:
-mov   ax, word ptr ds:[_la_damage]
+mov   ax, word ptr cs:[_la_damage]
 cmp   ax, 12
 jg    continue_draw_check
 cmp   ax, 9
@@ -7098,7 +7105,7 @@ push  bx				; bp - 0Eh
 
 
 mov   ax, word ptr [bp + 0Eh]
-mov   word ptr ds:[_la_damage], ax
+mov   word ptr cs:[_la_damage], ax
 
 
 
@@ -7808,7 +7815,7 @@ jne   crunch_items
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_SHOOTABLE
 je    exit_changesector_return_1
 mov   byte ptr cs:[OFFSET SELFMODIFY_dochangesector_return - OFFSET P_SIGHT_STARTMARKER_], STC_OPCODE
-cmp   byte ptr ds:[_crushchange], 0
+cmp   byte ptr cs:[_crushchange], 0
 je    exit_changesector_return_1
 test  byte ptr ds:[_leveltime], 3
 je    not_leveltime_mod_3
@@ -7924,7 +7931,7 @@ push  cx
 push  si
 push  di
 
-mov   byte ptr ds:[_crushchange], bl
+mov   byte ptr cs:[_crushchange], bl
 mov   byte ptr cs:[OFFSET SELFMODIFY_dochangesector_return - OFFSET P_SIGHT_STARTMARKER_], CLC_OPCODE
 
 add   ax, OFFSET _sectors_physics

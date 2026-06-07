@@ -36,6 +36,7 @@ EXTRN V_CopyRect_:NEAR
 EXTRN P_GivePower_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 EXTRN Z_QuickMapPhysics_Physics_:NEAR
+EXTRN _weaponinfo:WORD
 
 
 
@@ -1036,7 +1037,7 @@ mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 
 
-mov   al, byte ptr ds:[bx + _weaponinfo]
+mov   al, byte ptr cs:[bx + _weaponinfo]
 cmp   al, AM_NOAMMO
 
 mov   dx, 1994

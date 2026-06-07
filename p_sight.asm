@@ -511,7 +511,7 @@ PROC    P_DivlineSideNode_ NEAR
 PUBLIC  P_DivlineSideNode_
 
 
-SHIFT_MACRO shl si 3
+SHIFT_MACRO_SMALL shl si 3
 
 ; es is NODES_SEGMENT
 cmp   word ptr es:[si + 4], 0
@@ -649,7 +649,7 @@ mov   ax, SUBSECTOR_LINES_SEGMENT
 mov   es, ax
 mov   dx, SUBSECTORS_SEGMENT
 mov   al, byte ptr es:[bx]			; count todo selfmodify this
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO_SMALL shl bx 2
 xor   ah, ah
 mov   es, dx
 mov   word ptr [bp - 0Ah], ax
@@ -668,7 +668,7 @@ mov   es, ax
 mov   bx, word ptr [bp - 4]
 mov   ax, word ptr es:[bx]
 mov   si, ax
-SHIFT_MACRO shl si 4
+SHIFT_MACRO_SMALL shl si 4
 mov   cx, LINES_PHYSICS_SEGMENT
 mov   es, cx
 mov   dx, word ptr es:[si + LINE_PHYSICS_T.lp_validcount]
@@ -695,9 +695,9 @@ mov   es, cx
 mov   word ptr es:[si + LINE_PHYSICS_T.lp_validcount], ax
 les   di, dword ptr es:[si]		; linev1Offset
 mov   bx, es					; linev2Offset
-SHIFT_MACRO shl   di 2
+SHIFT_MACRO_SMALL shl   di 2
 and   bh, (VERTEX_OFFSET_MASK SHR 8)
-SHIFT_MACRO shl   bx 2
+SHIFT_MACRO_SMALL shl   bx 2
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 mov   si, word ptr es:[di]		; v1.x
 mov   dx, word ptr es:[di + 2]  ; v1.y into dx
@@ -759,14 +759,14 @@ mov   ax, SEG_LINEDEFS_SEGMENT
 mov   es, ax
 mov   bx, word ptr [bp - 4]
 mov   si, word ptr es:[bx]
-SHIFT_MACRO shl si 4
+SHIFT_MACRO_SMALL shl si 4
 mov   ax, LINES_PHYSICS_SEGMENT
 mov   es, ax
 les   di, dword ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum]
 mov   si, es
 
-SHIFT_MACRO shl di 4
-SHIFT_MACRO shl si 4
+SHIFT_MACRO_SMALL shl di 4
+SHIFT_MACRO_SMALL shl si 4
 
 
 ; di/si not preshfited
@@ -1018,7 +1018,7 @@ call  P_DivlineSideNode_
 and   ax, 1
 mov   word ptr [bp - 2], ax
 mov   ax, word ptr [bp - 6]
-SHIFT_MACRO shl ax 2
+SHIFT_MACRO_SMALL shl ax 2
 mov   word ptr [bp - 4], ax
 mov   ax, word ptr [bp - 2]
 mov   bx, ax
