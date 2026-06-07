@@ -32,7 +32,7 @@ EXTRN I_Quit_:FAR
 EXTRN W_GetNumForNameFarString_:NEAR
 EXTRN W_ReadLump_:NEAR
 EXTRN G_InitNew_:NEAR
-
+EXTRN _timingdemo
 .DATA
 
 
@@ -68,7 +68,12 @@ db 0Ah, "timed %li gametics in %li realtics ", 0Ah, " prnd index %i  FPS: %i.%i"
 str_demo_recorded:
 db "Demo %s recorded", 0
 
-
+_pagetic:
+dw 0
+_pagename:
+dw 0
+public _pagetic
+public _pagename
 
 PROC    G_DeferedPlayDemo_ NEAR
 PUBLIC  G_DeferedPlayDemo_
@@ -135,10 +140,10 @@ je      dont_adjust_pagetic_commercial
 mov     ax, 35 * 11
 mov     bl, MUS_DM2TTL
 dont_adjust_pagetic_commercial:
-mov     word ptr ds:[_pagetic], ax
+mov     word ptr cs:[_pagetic], ax
 mov     word ptr ds:[_pendingmusicenum], bx   ; set repeat to 0 in high byte
 mov     byte ptr ds:[_gamestate], GS_DEMOSCREEN
-mov     word ptr ds:[_pagename], OFFSET str_TITLEPIC
+mov     word ptr cs:[_pagename], OFFSET str_TITLEPIC
 jmp     done_with_demo_sequence_switch_block
 demo_sequence_1:
 mov     ax, OFFSET str_demo1
@@ -146,9 +151,9 @@ call    G_DeferedPlayDemo_
 jmp     done_with_demo_sequence_switch_block
 
 demo_sequence_2:
-mov     word ptr ds:[_pagetic], 200
+mov     word ptr cs:[_pagetic], 200
 mov     byte ptr ds:[_gamestate], GS_DEMOSCREEN
-mov     word ptr ds:[_pagename], OFFSET str_CREDIT
+mov     word ptr cs:[_pagename], OFFSET str_CREDIT
 jmp     done_with_demo_sequence_switch_block
 
 demo_sequence_3:
@@ -171,8 +176,8 @@ mov    dx, OFFSET str_HELP2
 je     do_seq_4_stuff
 mov    dx, OFFSET str_CREDIT
 do_seq_4_stuff:
-mov    word ptr ds:[_pagetic], ax
-mov    word ptr ds:[_pagename], dx
+mov    word ptr cs:[_pagetic], ax
+mov    word ptr cs:[_pagename], dx
 jmp    done_with_demo_sequence_switch_block
 
 demo_sequence_5:
@@ -319,7 +324,7 @@ PUBLIC G_CheckDemoStatus_
 
 
 xor    ax, ax
-cmp    byte ptr ds:[_timingdemo], al ; 0
+cmp    byte ptr cs:[_timingdemo], al ; 0
 jne    end_playback
 dont_end_playback:
 

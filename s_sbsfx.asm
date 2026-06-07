@@ -242,6 +242,13 @@ db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
 db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
 db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
 
+_sfx_free_bytes:
+REPT NUM_SFX_PAGES
+    db 040h
+ENDM
+
+; todo _sfx_page_reference_count
+
 INVALID_IRQ = 0FFh
 
 _IRQ_TO_INTERRUPT_MAP:
@@ -511,7 +518,7 @@ dw 0E000h
     ; in theory the page ah should be allocated to at least al + (dx >> 8)
     add   dx, 0FFh ; round up lump to 256 byte multiple
     mov   bl, ah
-    mov   dl, byte ptr ds:[_sfx_free_bytes + bx]
+    mov   dl, byte ptr cs:[_sfx_free_bytes + bx]
 
     ; dl = free bytes (* 256)
     ; dh = size (* 256)
@@ -1420,7 +1427,7 @@ add   di, bp   ; 5+1 = 6 = SIZE SFXINFO_T
 loop  loop_check_next_cache_position
 
 ;		sfx_free_bytes[evictedpage] = BUFFERS_PER_EMS_PAGE;
-mov    byte ptr ds:[_sfx_free_bytes + bx], BUFFERS_PER_EMS_PAGE ; 040h
+mov    byte ptr cs:[_sfx_free_bytes + bx], BUFFERS_PER_EMS_PAGE ; 040h
 SHIFT_MACRO  sal bl 2
 
 
@@ -1775,12 +1782,12 @@ loop_check_next_singlepage:
 ;    for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
 ;        if (sample_256_size <= sfx_free_bytes[sfx_page]){
 
-cmp   dl, byte ptr ds:[_sfx_free_bytes + bx] 
+cmp   dl, byte ptr cs:[_sfx_free_bytes + bx] 
 jg    not_enough_room_single_check_next_page
 ;            allocate_position.bu.bytehigh = BUFFERS_PER_EMS_PAGE - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
 mov   si, bx
 mov   bx, (BUFFERS_PER_EMS_PAGE SHL 8)   ; bl is 0. 0400h.
-sub   bh, byte ptr ds:[_sfx_free_bytes + si]
+sub   bh, byte ptr cs:[_sfx_free_bytes + si]
 ;            goto found_page;
 jmp   found_page   
 jump_to_handle_multipage_pagecount:
@@ -1814,7 +1821,7 @@ xor   bx, bx  ; allocate_position default 0
 found_page:
 
 ;            sfx_free_bytes[sfx_page] -= sample_256_size;   // subtract...
-sub   byte ptr ds:[_sfx_free_bytes + si], dl
+sub   byte ptr cs:[_sfx_free_bytes + si], dl
 
 
 ; ax = sfx_id
@@ -1979,7 +1986,7 @@ loop_check_next_multipage_inner:
 mov   si, dx  ; currentpage lookup
 
 ;    if (sfx_free_bytes[currentpage] == BUFFERS_PER_EMS_PAGE){
-cmp     byte ptr ds:[_sfx_free_bytes + si], BUFFERS_PER_EMS_PAGE
+cmp     byte ptr cs:[_sfx_free_bytes + si], BUFFERS_PER_EMS_PAGE
 jne     break_multipage_innerloop
 ;        currentpage = sfxcache_nodes[currentpage].prev;
 SHIFT_MACRO  sal si 2
@@ -2102,7 +2109,7 @@ add    ax, 0FFh   ; round up sample_256_size
 mov    al, 040h
 sub    al, ah
 do_full_page:
-mov    byte ptr ds:[_sfx_free_bytes + di], al 
+mov    byte ptr cs:[_sfx_free_bytes + di], al 
 
 
 ;    sfxcache_nodes[currentpage].pagecount = pagecount - j;
@@ -3355,12 +3362,15 @@ PUBLIC  S_InitSFXCache_
 
     mov  byte ptr es:[di - 4], -1  ;    ; equivalent to [sfxcache_tail].prev location
 
-    
+    push cs
+    pop  es
     mov  di, OFFSET _sfx_free_bytes
     mov  al, 64                             ; todo constant
     mov  cl, NUM_SFX_PAGES
     rep  stosb
 
+    push ds
+    pop  es
 
       ; todo make this stuff one after the other in memory
     mov  di, OFFSET _sfx_page_reference_count

@@ -54,7 +54,7 @@ EXTRN locallib_fopen_nobuffering_:NEAR
 EXTRN G_ReadDemoTiccmd_:NEAR
 EXTRN G_WriteDemoTiccmd_:NEAR
 EXTRN S_ResumeSound_:NEAR
-
+EXTRN _pagetic:WORD
 
 
 
@@ -535,7 +535,7 @@ dw      F_TICKEROFFSET, CODE_OVERLAY_SEGMENT
 jmp     exit_g_ticker
 
 do_demoscreen:
-dec     word ptr ds:[_pagetic]
+dec     word ptr cs:[_pagetic]
 jnz     exit_g_ticker
 mov     byte ptr ds:[_advancedemo], 1
 exit_g_ticker:

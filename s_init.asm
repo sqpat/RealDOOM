@@ -244,13 +244,6 @@ PUBLIC LoadSFXWadLumps_
 
 
 
-    ; setup cache fields..
-    mov       cx, NUM_SFX_PAGES
-    mov       al, 040h     ; 64
-    mov       di, OFFSET _sfx_free_bytes
-    push      ds
-    pop       es
-    rep stosb
 
 
     ;jmp  done_with_sfx_prep

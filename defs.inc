@@ -77,11 +77,24 @@ _eventtail =					  	_NULL_OFFSET + 0000Eh
 _eventhead =					  	_NULL_OFFSET + 0000Fh
 
 
-;_spanfunc_prt = 					_NULL_OFFSET + 00010h
-;_spanfunc_destview_offset = 		_NULL_OFFSET + 00018h
-;_spanfunc_inner_loop_count =		_NULL_OFFSET + 00020h
-;_spanfunc_outp = 					_NULL_OFFSET + 00024h
-_maxammo = 	     					_NULL_OFFSET + 00028h
+_playerMobj_pos =		         	 _NULL_OFFSET + 00010h
+_MOBJPOSLIST_SEGMENT_PTR =	         _NULL_OFFSET + 00012h
+_setStateReturn_pos =		         _NULL_OFFSET + 00014h
+_gametic =						     _NULL_OFFSET + 00018h
+_clipangle =				         _NULL_OFFSET + 0001Ch
+_fieldofview =				         _NULL_OFFSET + 0001Eh
+
+_myargc =				 	 	     _NULL_OFFSET + 00020h
+_errno =      						 _NULL_OFFSET + 00022h
+
+_mousearray = 						 _NULL_OFFSET + 00024h
+_mousebuttons = 					 _NULL_OFFSET + 00025h
+
+_usemouse = 						 _NULL_OFFSET + 00028h
+_demosequence =	       		         _NULL_OFFSET + 00029h
+_STRING_newline =                    _NULL_OFFSET + 0002Ah
+_skullAnimCounter =				     _NULL_OFFSET + 0002Ch
+_whichSkull =				         _NULL_OFFSET + 0002Eh
 
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
 
@@ -89,29 +102,53 @@ _cachedsegmentlumps =              _NULL_OFFSET + 0003Ch
 _cachedlumps =                 	   _NULL_OFFSET + 00044h
 _cachedtex =                 	   _NULL_OFFSET + 0004Ch
 _cachedcollength =                 _NULL_OFFSET + 00050h
-
-;_lastopening =                   	_NULL_OFFSET + 00052h
-;_segloopprevlookup =               _NULL_OFFSET + 00054h
+; this area in use via movsw
 _segloopcachedbasecol =             _NULL_OFFSET + 00058h
 _cachedsegmenttex =                 _NULL_OFFSET + 0005Ch
 
 ; 6 bytes
 _visplanelookupsegments =           _NULL_OFFSET + 00060h
-; 66-7E free
+
+_borderdrawcount =       		     _NULL_OFFSET + 00066h
+_message_dontfuckwithme =            _NULL_OFFSET + 00067h
+_message_on =     			         _NULL_OFFSET + 00068h
+_message_nottobefuckedwith =         _NULL_OFFSET + 00069h
+_HeadTask =					         _NULL_OFFSET + 0006Ah
+_doomsav0_string =  		       	 _NULL_OFFSET + 0006Ch
+_showMessages =       			     _NULL_OFFSET + 00079h
+__STACKLOW =          				 _NULL_OFFSET + 0007Ah
+__STACKTOP =          				 _NULL_OFFSET + 0007Ch
 
 _screen_segments = 					_NULL_OFFSET + 0007Eh
 
 _maskedtexture = 					_NULL_OFFSET + 00088h
 _map31_exists =                     _NULL_OFFSET + 00089h
 
-;_spechit =       					_NULL_OFFSET + 0008Ah
-;_bombsource =       				_NULL_OFFSET + 0009Ah
-;_bombspot =       					_NULL_OFFSET + 0009Ch
-;_bombdamage =       				_NULL_OFFSET + 0009Eh
-;_bombspot_pos = 					_NULL_OFFSET + 000A0h
 
-;__old_int00 = 						_NULL_OFFSET + 000A4h
-;__old_int13 =	 					_NULL_OFFSET + 000A8h
+_defdemoname = 						 _NULL_OFFSET + 0008Ah
+
+_advancedemo =	       			     _NULL_OFFSET + 00096h
+_usegamma =	       			         _NULL_OFFSET + 00097h
+_sfxVolume =	       			     _NULL_OFFSET + 00098h
+_musicVolume =	       			     _NULL_OFFSET + 00099h
+_snd_SfxVolume =      			     _NULL_OFFSET + 0009Ah
+_detailLevel =	       			     _NULL_OFFSET + 0009Bh
+_screenSize =	       			     _NULL_OFFSET + 0009Ch
+_mouseSensitivity =   			     _NULL_OFFSET + 0009Dh
+_quickSaveSlot =      			     _NULL_OFFSET + 0009Eh
+_savegameslot =       			     _NULL_OFFSET + 0009Fh
+
+
+
+_screen_oldloc =					 _NULL_OFFSET + 000A0h
+_old_screen_botleft_x =				 _NULL_OFFSET + 000A4h
+_old_screen_botleft_y =				 _NULL_OFFSET + 000A6h
+
+_modifiedgame =       			     _NULL_OFFSET + 000A8h
+;a9 free
+_viewactivestate =	 	     	     _NULL_OFFSET + 000AAh
+_menuactivestate =	 	     	     _NULL_OFFSET + 000ABh
+
 _nomonsters =                       _NULL_OFFSET + 000ACh
 _respawnmonsters =                  _NULL_OFFSET + 000ADh
 
@@ -442,7 +479,7 @@ _bottomslope =					     _NULL_OFFSET + 0052Ch
 _cachedt2x =				         _NULL_OFFSET + 00530h
 _cachedt2y =					     _NULL_OFFSET + 00534h
 _strace =					         _NULL_OFFSET + 00538h
-_sfx_free_bytes = 					 _NULL_OFFSET + 00548h
+;_sfx_free_bytes = 					 _NULL_OFFSET + 00548h
 
 
 _activespritepages =                 _NULL_OFFSET + 00570h
@@ -540,8 +577,7 @@ _currentloadedfileindex =       	 _NULL_OFFSET + 007BCh
 _mousepresent =				       	 _NULL_OFFSET + 007BDh
 _respawnparm =				       	 _NULL_OFFSET + 007BEh
 _demorecording =			       	 _NULL_OFFSET + 007BFh
-_doomsav0_string =  		       	 _NULL_OFFSET + 007C0h
-
+;7c0-7d0
 
 
 ;_startskill = 						 _NULL_OFFSET + 007CDh
@@ -565,9 +601,6 @@ _mousebforward = 					 _NULL_OFFSET + 007DCh
 _precache = 						 _NULL_OFFSET + 007DDh
 _cached_psetup_level_lump =		     _NULL_OFFSET + 007DEh
 
-_screen_oldloc =					 _NULL_OFFSET + 007E0h
-_old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
-_old_screen_botleft_y =				 _NULL_OFFSET + 007E6h
 
 ;_message_counter =					 _NULL_OFFSET + 007E8h
 
@@ -582,53 +615,19 @@ _buttonlist =                        _NULL_OFFSET + 00864h
 _levelTimeCount =				     _NULL_OFFSET + 00888h
 _lastanim =				             _NULL_OFFSET + 0088Ch
 _numswitches =						 _NULL_OFFSET + 0088Eh
+; todo move hi?
 _anims =				     		 _NULL_OFFSET + 00890h
 
+; todo move hi?
 _switchlist =				         _NULL_OFFSET + 00950h
-_skullAnimCounter =				     _NULL_OFFSET + 00A18h
-_whichSkull =				         _NULL_OFFSET + 00A1Ah
-
-_borderdrawcount =       		     _NULL_OFFSET + 00A1Ch
-_message_dontfuckwithme =            _NULL_OFFSET + 00A1Dh
-_message_on =     			         _NULL_OFFSET + 00A1Eh
-_message_nottobefuckedwith =         _NULL_OFFSET + 00A1Fh
-
-
-_HeadTask =					         _NULL_OFFSET + 00A20h
-_pagetic = 							 _NULL_OFFSET + 00A22h
-_pagename = 						 _NULL_OFFSET + 00A24h
-_singletics = 						 _NULL_OFFSET + 00A26h
-_timingdemo = 						 _NULL_OFFSET + 00A27h
-_defdemoname = 						 _NULL_OFFSET + 00A28h
-_mousearray = 						 _NULL_OFFSET + 00A2Ch
-_mousebuttons = 					 _NULL_OFFSET + 00A2Dh
-_usemouse = 						 _NULL_OFFSET + 00A30h
+; a18-a40 free
 
 
 
-_demosequence =	       		         _NULL_OFFSET + 00A31h
 
-_STRING_newline =                    _NULL_OFFSET + 00A32h
-
-_advancedemo =	       			     _NULL_OFFSET + 00A34h
-_usegamma =	       			         _NULL_OFFSET + 00A35h
-_sfxVolume =	       			     _NULL_OFFSET + 00A36h
-_musicVolume =	       			     _NULL_OFFSET + 00A37h
-_snd_SfxVolume =      			     _NULL_OFFSET + 00A38h
-_detailLevel =	       			     _NULL_OFFSET + 00A39h
-_screenSize =	       			     _NULL_OFFSET + 00A3Ah
-_mouseSensitivity =   			     _NULL_OFFSET + 00A3Bh
-_showMessages =       			     _NULL_OFFSET + 00A3Ch
-_quickSaveSlot =      			     _NULL_OFFSET + 00A3Dh
-_savegameslot =       			     _NULL_OFFSET + 00A3Eh
-_modifiedgame =       			     _NULL_OFFSET + 00A3Fh
 _hu_font =	 	      			     _NULL_OFFSET + 00A40h
 
-
-_viewactivestate =	 	     	     _NULL_OFFSET + 00ABEh
-_menuactivestate =	 	     	     _NULL_OFFSET + 00ABFh
-__STACKLOW =          				 _NULL_OFFSET + 00AC0h
-__STACKTOP =          				 _NULL_OFFSET + 00AC2h
+;abe
 
 _st_gamestate =	  	  				 _NULL_OFFSET + 00AC4h
 _st_firsttime =	  	  				 _NULL_OFFSET + 00AC5h
@@ -640,9 +639,9 @@ _old_screen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
 _r_cachedplayerMobjsecnum = 		 _NULL_OFFSET + 00AD0h
 _scaledviewwidth = 					 _NULL_OFFSET + 00AD2h
 _viewwindowoffset = 				 _NULL_OFFSET + 00AD4h
+
 _pendingdetail = 				 	 _NULL_OFFSET + 00AD6h
-_myargc =				 	 	     _NULL_OFFSET + 00AD8h
-_errno =      						 _NULL_OFFSET + 00ADAh
+; ad7
 
 
 
@@ -653,12 +652,8 @@ ___iob = 							 _NULL_OFFSET + 00ADCh
 ; max args = 20 including program name i guess. should be enough? maybe too much.
 _myargv = 	   	  					 _NULL_OFFSET + 00AF4h
 
-_playerMobj_pos =		         	 _NULL_OFFSET + 00B20h
-_MOBJPOSLIST_SEGMENT_PTR =	         _NULL_OFFSET + 00B22h
-_setStateReturn_pos =		         _NULL_OFFSET + 00B24h
-_gametic =						     _NULL_OFFSET + 00B28h
-_clipangle =				         _NULL_OFFSET + 00B2Ch
-_fieldofview =				         _NULL_OFFSET + 00B2Eh
+; b20-b30 free
+; b30
 
 _flatcache_nodes =				     _NULL_OFFSET + 00B30h
 

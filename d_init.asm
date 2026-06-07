@@ -71,6 +71,9 @@ EXTRN divexception_handler_:FAR
 
 EXTRN locallib_strcmp_:NEAR
 EXTRN __old_int00:NEAR
+EXTRN _timingdemo
+EXTRN _singletics
+
 .DATA
 
 ; related to spacing for printing title based on chipset name...
@@ -1198,8 +1201,8 @@ jnl   skip_timedemo_param
     ;call  M_CheckParm_CS_
     ;mov   byte ptr ds:[_noblit], al     ; noblit = M_CheckParm ("-noblit"); 
 
-    mov   byte ptr ds:[_timingdemo], cl ; 1 ; timingdemo = true; 
-    mov   byte ptr ds:[_singletics], cl ; 1 ; singletics = true; 
+    mov   byte ptr cs:[_timingdemo], cl ; 1 ; timingdemo = true; 
+    mov   byte ptr cs:[_singletics], cl ; 1 ; singletics = true; 
     
     ;call  G_TimeDemo_ ; inlined
     do_just_demo:

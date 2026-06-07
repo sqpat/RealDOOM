@@ -29,9 +29,11 @@ dw  -1, -1, 00, 00, 00, 00, 00, 00
 
 
 ; 010  
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 020   28 = maxammo  
-dw  00, 00, 00, 00, 200, 50, 300, 50
+dw  00, MOBJPOSLIST_SEGMENT, 00, MOBJPOSLIST_SEGMENT, 00, 00,  00, 00
+; 020   
+dw  00, 00, 00, 00, 00
+db 10, 0 ; 2A = newline
+dw  00, 00
 ; _quality_port_lookup 0x30
 db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15
 
@@ -45,9 +47,13 @@ dw 0, 0, 0, 0, 0, 0, 0, 0
 ; visplanelookupsegments
 dw 08400h, 08800h, 08C00h
 ; 0x66
-dw  0, 0, 0, 0, 0
-;0x70  7E = screen_segments
-dw 00, 00, 00, 00, 00, 00, 00, 8000h
+dw  0, 0, 0
+; 0x6c 
+db  "doomsav0.dsg", 0
+; 0x79
+db 0
+;0x7A  7E = screen_segments
+dw 00, 00, 8000h
 ; 0x80
 dw 8000h,  7000h,  6000h,  9C00h,    00, 00,     00,    00
 ; 0x90
@@ -291,34 +297,10 @@ dw  00, 00, 00, 00, 00, 00
 ; 720
 dw  00, 00, 00, 00
 
-; 728 _weaponinfo
-; fist
-db AM_NOAMMO
-dw S_PUNCHUP, S_PUNCHDOWN, S_PUNCH, S_PUNCH1, S_NULL
-; pistol
-db AM_CLIP
-dw S_PISTOLUP, S_PISTOLDOWN, S_PISTOL, S_PISTOL1, S_PISTOLFLASH
-; shotgun
-db AM_SHELL
-dw S_SGUNUP, S_SGUNDOWN, S_SGUN, S_SGUN1, S_SGUNFLASH1
-; chaingun
-db AM_CLIP
-dw S_CHAINUP, S_CHAINDOWN, S_CHAIN, S_CHAIN1, S_CHAINFLASH1
-; missile launcher
-db AM_MISL
-dw S_MISSILEUP, S_MISSILEDOWN, S_MISSILE, S_MISSILE1, S_MISSILEFLASH1
-; plasma rifle
-db AM_CELL
-dw S_PLASMAUP, S_PLASMADOWN, S_PLASMA, S_PLASMA1, S_PLASMAFLASH1
-; bfg 9000
-db AM_CELL
-dw S_BFGUP, S_BFGDOWN, S_BFG, S_BFG1, S_BFGFLASH1
-; chainsaw
-db AM_NOAMMO
-dw S_SAWUP, S_SAWDOWN, S_SAW, S_SAW1, S_NULL
-; super shotgun
-db AM_SHELL
-dw S_DSGUNUP, S_DSGUNDOWN, S_DSGUN, S_DSGUN1, S_DSGUNFLASH1
+; 728 
+REPT 99
+ db 0
+ENDM
 
 ; 78B
 
@@ -331,9 +313,7 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 7B0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 7C0  
-db  "doomsav0.dsg", 0
-; 7CD
-db  0, 0, 0
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 7D0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 7E0 
@@ -411,13 +391,7 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; A20
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; A30
-db 0
-; A31
-db 0
-; A32
-db 10, 0
-; A34
-dw      00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ; A40 hu_font
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; A50 hu_font

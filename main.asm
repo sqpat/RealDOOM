@@ -57,6 +57,7 @@ EXTRN Z_QuickMapRender_:NEAR
 EXTRN _OldInt8:DWORD
 EXTRN _TS_Installed:BYTE
 EXTRN _doomdata_bin_string
+EXTRN _pagename
 
 PUBLIC _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
 
@@ -192,9 +193,18 @@ dw 0, 0
 _oldgamestate:
 db -1
 
+_singletics:
+db  0
+_timingdemo:
+db  0
+
+
 PUBLIC _oldkeyboardisr
 PUBLIC _forwardmove
 PUBLIC _sidemove
+PUBLIC _timingdemo
+PUBLIC _singletics
+
 
 ; external hook for am_map which is high
 
@@ -2774,7 +2784,7 @@ switch_case_4:
 cmp   byte ptr ds:[_inhelpscreens], 0
 jne   jump_to_done_with_gs_level_case
 
-mov   ax, word ptr ds:[_pagename]
+mov   ax, word ptr cs:[_pagename]
 mov   dx, cs
 
 call  V_DrawFullscreenPatch_ 
@@ -3097,7 +3107,7 @@ PUBLIC  D_DoomLoop_
 
 continue_doom_loop:
 
-cmp   byte ptr ds:[_singletics], 0
+cmp   byte ptr cs:[_singletics], 0
 je    not_singletics
 
 call  I_StartTic_
