@@ -824,11 +824,11 @@ call  dword ptr ds:[_SFX_PlayPatch_addr]
 done_with_i_sound:
 
 jc    exit_startsoundwithposition
-successful_play:
+pc_speaker_successful_play:
 ;    al is already handle!
-SHIFT_MACRO SHL SI 2
-mov   byte ptr cs:[si + _channels + CHANNEL_T.channel_handle], al
+SHIFT_MACRO SHL SI 2  ; size of channels
 
+mov   byte ptr cs:[si + _channels + CHANNEL_T.channel_handle], al
 exit_startsoundwithposition:
 LEAVE_MACRO 
 pop   di
@@ -873,7 +873,8 @@ les   ax,  dword ptr es:[bx]
 mov   word ptr ds:[_pcspeaker_currentoffset], ax
 mov   word ptr ds:[_pcspeaker_endoffset], es
 sti
-jmp   successful_play  ; todo just exit maybe? handles not used for pc speaker?
+xor   ax, ax  ; always channel 0. todo correct?
+jmp   pc_speaker_successful_play 
 
 
 
