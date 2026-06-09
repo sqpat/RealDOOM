@@ -24,10 +24,6 @@ EXTRN I_Error_:FAR
 EXTRN Z_QuickMapSFXPageFrame_:NEAR
 EXTRN Z_QuickMapSFXPageFrame_NoCheck_:NEAR
 EXTRN W_CacheLumpNumDirectWithOffset_:NEAR
-EXTRN SB_DSP1xx_BeginPlayback_:NEAR
-EXTRN SB_SetPlaybackRate_:NEAR
-EXTRN _SB_DSP_Version:BYTE
-EXTRN _SB_CardActive:BYTE
 
 
 .DATA
@@ -45,6 +41,14 @@ PROC    S_SBFX_STARTMARKER_ NEAR
 PUBLIC  S_SBFX_STARTMARKER_
 ENDP
 
+
+_SB_DSP_Version:
+dw 0
+PUBLIC _SB_DSP_Version
+
+_SB_CardActive:
+db 0
+PUBLIC _SB_CardActive
 str_bad_vol:
 db "bad vol! %i %i %i", 0
 
@@ -190,8 +194,9 @@ _change_sampling_to_22_next_int:
 db  0
 _change_sampling_to_11_next_int:
 db  0
+
 _current_sampling_rate:
-db 0
+db 0, 0 ; 2nd byte always zero
 
 ALIGN_MACRO
 _in_second_buffer_low:
@@ -613,6 +618,21 @@ dw 0E000h
     @
 ENDIF
 
+
+PROC   SB_DSP1xx_BeginPlayback_ NEAR
+PUBLIC SB_DSP1xx_BeginPlayback_
+
+;Program DSP to play sound
+mov    al, 014h                 ; SB DAC 8 bit init, no autoinit
+call   SB_WriteDSP_
+
+mov    al, ((SB_MIXBUFFERSIZE - 1 ) AND 0FFh)  ; 0FFh
+call   SB_WriteDSP_
+mov    al, ((SB_MIXBUFFERSIZE - 1 ) SHR 8)     ; 0 
+call   SB_WriteDSP_
+ret
+
+ENDP
 
 PROC    S_IncreaseRefCount_ NEAR
 PUBLIC  S_IncreaseRefCount_ ; todo inline
@@ -1667,10 +1687,8 @@ mov    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_volume], dh
 ;    }
 
 cmp    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_samplerate], ch ; known zero
-je     dont_change_sampling_rate
-cmp    byte ptr cs:[_current_sampling_rate], ch ; known 0
-jne    dont_change_sampling_rate
-inc    byte ptr cs:[_change_sampling_to_22_next_int]
+jne    check_to_change_sampling_rate
+done_changing_sampling_rate_playpatch:
 dont_change_sampling_rate:
 
 or    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
@@ -1685,6 +1703,13 @@ clc
 pop  cx
 pop  si
 retf
+
+check_to_change_sampling_rate:
+cmp    byte ptr cs:[_current_sampling_rate], ch ; known 0
+jne    dont_change_sampling_rate
+inc    byte ptr cs:[_change_sampling_to_22_next_int]
+jmp    done_changing_sampling_rate_playpatch
+
 
 IFDEF DEBUG_SFX
     str_too_high_1:
@@ -3022,6 +3047,55 @@ jmp   do_sfx_play_cleanup
 
 ENDP
 
+
+
+PROC    SB_SetPlaybackRate_ NEAR
+PUBLIC  SB_SetPlaybackRate_
+
+push   dx
+
+cmp    byte ptr cs:[_SB_DSP_Version+1], (SB_DSP_VERSION4XX SHR 8)
+jl     do_lower_version_set_playback_rate
+xchg   ax, dx
+
+; set playback rate
+mov    al, SB_DSP_SET_DA_RATE
+call   SB_WriteDSP_
+mov    al, dh
+call   SB_WriteDSP_
+mov    al, dl
+call   SB_WriteDSP_
+
+; set recording rate
+mov    al, SB_DSP_SET_AD_RATE
+call   SB_WriteDSP_
+mov    al, dh
+call   SB_WriteDSP_
+mov    al, dl
+call   SB_WriteDSP_
+
+pop    dx
+ret
+
+
+do_lower_version_set_playback_rate:
+
+cmp    ax, SAMPLE_RATE_22_KHZ_UINT
+mov    dl, 0D2h
+je     do_22_khz_setup
+do_11_khz_setup:
+mov    dl, 0A5h
+do_22_khz_setup:
+mov    al, 040h
+call   SB_WriteDSP_
+xchg   ax, dx
+call   SB_WriteDSP_
+pop    dx
+ret
+
+ENDP
+
+
 check_change_sampling_rate:
 ; either change to 22 or 11 this interrupt
 cmp     byte ptr cs:[_change_sampling_to_22_next_int], al ; known 0. check 22 case
@@ -3063,6 +3137,24 @@ dw 0, 0
 safe_ss_sp:
 dw _SFX_INTERRUPT_STACK_FRAME + SFX_INTERRUPT_STACK_SIZE, FIXED_DS_SEGMENT
 ENDIF
+
+handle_old_sb_interrupt:
+;        // Older card - can't detect if an interrupt occurred.
+;        inp(sb_port + SB_DataAvailablePort);
+add   dl, SB_DATAAVAILABLEPORT
+in    al, dx
+
+cmp     word ptr cs:[_SB_DSP_Version], SB_DSP_VERSION2XX
+jnl     done_acking_interrupt
+
+handle_dsp_1xx:
+cmp    byte ptr cs:[_SB_CardActive], 0
+je     done_with_dsp_1xx
+call   SB_DSP1xx_BeginPlayback_
+
+jmp    done_with_dsp_1xx
+
+
 PROC   SB_ServiceInterrupt_ FAR
 PUBLIC SB_ServiceInterrupt_
 
@@ -3094,7 +3186,6 @@ mov    ds, ax
 
 
 ;uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
-mov     bl, byte ptr ds:[_currentpageframes + (SFX_PAGE_FRAME_INDEX)]
 xor     ax, ax
 xor     byte ptr cs:[_in_second_buffer], 1
 cmp     word ptr cs:[_change_sampling_to_22_next_int], ax ; check both at once
@@ -3103,31 +3194,16 @@ dont_update_sampling_rate:
 done_changing_sampling_rate:
 
 ;	sample_rate_this_instance = current_sampling_rate;
-mov     al, byte ptr cs:[_current_sampling_rate]
-cbw
-xchg    ax, si    ; si = sample_rate_this_instance
+mov     si, word ptr cs:[_current_sampling_rate] ; hi byte always zero.
 
 ;    // Acknowledge interrupt
 ;    // Check if this is this an SB16 or newer
 
-mov   dx, word ptr ds:[_sb_port]
+mov   dx, word ptr ds:[_sb_port] ; todo selfmodify
 
-cmp     word ptr cs:[_SB_DSP_Version], SB_DSP_VERSION4XX
-jge     handle_4xx_sb_interrupt
+cmp     word ptr cs:[_SB_DSP_Version], SB_DSP_VERSION4XX ; todo selfmodify
+jl      handle_old_sb_interrupt
 
-;        // Older card - can't detect if an interrupt occurred.
-;        inp(sb_port + SB_DataAvailablePort);
-add   dl, SB_DATAAVAILABLEPORT
-in    al, dx
-
-jmp    done_acking_interrupt
-
-handle_dsp_1xx:
-cmp    byte ptr cs:[_SB_CardActive], 0
-je     done_with_dsp_1xx
-call   SB_DSP1xx_BeginPlayback_
-
-jmp    done_with_dsp_1xx
 
 handle_4xx_sb_interrupt:
 
@@ -3159,8 +3235,6 @@ done_acking_interrupt:
 ;        }
 ;	}
 
-cmp     word ptr cs:[_SB_DSP_Version], SB_DSP_VERSION2XX
-jl      handle_dsp_1xx
 
 done_with_dsp_1xx:
 
@@ -3174,16 +3248,21 @@ mov   ax, SB_DMABUFFER_SEGMENT
 mov   es, ax
 mov   ax, 08080h
 
+; todo!: dont do this if we played nothing 2 interrupts ago
+
 mov   di, word ptr cs:[_in_second_buffer_low]  ; hi is 0 if firstbuffer, 1 if second. lo is 0, so this works out to di being target buffer.
 
 ; es:di is now dest
 
 mov   cx, (SB_TRANSFERLENGTH SHR 1) ; 128
 
+
 rep   stosw ; write 8080 128 times
 ; si was sample_rate_this_instance
 
-push  bx
+; store current sfx page.
+push     word ptr ds:[_currentpageframes + (SFX_PAGE_FRAME_INDEX)]  ; just low byte used...
+
 
 cmp   si, cx ; known 0 . cx == 11 khz
 
@@ -3200,7 +3279,7 @@ done_with_mix:
 
 pop    ax
 
-; al now equal to current_sfx_page
+; al now equal to previous current_sfx_page
 
 cmp   al, byte ptr ds:[_currentpageframes + (SFX_PAGE_FRAME_INDEX)]
 jne   recover_sfx_page
@@ -3258,7 +3337,7 @@ PUBLIC SB_ReadDSP_
 
 push   dx
 push   cx
-mov    dx, word ptr ds:[_sb_port] ;    int16_t port = sb_port + SB_DataAvailablePort;
+mov    dx, word ptr ds:[_sb_port]  ; todo selfmodify
 add    dx, SB_DATAAVAILABLEPORT
 mov    cx, RETRY_COUNT            ;     uint8_t count = 0xFF;
 loop_try_read_dsp_again:
@@ -3291,7 +3370,7 @@ PUBLIC  SB_WriteDSP_
 push dx
 push cx
 mov   ah, al ; backup value
-mov   dx, word ptr ds:[_sb_port]
+mov   dx, word ptr ds:[_sb_port]  ; todo selfmodify
 add   dl, SB_WRITEPORT
 mov   cx, 0FFFFh
 
@@ -3549,7 +3628,7 @@ PUBLIC SB_ResetDSP_
 
 push   dx
 push   cx
-mov    dx, word ptr ds:[_sb_port] ;    int16_t port = sb_port + SB_ResetPort;
+mov    dx, word ptr ds:[_sb_port] ; todo selfmodify
 add    dx, SB_ResetPort
 mov    cx, RETRY_COUNT            ;     uint8_t count = 0xFF;
 

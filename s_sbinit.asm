@@ -32,6 +32,10 @@ EXTRN SB_StopPlayback_:NEAR
 EXTRN SB_ResetDSP_:NEAR
 EXTRN   SB_DMA_VerifyChannel_:NEAR
 EXTRN   SB_ReadDSP_:NEAR
+EXTRN SB_SetPlaybackRate_:NEAR
+EXTRN _SB_DSP_Version:BYTE
+EXTRN _SB_CardActive:BYTE
+EXTRN SB_DSP1xx_BeginPlayback_:NEAR
 
 
 .DATA
@@ -157,13 +161,6 @@ db 0Ah, "SB INIT Error: %i %i", 0Ah, 00
 
 
 
-_SB_DSP_Version:
-dw 0
-PUBLIC _SB_DSP_Version
-
-_SB_CardActive:
-db 0
-PUBLIC _SB_CardActive
 
 
 
@@ -212,14 +209,6 @@ ENDP
 
 
 
-PROC   SB_DSP1xx_BeginPlayback_ NEAR
-PUBLIC SB_DSP1xx_BeginPlayback_
-
-;Program DSP to play sound
-mov    al, 014h                 ; SB DAC 8 bit init, no autoinit
-call   SB_WriteDSP_
-jmp    write_size_to_dsp
-ENDP
 
 
 PROC   SB_DSP2xx_BeginPlayback_ NEAR
@@ -421,52 +410,6 @@ ret
 ENDP
 
 
-
-PROC    SB_SetPlaybackRate_ NEAR
-PUBLIC  SB_SetPlaybackRate_
-
-push   dx
-
-cmp    byte ptr cs:[_SB_DSP_Version+1], (SB_DSP_VERSION4XX SHR 8)
-jl     do_lower_version_set_playback_rate
-xchg   ax, dx
-
-; set playback rate
-mov    al, SB_DSP_SET_DA_RATE
-call   SB_WriteDSP_
-mov    al, dh
-call   SB_WriteDSP_
-mov    al, dl
-call   SB_WriteDSP_
-
-; set recording rate
-mov    al, SB_DSP_SET_AD_RATE
-call   SB_WriteDSP_
-mov    al, dh
-call   SB_WriteDSP_
-mov    al, dl
-call   SB_WriteDSP_
-
-pop    dx
-ret
-
-
-do_lower_version_set_playback_rate:
-
-cmp    ax, SAMPLE_RATE_22_KHZ_UINT
-mov    dl, 0D2h
-je     do_22_khz_setup
-do_11_khz_setup:
-mov    dl, 0A5h
-do_22_khz_setup:
-mov    al, 040h
-call   SB_WriteDSP_
-xchg   ax, dx
-call   SB_WriteDSP_
-pop    dx
-ret
-
-ENDP
 
 
 
