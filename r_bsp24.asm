@@ -2345,7 +2345,7 @@ mov   ax, 01010h
 rep   stosw  ; write vieweight to es:di
 
 
-xor   ax, ax
+mov   ax, cx ; zero
 
 mov   di, SCREENWIDTH  ; offset of ceilingclip within floorclip
 mov   cx, dx
@@ -4747,7 +4747,7 @@ mov   word ptr ds:[SELFMODIFY_add_wallights+3], ax
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
 seg_textured_check_done:
-
+public seg_textured_check_done
 ; dh (worldtop hi) always 0?
 
 
@@ -4756,28 +4756,20 @@ seg_textured_check_done:
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 026h + SSD]
-   mov       dx, es
-   les       bx, dword ptr [bp - 02Eh + SSD]
-   mov       cx, es
 
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
-   imul  ecx
+   mov       eax, dword ptr [bp - 026h + SSD]
+   imul      dword ptr [bp - 02Eh + SSD]  ; todo put in  ECX and reuse for next mul
    shr  eax, 16
 
 
 
 ELSE
 
-   les       ax, dword ptr [bp - 026h + SSD]
-   mov       si, es
    les       bx, dword ptr [bp - 02Eh + SSD]
    mov       cx, es
+   les       ax, dword ptr [bp - 026h + SSD]
    jcxz      do_16_bit_rw_scale_mul_worldtophi_mid
+   mov       si, es
 
    ; mul dx:ax by cx:bx
 
@@ -4806,7 +4798,7 @@ ELSE
    ALIGN_MACRO
    do_16_bit_rw_scale_mul_worldtophi_mid:   
 
-   mov  CX, SI
+   mov  CX, ES
    mov  SI, BX   ; SI gets rw_scale copy
    
    ; mul cx:bx by --:ax
@@ -4827,14 +4819,15 @@ ELSE
    SELFMODIFY_sub__centeryfrac_4_hi_5:
    mov       cx, 01000h
    sbb       cx, dx
+   mov       dx, 0
    add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
-   adc       cx, 0
+   adc       cx, dx ; zero
 
    mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], cx
    mov       word ptr ds:[_cs_topfrac_lo], ax
 
    mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], si
-   mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], es ; zero
+   mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], dx ; zero
 
    les       ax, dword ptr [bp - 02Ah + SSD]  ; avoid xchg ax/bx
    mov       cx, es
@@ -5285,7 +5278,7 @@ mov  cx, di
 and  cl, 3
 mov  ax, 1 ; zero ah
 shl  al, cl
-mov  dx, SC_DATA
+mov  dx, SC_DATA  ; dh could be anded to cl, but selfmodify is tricky
 out  dx, al    ; 14 bytes
 
 done_setting_vga_plane:
@@ -6082,7 +6075,7 @@ ALIGN_MACRO
 seglooptexrepeat_mid_is_jmp:
 ; ds already cs
 ; todo make sure the word write is word aligned.
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_mid], 0E9h
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_mid], 0E9h
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_mid+1], (SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_1 - SELFMODIFY_BSP_set_seglooptexrepeat_mid_AFTER)
 jmp   just_do_draw_mid
 
@@ -8002,16 +7995,18 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   les       ax, dword ptr [bp - 026h + SSD]
-   mov       si, es
    les       bx, dword ptr [bp - 02Eh + SSD]
    mov       cx, es
+   les       ax, dword ptr [bp - 026h + SSD]
    jcxz      do_16_bit_rw_scale_mul_worldtophi_bottop
 
-   ; mul dx:ax by cx:bx
-
-   MOV  ES, AX ; todo synergy
+   ; si:ax by cx:bx
+   mov       si, es
+   MOV  ES, AX 
    MUL  BX
+   test si, 0FF00h
+   jne  enable_overflow_checks
+   done_with_overflow_enable:
    MOV  DI, DX
    MOV  AX, SI
    MUL  CX
@@ -8030,12 +8025,52 @@ ELSE
    MUL  BX
    ADD  AX, CX
    ADC  DX, SI
-   jmp  done_with_rw_scale_mul_worldtophi_bottop
+   TEST DH, 0C0h
+   JPE  done_with_rw_scale_mul_worldtophi_bottop
+   
+   ; overflow only possible if cx is nonzero 
+
+   ; overflow check! 
+   ; result is in between 0x4000 and 0xC000, which is rare to begin with
+   ; also, overflows shouldnt overflow by more than this much (i hope)
+   ; so now we're here, determine if we overflowed by checking if the result sign matches
+   ;   the expected sign based on the two inputs to fixedmul
+   
+
+
+   ;check to see if sign overflowed...
+   overflow_check:
+   public overflow_check
+   ; si reg is free...
+   mov   cl, byte ptr [bp - 023h + SSD]
+   xor   cl, byte ptr [bp - 02Bh + SSD]
+   
+   xor   cl, dh  ; si should have correct sign; compare to result
+   jns   done_with_rw_scale_mul_worldtophi_bottop    ; correct sign, ignore. 
+   ; adjust DX...
+   
+   test  dx, dx
+   mov   dx, 07FFFh ; if it was signed then make this MAX_INT
+   js    done_with_rw_scale_mul_worldtophi_bottop ; we made it nonsigned..
+   inc   dx         ; if it was unsigned then make it MIN_INIT
+   jmp   done_with_rw_scale_mul_worldtophi_bottop
+   
+   ; only need to do this if worldtop is large?
+   enable_overflow_checks:
+   ; turn on later overflow checks.
+   mov    byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_2], 0E9h  ; jmp 3 byte opcode
+   ; todo not sure this one is necessary
+   ; turn on later overflow checks.   
+   ;mov    byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_1], 0E9h  ; jmp 3 byte opcode
+   jmp   done_with_overflow_enable
+
+
 
    ALIGN_MACRO
    do_16_bit_rw_scale_mul_worldtophi_bottop:   
 
-   mov  CX, SI
+   ; wont overflow in this case because cx too small (0)
+   mov  CX, ES
    mov  SI, BX   ; SI gets rw_scale copy
    
    ; mul cx:bx by --:ax
@@ -8270,8 +8305,13 @@ ENDIF
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+4], dx
 
-
-
+; todo not sure this one is necessary
+COMMENT @
+public  SELFMODIFY_BSP_do_overflow_bugfix_detection_1
+SELFMODIFY_BSP_do_overflow_bugfix_detection_1:
+mov       ax, (OFFSET SELFMODIFY_BSP_do_overflow_bugfix_detection_1_TARGET - SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER)
+SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER:
+@
 
 ;start inlined FixedMulBSPLocal_
 
@@ -8330,6 +8370,11 @@ ENDIF
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], dx
 
+SELFMODIFY_BSP_do_overflow_bugfix_detection_2:
+mov       ax, (OFFSET SELFMODIFY_BSP_do_overflow_bugfix_detection_2_TARGET - SELFMODIFY_BSP_do_overflow_bugfix_detection_2_AFTER)
+SELFMODIFY_BSP_do_overflow_bugfix_detection_2_AFTER:
+
+
 
 
 
@@ -8379,6 +8424,25 @@ stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
 
 jmp   R_RenderSegLoop_exit_TWOSIDED
 
+; OVERFLOW BUGFIX BRANCH
+public adjust_topstep
+adjust_topstep:
+js    adjust_top_low
+mov   byte ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+2], 080h
+jmp   continue_subs_after_top
+adjust_top_low:
+mov   byte ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+2], 07Fh
+jmp   continue_subs_after_top
+COMMENT @
+public adjust_botstep
+adjust_botstep:
+js    adjust_bot_low
+mov   byte ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+2], 080h
+jmp   continue_subs_after_bot
+adjust_bot_low:
+mov   byte ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+2], 07Fh
+jmp   continue_subs_after_bot
+@
 
 
 ALIGN_MACRO
@@ -8409,10 +8473,19 @@ SELFMODIFY_add_topstep_lo_TWOSIDED:
 sub   word ptr ds:[_cs_topfrac_lo], 01000h
 SELFMODIFY_add_topstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], 01000h
+SELFMODIFY_adjust_topstep_overflow_branch:
+mov   cl, (OFFSET adjust_topstep - OFFSET continue_subs_after_top)  ; may be selfmodified into branch
+continue_subs_after_top:
 SELFMODIFY_add_botstep_lo_TWOSIDED:
 sub   word ptr ds:[_cs_botfrac_lo], 01000h
 SELFMODIFY_add_botstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], 01000h
+COMMENT @
+; todo not sure this one is necessary
+SELFMODIFY_adjust_botstep_overflow_branch:
+mov   cl, (OFFSET adjust_botstep - OFFSET continue_subs_after_bot)  ; may be selfmodified into branch
+continue_subs_after_bot:
+@
 SELFMODIFY_add_rwscale_lo_TWOSIDED:
 add   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1], 01000h
 SELFMODIFY_add_rwscale_hi_TWOSIDED:
@@ -8432,7 +8505,7 @@ mov  cx, di
 and  cl, 3
 mov  ax, 1 ; zero ah
 shl  al, cl
-mov  dx, SC_DATA
+mov  dx, SC_DATA  ; dh could be anded to cl, but selfmodify is tricky
 out  dx, al    ; 14 bytes
 
 
@@ -9667,10 +9740,16 @@ mov   bp, 01000h
 
 
 ; clean up the self modified code of renderseg loop. 
-mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_top], 0E9h
+mov   ah, 0E9h
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_top], ah
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_top+1], (SELFMODIFY_BSP_set_seglooptexrepeat_top_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_top_AFTER )
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], 0E9h
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], ah
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot+1], (SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER)
+
+mov   ah, 0B1h
+mov   byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch], ah
+; todo not sure this one is necessary
+;mov   byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch], ah
 
 
 
@@ -9818,6 +9897,31 @@ ret
 
 ENDP
 
+; todo combine.
+; HACK ALERT: OVERFLOW DETECT BUGFIX WRITEAHEAD 
+
+COMMENT @
+; todo not sure this one is necessary
+SELFMODIFY_BSP_do_overflow_bugfix_detection_1_TARGET:
+mov       ax, 0B870h  ; al = jo, ah = mov ax, imm16
+test      dx, dx
+jns       use_jo_botstep_branch  ; we are subtracting. if subtracting positive then we are approaching a jo check
+mov       al, 073h  ; ah = jnc
+use_jo_botstep_branch:
+mov       byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch], al
+mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_1], ah
+jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER
+@
+; di free
+SELFMODIFY_BSP_do_overflow_bugfix_detection_2_TARGET:
+mov       ax, 0B870h  ; al = jo, ah = mov ax, imm16
+test      dx, dx
+jns       use_jo_topstep_branch  ; we are subtracting. if subtracting positive then we are approaching a jo check
+mov       al, 073h  ; ah = jnc
+use_jo_topstep_branch:
+mov       byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch], al
+mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_2], ah
+jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_2_AFTER
 
 
 SEG_LINEDEFS_OFFSET_IN_LINEFLAGSLIST =  ((SEG_LINEDEFS_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)
