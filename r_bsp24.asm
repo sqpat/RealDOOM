@@ -1753,8 +1753,8 @@ jne not_fast_div_32_16
 ; shift right 8, and ch is already 0. so 16 bit.
 
 ; 32:16
-cmp bh, 2
-jc  return_2048 ; if (den < 512)  return SLOPERANGE
+;cmp bh, 2
+;jc  return_2048 ; if (den < 512)  return SLOPERANGE
 
 mov bl, bh
 mov bh, cl
@@ -1767,10 +1767,10 @@ cmp  ax, 0801h ; nocarry if over 0800h
 
 ret          ; dx will be garbage, but who cares , return 16 bits.
 
-return_2048:
-ALIGN_MACRO
-clc
-ret
+;ALIGN_MACRO
+;return_2048:
+;clc
+;ret
 
 
 
