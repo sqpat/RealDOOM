@@ -1,4 +1,4 @@
-#define R_DrawMasked24Offset                    0x1100
+#define R_DrawMasked24Offset                    0x1108
 #define R_DrawMasked16Offset                    0x1491
 #define R_DrawMasked0Offset                     0x140A
 #define R_DrawMaskedFLOffset                    0x13F1
@@ -24,10 +24,10 @@
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
 #define R_DrawSkyPlaneDynamicFLOffset           0x294
-#define R_WriteBackViewConstants24Offset        0x395A
-#define R_RenderPlayerView24Offset              0x377C
-#define R_GetCompositeTexture24Offset           0x3490
-#define R_GetPatchTexture24Offset               0x3402
+#define R_WriteBackViewConstants24Offset        0x3972
+#define R_RenderPlayerView24Offset              0x3794
+#define R_GetCompositeTexture24Offset           0x34A8
+#define R_GetPatchTexture24Offset               0x341A
 #define R_WriteBackViewConstants16Offset        0x33E6
 #define R_RenderPlayerView16Offset              0x3269
 #define R_GetCompositeTexture16Offset           0x2F53
@@ -50,8 +50,8 @@
 #define P_SpawnMapThingOffset                   0x2C66
 #define P_SpawnSpecialsOffset                   0x7EC8
 #define AM_DrawerOffset                         0x97D5
-#define S_StartSoundFarOffset                   0xB906
-#define S_StartOffset                           0xB9E7
+#define S_StartSoundFarOffset                   0xB8F6
+#define S_StartOffset                           0xB9D7
 #define M_InitOffset                            0x1186
 #define M_ResponderOffset                       0xD5B
 #define M_DrawPauseOffset                       0x1368
@@ -76,12 +76,12 @@
 #define R_DrawSkyColumnCodeSize        0xD7C
 #define R_DrawSkyColumnFLCodeSize      0x303
 #define M_MenuCodeSize                 0x1559
-#define R_BSP24CodeSize                0x3EC0
+#define R_BSP24CodeSize                0x3EE0
 #define R_BSP16CodeSize                0x3720
 #define R_BSP0CodeSize                 0x364F
 #define R_BSPFLCodeSize                0x35F9
 #define WI_StuffCodeSize               0x1141
-#define PSightCodeSize                 0xBA72
+#define PSightCodeSize                 0xBA62
 #define WipeCodeSize                   0x5FA
 #define FinaleCodeSize                 0xB97
 #define SaveLoadCodeSize               0xBE6

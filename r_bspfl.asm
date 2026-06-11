@@ -4503,7 +4503,7 @@ neg dx
 
 
 cmp dx, bx
-jge two_part_divide_3216
+jae two_part_divide_3216
 one_part_divide_3216:
 div bx
 xor dx, dx

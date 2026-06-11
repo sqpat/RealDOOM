@@ -1346,7 +1346,7 @@ PUBLIC FastDiv32u16u_MapLocal_
 ;DX:AX / BX (?)
 
 cmp dx, bx
-jge two_part_divide
+jae two_part_divide
 one_part_divide:
 div bx
 xor dx, dx
@@ -1383,7 +1383,7 @@ test dx, dx
 js   handle_negative_3216
 
 cmp dx, bx
-jge two_part_divide
+jae two_part_divide
 div bx
 xor dx, dx
 ret
@@ -1396,7 +1396,7 @@ neg dx
 
 
 cmp dx, bx
-jge two_part_divide_3216
+jae two_part_divide_3216
 one_part_divide_3216:
 div bx
 xor dx, dx
@@ -2381,28 +2381,6 @@ ALIGN_MACRO
 
 
 
-
-fast_div_32_16:
-
-mov bl, bh
-mov bh, cl
-
-SHIFT32_MACRO_LEFT dx ax 3
-
-
-div bx        ; after this dx stores remainder, ax stores q1
-
-ret          ; dx will be garbage, but who cares , return 16 bits.
-ALIGN_MACRO
-
-return_2048:
-
-
-mov ax, 0800h
-ret
-
-
-ALIGN_MACRO
 ALIGN_MACRO
 PROC FastDiv3232_shift_3_8_ NEAR ; todo needs another look
 
@@ -2416,25 +2394,21 @@ PROC FastDiv3232_shift_3_8_ NEAR ; todo needs another look
 
 test ch, ch
 jne not_fast_div_32_16
-
-; shift right 8, and ch is already 0. so 16 bit.
-
-; 32:16
-
+cmp bh, 2
+jc  return_2048 ; if (den < 512)  return SLOPERANGE
+; shift right 8
 mov bl, bh
 mov bh, cl
 
+
 SHIFT32_MACRO_LEFT dx ax 3
-
-
 div  bx        ; after this dx stores remainder, ax stores q1
-cmp  ax, 0801h ; nocarry if over 08000h
+cmp  ax, 0801h ; nocarry if over 0800h
 ret          ; dx will be garbage, but who cares , return 16 bits.
-
-;ALIGN_MACRO
-;return_2048:
-;stc
-;ret
+return_2048:
+ALIGN_MACRO
+clc
+ret
 
 
 ALIGN_MACRO

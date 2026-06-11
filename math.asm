@@ -132,7 +132,7 @@ PUBLIC FastDiv32u16u_
 ;DX:AX / BX (?)
 
 cmp dx, bx
-jge two_part_divide
+jae two_part_divide
 one_part_divide:
 div bx
 xor dx, dx
@@ -162,7 +162,7 @@ test dx, dx
 js   handle_negative_3216
 
 cmp dx, bx
-jge two_part_divide
+jae two_part_divide
 div bx
 xor dx, dx
 ret
@@ -175,7 +175,7 @@ neg dx
 
 
 cmp dx, bx
-jge two_part_divide_3216
+jae two_part_divide_3216
 one_part_divide_3216:
 div bx
 xor dx, dx

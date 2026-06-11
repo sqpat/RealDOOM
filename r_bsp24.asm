@@ -1752,6 +1752,8 @@ jne not_fast_div_32_16
 ; shift right 8, and ch is already 0. so 16 bit.
 
 ; 32:16
+cmp bh, 2
+jc  return_2048 ; if (den < 512)  return SLOPERANGE
 
 mov bl, bh
 mov bh, cl
@@ -1760,13 +1762,15 @@ SHIFT32_MACRO_LEFT dx ax 3
 
 
 div  bx        ; after this dx stores remainder, ax stores q1
-cmp  ax, 0801h ; nocarry if over 08000h
+cmp  ax, 0801h ; nocarry if over 0800h
+
 ret          ; dx will be garbage, but who cares , return 16 bits.
 
-;ALIGN_MACRO
-;return_2048:
-;stc
-;ret
+return_2048:
+ALIGN_MACRO
+clc
+ret
+
 
 
 ALIGN_MACRO
@@ -8366,8 +8370,13 @@ ENDIF
 
 ; dx:ax are topstep
 
-
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+4], ax
+; todo unacceptable, figure out a non sucky way. fixes map 30 render crash bugs...
+cmp       dx, 128
+jg        cap_dx
+cmp       dx, -128
+jl        cap_dx
+continue_write:
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], dx
 
 SELFMODIFY_BSP_do_overflow_bugfix_detection_2:
@@ -8400,6 +8409,9 @@ mov   di, word ptr [bp - 020h + SSD]  ; startx
 
 jmp   start_per_column_inner_loop_TWOSIDED
 
+cap_dx:
+xor   dx, dx
+jmp   continue_write
 
 ALIGN_MACRO
 
@@ -9236,7 +9248,7 @@ SELFMODIFY_BSP_toptexture_TARGET:
 
 ; ds = cs here.
 ; bx is already rw_x
-mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]  ; set up ceilclip in this path.
+mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]  ; set up ceilclip in this path.  ; todo OPTIMIZE why does this happen twice look below
 SELFMODIFY_BSP_markceiling_2_TWOSIDED:
 jmp  check_bottom_texture_TWOSIDED  ; 3 byte, can become mov ax, imm16
 SELFMODIFY_BSP_markceiling_2_AFTER_TWOSIDED:
@@ -9246,7 +9258,7 @@ mark_ceiling_si_TWOSIDED:
 lea   ax, [si - 1]
 skip_set_ax_to_si:
 mark_ceiling_ax_TWOSIDED:
-mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]  ; set up ceilclip in this path.
+mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]  ; set up ceilclip in this path.   ; todo OPTIMIZE why does this happen twice look above
 jmp   do_mark_ceiling_and_end_topdraw
 ALIGN_MACRO
 

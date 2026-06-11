@@ -2750,6 +2750,7 @@ got_colormap:
 ; fastdiv here
 
 ; cx:bx is spryscale
+; what if bx is 0???
 
 call  FastDiv3232FFFF_  ; todo inline eventually
 
@@ -4064,6 +4065,9 @@ ENDP
 
 
 IF COMPISA GE COMPILE_386
+   return_max:
+   inc  cx
+   jmp  continue_div
 
 
 ALIGN_MACRO
@@ -4076,19 +4080,23 @@ ALIGN_MACRO
 ; continue fast_div_32_16_FFFF
 
 
-    db 066h, 031h, 0C0h              ; xor eax, eax
-    db 066h, 099h                    ; cdq
-    db 066h, 048h                    ; dec eax
+    xor eax, eax
+    cdq
+    dec eax
 
    ; set up ecx
-   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
-   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+   shl  ebx, 010h
+   shld ecx, ebx, 010h
+
+   test ecb, ecx
+   je   return_max
+   continue_div:
 
    ; divide
-   db 066h, 0F7h, 0F1h              ; div ecx
+   div ecx
 
    ; set up return
-   db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
+   shld edx, eax, 0x10
 
    ; ?only write to dc_iscale_hi when nonzero.
    mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dl
@@ -4104,12 +4112,20 @@ ALIGN_MACRO
    ENDP
 
 ELSE
+   return_max:
+   inc  bx
+   jmp  continue_div
+
    ALIGN_MACRO
    fast_div_32_16_FFFF:
    cwd
 
    xchg dx, cx   ; cx was 0, dx is FFFF
-   div bx        ; after this dx stores remainder, ax stores q1
+   ; note: bx has been caught as zero before!
+   test bx, bx
+   je   return_max
+   continue_div:
+   div  bx        ; after this dx stores remainder, ax stores q1
    mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], al
    xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
    div bx
