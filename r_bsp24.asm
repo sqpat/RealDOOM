@@ -8379,13 +8379,14 @@ ENDIF
 ; dx:ax are topstep
 
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+4], ax
-; todo unacceptable, figure out a non sucky way. fixes map 30 render crash bugs...
-cmp       dx, 128
-jg        cap_dx
-cmp       dx, -128
-jl        cap_dx
-continue_write:
+mov       ax, dx
+sub       ax, -128
+test      ah, ah
+jnz       cap_dx
+done_hacking_topstep:
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], dx
+
+
 
 SELFMODIFY_BSP_do_overflow_bugfix_detection_2:
 mov       ax, (OFFSET SELFMODIFY_BSP_do_overflow_bugfix_detection_2_TARGET - SELFMODIFY_BSP_do_overflow_bugfix_detection_2_AFTER)
@@ -8417,9 +8418,10 @@ mov   di, word ptr [bp - 020h + SSD]  ; startx
 
 jmp   start_per_column_inner_loop_TWOSIDED
 
+ALIGN_MACRO
 cap_dx:
 xor   dx, dx
-jmp   continue_write
+jmp   done_hacking_topstep
 
 ALIGN_MACRO
 
