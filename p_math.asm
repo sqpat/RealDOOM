@@ -2395,14 +2395,23 @@ PROC FastDiv3232_shift_3_8_ NEAR ; todo needs another look
 
 test ch, ch
 jne not_fast_div_32_16
-cmp bh, 2
-jc  return_2048 ; if (den < 512)  return SLOPERANGE
+
 ; shift right 8
 mov bl, bh
 mov bh, cl
 
+; note: the < 512 check seemed to cause doom.wad timedemo 1 desyncs.
+
+test bx, bx
+jz   return_2048
+; todo or should it be the below?
+
 
 SHIFT32_MACRO_LEFT dx ax 3
+
+;cmp dx, bx
+;jae  return_2048 
+
 div  bx        ; after this dx stores remainder, ax stores q1
 cmp  ax, 0801h ; nocarry if over 0800h
 ret          ; dx will be garbage, but who cares , return 16 bits.

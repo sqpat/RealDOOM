@@ -1759,18 +1759,25 @@ jne not_fast_div_32_16
 mov bl, bh
 mov bh, cl
 
+test bx, bx
+jz   return_2048
+; todo or should it be the below?
+
+
 SHIFT32_MACRO_LEFT dx ax 3
 
+;cmp dx, bx
+;jae  return_2048 
 
 div  bx        ; after this dx stores remainder, ax stores q1
 cmp  ax, 0801h ; nocarry if over 0800h
 
 ret          ; dx will be garbage, but who cares , return 16 bits.
 
-;ALIGN_MACRO
-;return_2048:
-;clc
-;ret
+ALIGN_MACRO
+return_2048:
+clc
+ret
 
 
 
