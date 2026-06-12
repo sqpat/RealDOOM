@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/11 21:13:46
+Created on:       26/06/11 23:51:22
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -175,8 +175,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 004a:0f79      G_DoCompleted_
 Module: m_menu.obj(m_menu.ASM)
 015f:0c6b*     M_StringWidth_
-015f:0ca7*     M_StringHeight_
 015f:0442*     M_LoadGame_
+015f:0ca7*     M_StringHeight_
 015f:0b6e*     M_ChangeDetail_
 015f:13bf      G_Responder_
 015f:0386*     M_DrawLoad_
@@ -342,41 +342,41 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079d:0000      SM_MPUMD_STARTMARKER_
 079d:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-081b:396a      R_WriteBackViewConstants24_
+081b:396c      R_WriteBackViewConstants24_
 081b:0d95*     tx_already_positive
-081b:271f*     R_AddLine_
+081b:2721*     R_AddLine_
 081b:3ed0      R_BSP24_ENDMARKER_
 081b:09be*     FixedMulTrigNoShiftSine_BSPLocal_
 081b:1080*     handle_closed_door_top
-081b:26f0*     skip_this_sprite
-081b:24b4*     mark_floor_di
-081b:2102*     exit_rendersegloop_TWOSIDED
-081b:1d9f*     continue_backsector_not_null
-081b:3412      R_GetPatchTexture_Far24_
-081b:2412*     R_DrawColumnPrepTop
-081b:23d2*     SELFMODIFY_BSP_toptexture_AFTER
-081b:297c*     R_ClipPassWallSegment_
+081b:26f2*     skip_this_sprite
+081b:24b6*     mark_floor_di
+081b:3414      R_GetPatchTexture_Far24_
+081b:2104*     exit_rendersegloop_TWOSIDED
+081b:1da1*     continue_backsector_not_null
+081b:2414*     R_DrawColumnPrepTop
+081b:23d4*     SELFMODIFY_BSP_toptexture_AFTER
+081b:297e*     R_ClipPassWallSegment_
 081b:0200*     _ceilingclip
 081b:004f*     _seglooptexrepeat
 081b:1506*     ENSUREALIGN_051
 081b:1502*     ENSUREALIGN_050
-081b:25d9*     SELFMODIFY_mark_planes_dirty_TWOSIDED
+081b:25db*     SELFMODIFY_mark_planes_dirty_TWOSIDED
 081b:3d40      bsp_local_dc_yl_lookup_table_
-081b:2128*     pre_increment_values_TWOSIDED
-081b:20f9*     R_RenderSegLoop_TWOSIDED_
+081b:212a*     pre_increment_values_TWOSIDED
+081b:20fb*     R_RenderSegLoop_TWOSIDED_
 081b:1467*     SELFMODIFY_BSP_set_skyflatnum_4
 081b:1001*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
-081b:261c*     R_Subsector_
-081b:2410*     just_do_draw_top
-081b:3267*     found_multipage
-081b:23cf*     do_top_texture_draw
-081b:3908*     R_WriteBackLevelConstants24_
+081b:261e*     R_Subsector_
+081b:2412*     just_do_draw_top
+081b:3269*     found_multipage
+081b:23d1*     do_top_texture_draw
+081b:390a*     R_WriteBackLevelConstants24_
 081b:0200*     OFFSET_CEILINGCLIP
 081b:0000      R_BSP24_STARTMARKER_
 081b:1536*     exit_rendersegloop
 081b:12ec*     scales_set
-081b:1f80*     overflow_check
-081b:378c      R_RenderPlayerView24_
+081b:1f82*     overflow_check
+081b:378e      R_RenderPlayerView24_
 081b:096e*     FixedDivBSPLocal_
 081b:1557*     increment_loop_values
 081b:0384*     _CURRENT_LINE_TEXTURE_HEIGHT
@@ -384,51 +384,51 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081b:0080*     _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
 081b:0fd0*     R_StoreWallRangeNoBackSector_
 081b:0080*     BEOFRE_COLFUNC_LOOKUP
-081b:249e*     SELFMODIFY_set_pixel_count_shift_mul_bot
-081b:32b4*     R_GetTexturePage_
-081b:3afa*     R_WriteBackFrameConstants_
+081b:24a0*     SELFMODIFY_set_pixel_count_shift_mul_bot
+081b:32b6*     R_GetTexturePage_
+081b:3afc*     R_WriteBackFrameConstants_
 081b:09e8*     FixedMulTrigNoShiftCosine_BSPLocal_
 081b:0a12*     R_ClearPlanes_
 081b:0056*     _cachedsegmentlumpsBSPLocal
-081b:21aa*     SELFMODIFY_BSP_markfloor_1_TWOSIDED
+081b:21ac*     SELFMODIFY_BSP_markfloor_1_TWOSIDED
 081b:17f2*     mark_planes_dirty
 081b:11ae*     SELFMODIFY_skip_curseg_based_selfmodify_TARGET
-081b:2112*     adjust_topstep
-081b:1b4a*     scales_set_TWOSIDED
+081b:2114*     adjust_topstep
+081b:1b4c*     scales_set_TWOSIDED
 081b:16f0*     main_3232_div
 081b:188f*     SELFMODIFY_skip_curseg_based_selfmodify_topbot_AFTER
 081b:0098*     _lastbasexscale
-081b:2428*     SELFMODIFY_set_pixel_count_shift_mul_top
+081b:242a*     SELFMODIFY_set_pixel_count_shift_mul_top
 081b:0bc4*     R_FindPlane_
 081b:071a*     FixedDivWholeA_BSPLocal_
 081b:00aa*     _viewangle_shiftright3_bsp
 081b:004e*     _segloopheightvalcache
-081b:1d72*     side_has_midtexture
+081b:1d74*     side_has_midtexture
 081b:15a6*     SELFMODIFY_BSP_markceiling_1
 081b:185e*     R_StoreWallRangeWithBackSector_
 081b:1852*     adjust_row_offset_TWOSIDED
-081b:34a0      R_GetCompositeTexture_Far24_
+081b:34a2      R_GetCompositeTexture_Far24_
 081b:004a*     _segloopnextlookup
 081b:0fc4*     adjust_row_offset
-081b:2504*     R_RenderSegLoop_exit_TWOSIDED
+081b:2506*     R_RenderSegLoop_exit_TWOSIDED
 081b:0098*     _basexscale
 081b:1590*     done_setting_vga_plane
 081b:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
 081b:03a9*     SELFMODIFY_get_rw_distance_hi_1
-081b:2445*     SELFMODIFY_BSP_set_pixlow
+081b:2447*     SELFMODIFY_BSP_set_pixlow
 081b:1390*     seg_textured_check_done
-081b:222c*     do_32_bit_finetan_mul_TWOSIDED
+081b:222e*     do_32_bit_finetan_mul_TWOSIDED
 081b:00c0*     OFFSET_FLOORCLIP
 081b:1531*     R_RenderSegLoop_
-081b:2409*     SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED
-081b:25e0*     mark_planes_dirty_TWOSIDED
+081b:240b*     SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED
+081b:25e2*     mark_planes_dirty_TWOSIDED
 081b:18d3*     v2_y_equals_v1_y_TWOSIDED
 081b:0ce4*     R_ProjectSprite_
-081b:2abe*     R_GetColumnSegment_
+081b:2ac0*     R_GetColumnSegment_
 081b:0386*     R_ScaleFromGlobalAngle_
 081b:17c0*     SELFMODIFY_mark_planes_dirty
 081b:1582*     start_per_column_inner_loop
-081b:2163*     done_setting_vga_plane_topbot
+081b:2165*     done_setting_vga_plane_topbot
 Module: r_bsp16.obj(r_bsp16.ASM)
 0c08:3269      R_RenderPlayerView16_
 0c08:0000      R_BSP16_STARTMARKER_
@@ -594,10 +594,10 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd7:0921*     ENSUREALIGN_119
 1dd7:033f*     ENSUREALIGN_129
 1dd7:14b1*     ENSUREALIGN_131
-1dd7:12f8*     ENSUREALIGN_123
 1dd7:098a*     ENSUREALIGN_118
 1dd7:098d*     ENSUREALIGN_116
 1dd7:14c3*     ENSUREALIGN_127
+1dd7:12f8*     ENSUREALIGN_123
 1dd7:14e9*     ENSUREALIGN_108
 1dd7:0695*     three_page_sprite
 1dd7:0bcb*     ENSUREALIGN_115
@@ -608,8 +608,8 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd7:0440*     ENSUREALIGN_134
 1dd7:1301*     ENSUREALIGN_124
 1dd7:1521*     ENSUREALIGN_104
-1dd7:153b*     ENSUREALIGN_101
 1dd7:051a*     ENSUREALIGN_131_sprite
+1dd7:153b*     ENSUREALIGN_101
 1dd7:0986*     ENSUREALIGN_114
 1dd7:0a93*     ENSUREALIGN_128
 1dd7:12ac*     ENSUREALIGN_125
@@ -726,8 +726,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 2447:3bcc*     P_FireWeapon_
 2447:3d12*     A_Raise_
 2447:3d48*     A_GunFlash_
-2447:3df4*     A_Saw_
 2447:421a*     P_SetPsprite_
+2447:3df4*     A_Saw_
 2447:40e2*     A_Light0_
 2447:40f4*     A_OpenShotgun2_
 2447:3a32      _weaponinfo
@@ -1658,4 +1658,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e680 (255616.)
 Entry point address: 2fed:800e
-Link time: 00:00.59
+Link time: 00:00.04

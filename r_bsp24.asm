@@ -6681,7 +6681,7 @@ SELFMODIFY_skip_curseg_based_selfmodify_topbot_TARGET:
  
 
 
-les       di, dword ptr ds:[_ds_p_bsp]
+les       di, dword ptr cs:[_ds_p_bsp]
 mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
