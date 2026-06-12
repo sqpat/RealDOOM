@@ -3509,7 +3509,7 @@ db 09Ah
 dw F_RESPONDEROFFSET, CODE_OVERLAY_SEGMENT
 
 
-jnc   exit_gresponder_2
+jc   exit_gresponder_2
 
 not_gamestate_finale:
 
