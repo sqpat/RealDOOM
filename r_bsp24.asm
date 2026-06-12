@@ -8380,11 +8380,11 @@ ENDIF
 
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+4], ax
 mov       ax, dx
-sub       ax, -128
-test      ah, ah
-jnz       cap_dx
+cbw
+cmp       ax, dx
+jne       cap_dx
 done_hacking_topstep:
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], dx
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], ax
 
 
 
@@ -8420,7 +8420,7 @@ jmp   start_per_column_inner_loop_TWOSIDED
 
 ALIGN_MACRO
 cap_dx:
-xor   dx, dx
+xor   ax, ax
 jmp   done_hacking_topstep
 
 ALIGN_MACRO
@@ -9936,8 +9936,8 @@ jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER
 @
 ; di free
 SELFMODIFY_BSP_do_overflow_bugfix_detection_2_TARGET:
+test      ax, ax
 mov       ax, 0B870h  ; al = jo, ah = mov ax, imm16
-test      dx, dx
 jns       use_jo_topstep_branch  ; we are subtracting. if subtracting positive then we are approaching a jo check
 mov       al, 073h  ; ah = jnc
 use_jo_topstep_branch:

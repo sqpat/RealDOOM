@@ -4759,6 +4759,7 @@ sub  di, (SIZE DRAWSEG_T)
 jle  done_rendering_masked_segranges
 
 check_next_seg:
+public check_next_seg
 cmp  word ptr es:[di + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
 je   not_masked
 
