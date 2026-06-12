@@ -88,7 +88,7 @@ _clipangle =				         _NULL_OFFSET + 0001Ch
 _fieldofview =				         _NULL_OFFSET + 0001Eh
 
 _myargc =				 	 	     _NULL_OFFSET + 00020h
-_errno =      						 _NULL_OFFSET + 00022h
+; todo 22-23 unused
 
 _mousearray = 						 _NULL_OFFSET + 00024h
 _mousebuttons = 					 _NULL_OFFSET + 00025h
@@ -164,12 +164,9 @@ _is_ultimate = 						_NULL_OFFSET + 000B1h
 _viewwindowoffset = 				 _NULL_OFFSET + 000B2h
 _pendingdetail = 				 	 _NULL_OFFSET + 000B4h
 
-
-
-
-
 _firstspritelump = 					_NULL_OFFSET + 000B6h
 
+; todo overlap more finale vars with something that wont overlap (automap etc) 
 _finaletext =                    	_NULL_OFFSET + 000B8h
 _finalecount =                   	_NULL_OFFSET + 000BAh
 _finalestage =                   	_NULL_OFFSET + 000BCh
@@ -312,6 +309,18 @@ _ticcount =			              	_NULL_OFFSET + 001F0h
 _R_FlatNumForName_addr =             _NULL_OFFSET + 001F4h
 _deadAttackerX =                     _NULL_OFFSET + 001F8h
 _deadAttackerY =                     _NULL_OFFSET + 001FCh
+
+
+ ; should be safe to overlap finale values with automap . they arent in use at the same time?
+_castattacking =                 	 _NULL_OFFSET + 00200h
+_castdeath =                     	 _NULL_OFFSET + 00201h
+_castonmelee =                   	 _NULL_OFFSET + 00202h
+_castframes =                    	 _NULL_OFFSET + 00203h
+_casttics =                      	 _NULL_OFFSET + 00204h
+_castnum =                       	 _NULL_OFFSET + 00205h
+_finaleflat =                   	 _NULL_OFFSET + 00206h
+
+
 _am_scale_mtof =                     _NULL_OFFSET + 00200h
 _am_scale_ftom =       		     	 _NULL_OFFSET + 00204h
 _I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
@@ -334,13 +343,7 @@ _maskedcachedbasecol =               _NULL_OFFSET + 0028Eh
 _maskedcachedsegment =               _NULL_OFFSET + 00290h
 _maskedheightvalcache =              _NULL_OFFSET + 00292h
 _currentoverlay = 		         	 _NULL_OFFSET + 00293h
-_castattacking =                 	 _NULL_OFFSET + 00294h
-_castdeath =                     	 _NULL_OFFSET + 00295h
-_castonmelee =                   	 _NULL_OFFSET + 00296h
-_castframes =                    	 _NULL_OFFSET + 00297h
-_casttics =                      	 _NULL_OFFSET + 00298h
-_castnum =                       	 _NULL_OFFSET + 00298h
-_finaleflat =                   	 _NULL_OFFSET + 0029Ah
+; TODO 294-29c unused
 _ds_p =               				 _NULL_OFFSET + 0029Ch
 
 _olddb =							 _NULL_OFFSET + 002A0h

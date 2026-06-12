@@ -484,8 +484,8 @@ Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
 mov   ax, sp  ; ; text param (100 length)
 call  F_CastPrint_
 
-;call  Z_QuickMapRender7000_
-Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+12) INDEXED_PAGE_7000_OFFSET
+;call  Z_QuickMapRender9000_
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+20) INDEXED_PAGE_9000_OFFSET
 
 
 mov   al, byte ptr [bp - 2]

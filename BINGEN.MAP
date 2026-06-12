@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/11 23:51:22
+Created on:       26/06/12 12:51:20
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -177,8 +177,8 @@ Module: m_menu.obj(m_menu.ASM)
 015f:0c6b*     M_StringWidth_
 015f:0442*     M_LoadGame_
 015f:0ca7*     M_StringHeight_
-015f:0b6e*     M_ChangeDetail_
 015f:13bf      G_Responder_
+015f:0b6e*     M_ChangeDetail_
 015f:0386*     M_DrawLoad_
 015f:05a5*     M_SaveGame_
 015f:0550*     M_SaveSelect_
@@ -347,10 +347,10 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081b:2721*     R_AddLine_
 081b:3ed0      R_BSP24_ENDMARKER_
 081b:09be*     FixedMulTrigNoShiftSine_BSPLocal_
+081b:3414      R_GetPatchTexture_Far24_
 081b:1080*     handle_closed_door_top
 081b:26f2*     skip_this_sprite
 081b:24b6*     mark_floor_di
-081b:3414      R_GetPatchTexture_Far24_
 081b:2104*     exit_rendersegloop_TWOSIDED
 081b:1da1*     continue_backsector_not_null
 081b:2414*     R_DrawColumnPrepTop
@@ -587,30 +587,30 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd7:12a3*     ENSUREALIGN_122
 1dd7:0a60*     ENSUREALIGN_113
 1dd7:112a*     ENSUREALIGN_121
+1dd7:0921*     ENSUREALIGN_119
 1dd7:1517*     ENSUREALIGN_107
 1dd7:05d2*     ENSUREALIGN_130
 1dd7:044c*     ENSUREALIGN_132
 1dd7:0408*     ENSUREALIGN_133
-1dd7:0921*     ENSUREALIGN_119
 1dd7:033f*     ENSUREALIGN_129
+1dd7:098d*     ENSUREALIGN_116
 1dd7:14b1*     ENSUREALIGN_131
 1dd7:098a*     ENSUREALIGN_118
-1dd7:098d*     ENSUREALIGN_116
-1dd7:14c3*     ENSUREALIGN_127
-1dd7:12f8*     ENSUREALIGN_123
-1dd7:14e9*     ENSUREALIGN_108
-1dd7:0695*     three_page_sprite
 1dd7:0bcb*     ENSUREALIGN_115
+1dd7:14c3*     ENSUREALIGN_127
+1dd7:14e9*     ENSUREALIGN_108
+1dd7:12f8*     ENSUREALIGN_123
+1dd7:1533*     ENSUREALIGN_105
+1dd7:0695*     three_page_sprite
 1dd7:0418*     ENSUREALIGN_135
 1dd7:1237*     ENSUREALIGN_126
-1dd7:1533*     ENSUREALIGN_105
 1dd7:0512*     ENSUREALIGN_132_sprite
 1dd7:0440*     ENSUREALIGN_134
 1dd7:1301*     ENSUREALIGN_124
 1dd7:1521*     ENSUREALIGN_104
 1dd7:051a*     ENSUREALIGN_131_sprite
-1dd7:153b*     ENSUREALIGN_101
 1dd7:0986*     ENSUREALIGN_114
+1dd7:153b*     ENSUREALIGN_101
 1dd7:0a93*     ENSUREALIGN_128
 1dd7:12ac*     ENSUREALIGN_125
 1dd7:052c*     ENSUREALIGN_127_sprite
@@ -669,8 +669,8 @@ Module: r_maskfl.obj(r_maskfl.ASM)
 22b7:1898      R_WriteBackMaskedFrameConstantsFL_
 22b7:180b      R_WriteBackViewConstantsMaskedFL_
 Module: p_sight.obj(p_sight.ASM)
-2447:03fd*     ENSUREALIGN_908
 2447:0652*     P_CrossBSPNode_
+2447:03fd*     ENSUREALIGN_908
 2447:0100      P_CheckSight_
 2447:01d6*     P_DivlineSide_
 2447:0000      P_SIGHT_STARTMARKER_
@@ -765,10 +765,10 @@ Module: p_enemy.obj(p_enemy.ASM)
 2447:4d19*     A_BspiAttack_
 2447:5801*     A_Fall_
 2447:440f*     P_CheckMissileRange_
-2447:5990*     A_BrainPain_
 2447:4ac2*     A_FaceTarget_
 2447:4d86*     A_SargAttack_
 2447:5426*     GetVileMomz_
+2447:5990*     A_BrainPain_
 2447:5683*     A_PainDie_
 2447:503c*     A_SkelWhoosh_
 2447:42df      _floatok
@@ -968,8 +968,8 @@ Module: am_map.obj(am_map.ASM)
 Module: p_math.obj(p_math.ASM)
 2447:9932*     ENSUREALIGN_903
 2447:9984      FixedMulTrigNoShiftCosine_MapLocal_
-2447:9bae*     ENSUREALIGN_905
 2447:9ac4*     ENSUREALIGN_904
+2447:9bae*     ENSUREALIGN_905
 2447:9b80      FixedDiv_MapLocal_
 2447:9db8      R_PointToAngle2_16_MapLocal_
 2447:9a16*     div48_32_MapLocal_
