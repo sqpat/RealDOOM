@@ -219,7 +219,7 @@ xor     bx, bx
 mov     ax, OFFSET _doomsav0_string
 
 
-call    M_AppendFle_
+call    M_AppendFle_  ; inline?
 pop     cx
 
 retf

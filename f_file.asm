@@ -75,7 +75,7 @@ _O_RDWR          = 00002h ;  open for read and write
 _O_APPEND        = 00010h  ; writes done at end of file 
 _O_CREAT         = 00020h ;  create new file 
 ; _O_TRUNC         = 00040h ;  truncate existing file 
-_O_NOINHERIT     = 00080h ;  file is not inherited by child process
+
 
 
 
@@ -467,7 +467,7 @@ not_append_flag:
 
 ; bx has permissions.
 
-or   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], ax  ; flags
+or   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], ax  ; flags ; byte is enough, ah is always 0?
 
 
 ; flags set.
@@ -499,7 +499,7 @@ found_space:
 dec       si  ; roll back lodsb
 
 xchg      ax, dx ; get flags
-and       al, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR OR _O_NOINHERIT ) ; 083h
+and       al, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR ) ; 083h
 
 push      si     ; [bp - 6] = filename.
 mov       dx, si  ; dx gets filename
@@ -608,6 +608,9 @@ int  021h
 jmp  done_with_lseek_end
 
 exit_sopen_return_bad_handle:
+
+mov   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], 0  ; dont maintain a file spot.
+
 
 handle_sopen_seterrno:
 mov       bx, di

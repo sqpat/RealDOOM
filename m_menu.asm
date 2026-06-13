@@ -75,6 +75,7 @@ REPT 100
 ENDM
 
 _savegamestrings:
+public  _savegamestrings
 REPT (10 * SAVESTRINGSIZE)
     db 0
 ENDM
@@ -350,7 +351,7 @@ dw OFFSET _LoadMenu
 dw OFFSET M_DrawLoad_
 dw 80
 db 54
-dw 0
+dw 0    
 
 _SaveDef:
 db LOAD_END
@@ -535,10 +536,11 @@ mov   di, OFFSET _LoadMenu + MENUITEM_T.menuitem_status
 loop_next_savestring:
 mov   bx, si
 mov   dx, ss
-lea   ax, [bp - 060h]
+mov   ax, sp
 call  M_MakeSaveGameName_
 mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-lea   ax, [bp - 060h]
+mov   ax, sp
+
 call  dword ptr ds:[_fopen_addr]
 
 
@@ -742,13 +744,13 @@ sub   si, SAVESTRINGSIZE ; si has original choice * savestringsize
 push  ss
 pop   ds ; restore ds.
 
-lea   bx, [bp - 060h]
+mov   ax, sp
 mov   ax, EMPTYSTRING
 mov   cx, ss
 
 call  dword ptr ds:[_getStringByIndex_addr]
 
-lea   bx, [bp - 060h]
+mov   ax, sp
 mov   cx, ss
 mov   ax, si
 mov   dx, cs

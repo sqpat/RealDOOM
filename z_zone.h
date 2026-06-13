@@ -280,10 +280,10 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define EMS_ONLY_2_MB_BUILD_SETTING                      3 // fits in 2 mb including conventional (like a 2 mb laptop)
 #define EMS_4_MB_PLUS_BUILD_SETTING                      4 // fits in a 4 mb system
 
-#define EMS_BUILD_SETTING                              EMS_2_MB_PLUS_BUILD_SETTING
+// #define EMS_BUILD_SETTING                              EMS_2_MB_PLUS_BUILD_SETTING
 // #define EMS_BUILD_SETTING                              EMS_4_MB_BUILD_SETTING
 // #define EMS_BUILD_SETTING                              EMS_ONLY_2_MB_BUILD_SETTING
-// #define EMS_BUILD_SETTING                              EMS_4_MB_PLUS_BUILD_SETTING
+#define EMS_BUILD_SETTING                              EMS_4_MB_PLUS_BUILD_SETTING
 
 
 
