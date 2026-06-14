@@ -168,6 +168,10 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
 ALIGN_MACRO	
+cap_colormap:
+mov   al, 07Fh
+jmp   done_capping_colormap
+ALIGN_MACRO	
 go_generate_values:
 jmp   generate_distance_steps
 ALIGN_MACRO
@@ -175,6 +179,9 @@ SELFMODIFY_fixed_colormap_toggle_TARGET:
 calculate_colormap:
 mov   word ptr cs:[SELFMODIFY_compare_colormap_bits+1], ax
 SHIFT_MACRO shr ax 4 ; ah now known zero
+test  al, al
+js    cap_colormap
+done_capping_colormap:
 les   bx, dword ptr cs:[_planezlight]
 xlat  byte ptr es:[bx]
 SHIFT_MACRO shl ax 2 ; colormap * 16
@@ -272,8 +279,7 @@ IF COMPISA LE COMPILE_286
 
     ; dx:di is distance. or todo EDI for 386.
 
-    mov   ax, dx
-    and   ax, 07F0h  ; colormap bits.
+    mov   ax, dx ; todo for consistancy with 386... optim out later.
 SELFMODIFY_compare_colormap_bits:
     cmp   ax, 01000h
 ENSUREALIGN_408: ; todo odd
@@ -928,7 +934,7 @@ ELSE
 
     ; todo shld 12, al logic
     shld  eax, edi, 16
-    and   ax, 07F0h  ; colormap bits.
+
 SELFMODIFY_compare_colormap_bits:
     cmp   ax, 01000h
 ENSUREALIGN_408: ; todo odd
