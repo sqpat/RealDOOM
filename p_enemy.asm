@@ -1454,7 +1454,7 @@ PUBLIC  A_Metal_
 mov   dl, SFX_METAL
 call  S_StartSound_
 
-xchg  ax, si  ; si has ax value
+; si has value
 jmp   A_Chase_
 
 ENDP
@@ -1467,7 +1467,7 @@ PUBLIC  A_BabyMetal_
 mov   dl, SFX_BSPWLK
 call  S_StartSound_
 
-xchg  ax, si  ; si has ax value
+; si has value
 jmp   A_Chase_
 
 ENDP
@@ -1481,7 +1481,7 @@ PUBLIC  A_Hoof_
 mov   dl, SFX_HOOF
 call  S_StartSound_
 
-xchg  ax, si  ; si has ax value
+; si has value
 ; jmp   A_Chase_  ; fall thru
 
 ENDP
@@ -1494,35 +1494,38 @@ PUBLIC  A_Chase_
 
 
 mov   di, bx
+xor   ax, ax
+
+cmp   byte ptr ds:[si + MOBJ_T.m_reactiontime], al ; 0
+je    dont_dec_reaction
+dec   byte ptr ds:[si + MOBJ_T.m_reactiontime]
+dont_dec_reaction:
 
 
 mov  bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal  bx, 1
-mov  dx, word ptr ds:[bx + _mobjlookuptable]
-mov  cx, word ptr ds:[bx + _mobjposlookuptable]
-
-
-
-
+jz   null_chase_target
+mov   cx, word ptr ds:[bx + _mobjposlookuptable]
+mov   dx, word ptr ds:[bx + _mobjlookuptable]
 add   dx, THINKER_T.t_data
-cmp   byte ptr ds:[si + MOBJ_T.m_reactiontime], 0
-je    dont_dec_reaction
-dec   byte ptr ds:[si + MOBJ_T.m_reactiontime]
-dont_dec_reaction:
-cmp   byte ptr ds:[si + MOBJ_T.m_threshold], 0
+null_chase_target:
 
+cmp   byte ptr ds:[si + MOBJ_T.m_threshold], al ; 0
+; todo this
 je    done_modifying_threshold
-test  ax, ax
-je    set_threshold_0
+test  bx, bx
+je    just_dec_threshold
 
 mov   bx, dx
-cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
+cmp   word ptr ds:[bx + MOBJ_T.m_health], ax ; 0
 jle   set_threshold_0
+just_dec_threshold:
 dec   byte ptr ds:[si + MOBJ_T.m_threshold]
 jmp   done_modifying_threshold
 
 set_threshold_0:
-mov   byte ptr ds:[si + MOBJ_T.m_threshold], 0
+mov   byte ptr ds:[si + MOBJ_T.m_threshold], al
+
 
 done_modifying_threshold:
 mov   ax, MOBJPOSLIST_SEGMENT
@@ -3213,6 +3216,7 @@ do_chase_and_exit:
 
 mov   bx, word ptr [bp - 4]
 mov   si, word ptr [bp - 2]
+; si has value
 ;call  A_Chase_
 
 LEAVE_MACRO 

@@ -588,7 +588,7 @@ mov   si, OFFSET _channels
 ; loop al to ah
 
 loop_next_channel_getchannel:
-cmp   word ptr cs:[si + CHANNEL_T.channel_sfx_id], dx ; 0
+cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], dl ; 0
 je    foundchannel
 cmp   word ptr cs:[si + CHANNEL_T.channel_originRef], di
 jne   iter_next_channel_getchannel
@@ -794,7 +794,7 @@ mov   ax, di
 call  S_StopSound_  ;  S_StopSound(origin, soundorg_secnum);
 
 mov   dx, si
-xchg  ax, di
+xchg  ax, di  ; retrieve
 mov   di, bx  ; di has sep
 mov   bx, word ptr [bp - 2] ; recover sfx_id
 mov   si, bx ; copy sfx id to si
@@ -861,7 +861,7 @@ je    exit_startsoundwithposition
 cmp   al, SFX_POSACT
 jb    do_pc_speaker_sound
 cmp   al, SFX_DMACT
-jnbe  exit_startsoundwithposition  
+jbe   exit_startsoundwithposition  
 do_pc_speaker_sound:
 
 dec   ax
