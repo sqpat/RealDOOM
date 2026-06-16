@@ -4427,8 +4427,8 @@ ret
 PROC    A_BossDeath_ NEAR
 PUBLIC  A_BossDeath_
 
-xchg  ax, bx
-mov   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
+
+mov   cl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ax, ax
 cmp   byte ptr ds:[_commercial], al
 jne   is_commercial_1 ; doom 2
@@ -4439,7 +4439,7 @@ jne   is_ultimate_1
 cmp   byte ptr ds:[_gamemap], 8
 jne   exit_a_bossdeath_3
 cmp   cl, MT_BRUISER
-jne   test_player_health
+jne   check_ok_test_player_health
 
 cmp   byte ptr ds:[_gameepisode], 1
 jmp   generic_shared_jne_weird
@@ -4447,23 +4447,25 @@ jmp   generic_shared_jne_weird
 is_commercial_1:
 cmp   byte ptr ds:[_gamemap], 7
 jne   exit_a_bossdeath
-cmp   cl, 8
-je    test_player_health
+cmp   cl, MT_FATSO
+je    check_ok_test_player_health
 cmp   cl, MT_BABY
 generic_shared_jne_weird:
 jne   exit_a_bossdeath
 
-test_player_health:
+check_ok_test_player_health:
 cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
 jle   exit_a_bossdeath
-lea   ax, ds:[bx - (_thinkerlist + THINKER_T.t_data)]
+
+lea   ax, ds:[si - (_thinkerlist + THINKER_T.t_data)]
 cwd
 mov   si, (SIZE THINKER_T)
 div   si
 xchg  ax, si
 mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 
-je    all_bosses_dead
+
+
 scan_next_mobj_for_bosscheck:
 mov   bx, (SIZE THINKER_T)
 mul   bx
