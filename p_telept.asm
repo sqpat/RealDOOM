@@ -267,7 +267,8 @@ pop   cx
 
 call  P_SpawnMobj_
 mov   dl, SFX_TELEPT
-mov   ax, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
+xchg  ax, bx
 call  S_StartSound_
 
 
@@ -339,7 +340,8 @@ pop   ds ; restore ds
 
 call  P_SpawnMobj_
 mov   dl, SFX_TELEPT
-mov   ax, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
+xchg  ax, bx
 call  S_StartSound_
 
 pop   di  ; bp - 6  mobjpos offset

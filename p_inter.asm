@@ -1048,7 +1048,8 @@ mov    cx, es
 
 call   P_SpawnMobj_
 
-les    bx, dword ptr ds:[_setStateReturn_pos]
+; es:cx has _setstatereturnpos
+mov    bx, cx
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_DROPPED
 exit_p_killmobj:
 LEAVE_MACRO  

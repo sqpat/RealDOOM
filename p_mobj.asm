@@ -134,7 +134,7 @@ call  P_SpawnMobj_
 ;    th->momz.h.intbits = 1;
 ;    th->tics -= P_Random()&3;
 
-mov   bx, word ptr ds:[_setStateReturn];
+;bx has setstatereturn
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], 1 
 SELFMODIFY_set_rnd_value_3:
 mov   al, 0FFh
@@ -235,19 +235,13 @@ mov       ax, bx
 call      P_SpawnMobj_
 
 mov       word ptr ds:[_playerMobjRef], ax
-mov       dx, (SIZE THINKER_T)
-mul       dx
-add       ax, (_thinkerlist + THINKER_T.t_data)
 
-mov       word ptr ds:[_playerMobj], ax
+; bx has _setstatereturn
+mov       word ptr ds:[_playerMobj], bx
 
-mov       bx, word ptr ds:[_playerMobjRef]
-sal       bx, 1
-mov       ax, word ptr ds:[bx + _mobjposlookuptable]
-
-
-mov       word ptr ds:[_playerMobj_pos], ax
-mov       word ptr ds:[_playerMobj_pos + 2], MOBJPOSLIST_SEGMENT  
+; es:cx has _setstatereturnpos
+mov       word ptr ds:[_playerMobj_pos], cx
+mov       word ptr ds:[_playerMobj_pos + 2], es
 
 pop       ax ; retrieve stored angle
 cwd       
@@ -493,7 +487,7 @@ movsw
 movsw     
 movsw     
 
-mov       si, word ptr ds:[_setStateReturn]
+mov       si, bx ; bx has setstatereturn
 mov       al, byte ptr ds:[si + MOBJ_T.m_tics]
 
 test      al, al
@@ -705,7 +699,7 @@ ENDP
 
 
 ALIGN_MACRO
-PROC P_SpawnMobj_ NEAR
+PROC   P_SpawnMobj_ NEAR
 PUBLIC P_SpawnMobj_
 
 
@@ -878,10 +872,16 @@ mov       word ptr es:[di + MOBJ_POS_T.mp_z + 2], ax
 
 
 mov       word ptr ds:[_setStateReturn], si
+mov       bx, si  ; store in bx for return.
 
 mov       word ptr ds:[_setStateReturn_pos + 0], di
-mov       word ptr ds:[_setStateReturn_pos + 2], es
+mov       word ptr ds:[_setStateReturn_pos + 2], es  ; todo remove, set default...
+mov       cx, di
 mov       ax, word ptr [bp - 2]
+
+; return ref in ax
+; thing in bx
+; thingpos in es:cx
 LEAVE_MACRO     
 pop       di
 pop       si
@@ -2127,7 +2127,8 @@ push  si
 call  P_SpawnMobj_
 
 mov   dl, SFX_TELEPT
-mov   ax, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
+xchg  ax, bx
 mov   cx, word ptr [bp - 0Eh]
 call  S_StartSound_
 mov   dx, word ptr [bp - 010h]
@@ -2159,7 +2160,8 @@ mov   bx, ax
 call  P_SpawnMobj_
 
 mov   dl, SFX_TELEPT
-mov   ax, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
+xchg  ax, bx
 mov   bx, word ptr [bp - 2]
 
 call  S_StartSound_
@@ -2396,14 +2398,16 @@ mov   dx, es
 call  P_SpawnMobj_
 
 push  ax  ; bp - 8
-push  word ptr ds:[_setStateReturn_pos] ; bp - 0Ah
+; es:cx has _setstatereturnpos
+push  cx ; bp - 0Ah
 ;sub   sp, 0Eh
 
 
 mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr [bp + 8]   ; type
 
-mov   di, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
+mov   di, bx
 mov   bx, ax
 
 mov   al, byte ptr ds:[bx + _mobjInfo + MOBJINFO_T.mobjinfo_seesound]  ; seesound
@@ -2711,14 +2715,16 @@ mov    dx, es
 
 call  P_SpawnMobj_
 
-push   word ptr ds:[_setStateReturn_pos]   ; bp - 8
+; es:cx has _setstatereturnpos
+push   cx   ; bp - 8
 
 
 mov    al, (SIZE MOBJINFO_T)
 mul    byte ptr [bp - 2]
 
 
-mov    di, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
+mov    di, bx
 mov    bx, ax
 
 mov    al, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_seesound]

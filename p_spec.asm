@@ -1017,9 +1017,8 @@ mov       bl, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
 xor       ah, ah
 xor       bh, bh
 
-cmp       dl, 0                 ; PENDING COMPARE
-mov       dx, LINES_SEGMENT
-mov       es, dx
+test      dl, dl                 ; PENDING COMPARE
+mov       es, word ptr ds:[_LINES_SEGMENT_PTR]
 mov       si, word ptr es:[si + LINE_T.l_sidenum] ; lineside0
 
 
@@ -1030,7 +1029,7 @@ mov       si, word ptr es:[si + LINE_T.l_sidenum] ; lineside0
 ; si lineside0
 ; di linenum
 
-je        shoot_thing_is_player
+jz        shoot_thing_is_player
 cmp       bl, 46
 jne       exit_shootspecialline
 

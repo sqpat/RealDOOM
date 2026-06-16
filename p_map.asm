@@ -6018,7 +6018,7 @@ call  P_SpawnMobj_
 ;    th->momz.h.intbits = 2
 ;    th->tics -= P_Random()&3;
 
-mov   bx, word ptr ds:[_setStateReturn];
+; bx has _setstatereturn
 mov   word ptr ds:[bx + 018h], 2
 SELFMODIFY_blood_set_rnd_value_3:
 mov   al, 0FFh

@@ -2559,7 +2559,7 @@ call  P_SpawnMobj_
 
 ;    th->momz = FRACUNIT
 
-mov   bx, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 0], 0
 mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], 1
 
@@ -3518,10 +3518,12 @@ mov   word ptr ds:[si + MOBJ_T.m_tracerRef], ax
 
 mov   cx, (SIZE THINKER_T)
 xor   dx, dx
-lea   ax, ds:[si - (_thinkerlist + THINKER_T.t_data)]
+lea   ax, [si - (_thinkerlist + THINKER_T.t_data)]
 div   cx
 
-mov   di, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
+;mov   di, word ptr ds:[_setStateReturn]
+mov    di, bx
 
 mov   word ptr ds:[di + MOBJ_T.m_targetRef], ax
 push  word ptr ds:[si + MOBJ_T.m_targetRef]
@@ -4117,7 +4119,7 @@ jne   continue_checking_thinkers_for_skulls
 
 less_than_20_skulls:
 
-push  word ptr ds:[di + MOBJ_T.m_targetRef] ; bp - 4
+push  word ptr ds:[di + MOBJ_T.m_targetRef] ; bp - 4  will be the skull's targetref.
 
 
 ;	prestep.h.intbits = 4 + 3 * ((radii) >> 1);
@@ -4166,6 +4168,7 @@ mov   cx, dx
 pop   dx ; bp - 8h
 pop   ax ; bp - 6h
 
+;    newmobj = P_SpawnMobj (x , y, z, MT_SKULL);
 
 ; gross, rewrite
 
@@ -4194,9 +4197,11 @@ push  word ptr es:[si + MOBJ_POS_T.mp_z + 0]
 
 call  P_SpawnMobj_
 
-mov   ax, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
+xchg  ax, bx
 push  ax ; bp - 6 again (newmobj)
-les   si, dword ptr ds:[_setStateReturn_pos]
+; es:cx has _setstatereturnpos
+mov   si, cx
 push  word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 push  word ptr es:[si + MOBJ_POS_T.mp_y + 0]
 push  word ptr es:[si + MOBJ_POS_T.mp_x + 2]
@@ -4207,7 +4212,8 @@ mov   cx, es
 call  P_TryMove_
 
 
-jc    skull_nodamage
+jc    do_skull_attack
+; 
 mov   cx, 10000
 pop   ax ; bp - 6
 mov   bx, di
@@ -4216,13 +4222,14 @@ call  P_DamageMobj_
 
 jmp   exit_a_painshootskull
 
-skull_nodamage:
-pop   bx ; bp - 6
-pop   ax ; bp - 4
-mov   cx, dx
-mov   word ptr ds:[bx + MOBJ_T.m_targetRef], ax
-xchg  ax, bx
-mov   bx, si
+do_skull_attack:
+mov   bx, si ; bx = mobjpos
+mov   cx, es  ; segment. es:bx is mobjpos
+pop   si ; bp - 6 ; si gets thing.
+pop   word ptr ds:[si + MOBJ_T.m_targetRef]  ; bp - 4
+
+; si should be thing
+; es:bx should be mobjpos.
 call  A_SkullAttack_
 jmp   exit_a_painshootskull
 
@@ -4667,7 +4674,7 @@ mov   dx, si   ; dx gets stored x hibits
 call  P_SpawnMobj_
 
 
-mov   bx, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
 call  P_Random_
 
 ;		th->momz.w = P_Random()*512;
@@ -4766,8 +4773,7 @@ mov   cx, es
 
 call  P_SpawnMobj_
 
-
-mov   bx, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
 call  P_Random_
 
 ;    th->momz.w = P_Random()*512;
@@ -4988,7 +4994,8 @@ call  P_SpawnMobj_
 
 
 mov   dl, SFX_TELEPT
-mov   ax, word ptr ds:[_setStateReturn]
+; bx has _setstatereturn
+xchg  ax, bx
 call  S_StartSound_
 
 call  P_Random_
@@ -5070,15 +5077,13 @@ pop   ds
 
 call  P_SpawnMobj_
 
-
+;bx has _setstatereturn
 xchg  ax, bx
 sal   bx, 1
-mov   di, word ptr ds:[bx + _mobjlookuptable]
-add   di, THINKER_T.t_data
+mov   di, ax ; di has setstate return
 mov   bx, word ptr ds:[bx + _mobjposlookuptable]
 
 mov   dx, 1
-mov   ax, di
 mov   cx, MOBJPOSLIST_SEGMENT
 call  P_LookForPlayers_
 jnc   dont_set_seestate
