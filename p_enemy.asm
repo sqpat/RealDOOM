@@ -2484,8 +2484,7 @@ PUBLIC  A_Tracer_
 test  byte ptr ds:[_gametic], 3
 jne   exit_a_tracer_ret
 
-do_a_tracer:
-
+; pusha..?
 push  dx
 push  si
 push  di
@@ -2711,26 +2710,21 @@ call   P_AproxDistance_
 
 ;	dist16 =  dist.h.intbits / (mobjinfo[actor->type].speed - 0x80);
 
+TRACER_SPEED = 10
 
-mov   bx, word ptr [bp - 2]
-
-mov   al, (SIZE MOBJINFO_T)
-mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-xchg  ax, bx
-
-mov   bl, byte ptr ds:[bx + (_mobjinfo + MOBJINFO_T.mobjinfo_speed)]
-xor   bh, bh
-;xchg  ax, dx  ; intbits
-
-sub   bx, 080h
-cwd   
+mov   bx, TRACER_SPEED  ; tracer speed. 
+cmp   dx, bx
+jb    dont_cap_dx_to_tracer_speed   
+mov   ax, 0FFFFh
+jmp   skip_tracer_div
+dont_cap_dx_to_tracer_speed:
 div   bx
 cmp   ax, 1
 jge   dont_cap_dist16_to_1
 mov   ax, 1
 dont_cap_dist16_to_1:
-
-mov   bx, ax ; dist16
+skip_tracer_div:
+xchg  ax, bx ; dist16
 
 pop   di ; bp - 6
 pop   ds ; bp - 4
