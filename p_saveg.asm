@@ -1596,7 +1596,6 @@ mov       dx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 test      dx, dx
 je        exit_archivethinkers
 loop_check_next_thinker:
-call      P_CheckRepageSaveGame_ ; run once after thinkers
 
 mov       ax, (SIZE THINKER_T)
 push      dx    ; backup  th
@@ -1610,6 +1609,7 @@ cmp       ax, TF_MOBJTHINKER_HIGHBITS
 je        do_save_next_thinker
 mov       dx, bx
 iterate_to_next_thinker:
+call      P_CheckRepageSaveGame_ ; run per thinker
 mov       ax, (SIZE THINKER_T)
 mul       dx
 xchg      ax, bx

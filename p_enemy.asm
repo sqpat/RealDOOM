@@ -4035,30 +4035,37 @@ ENDP
 
 
 
+exit_a_painshootskull:
+LEAVE_MACRO 
+ret   
 
 
 PROC    A_PainDie_ NEAR
 PUBLIC  A_PainDie_
 
-;mov   si, ax
-mov   es, cx
-and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID) ; inlined A_FALL?
+xchg  ax, di  ; di gets thing..
 
-les   di, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   dx, es
-add   dh, (ANG90_HIGHBITS SHR 8)
-mov   bx, di
-mov   cx, dx
+; inlined A_Fall
+mov   es, cx  
+and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1],  (NOT MF_SOLID) 
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
+add   ah, (ANG90_HIGHBITS SHR 8)
+
+push  ax
+push  di
 call  A_PainShootSkull_
-add   dh, (ANG90_HIGHBITS SHR 8)
-mov   bx, di
-mov   ax, si
-mov   cx, dx
+pop   di
+pop   ax
+add   ah, (ANG90_HIGHBITS SHR 8)
+
+
+push  ax
+push  di
 call  A_PainShootSkull_
-add   dh, (ANG90_HIGHBITS SHR 8)
-mov   bx, di
-mov   ax, si
-mov   cx, dx
+pop   di
+pop   ax
+add   ah, (ANG90_HIGHBITS SHR 8)
+
 ;call  A_PainShootSkull_
 
 ; fall thru
@@ -4076,44 +4083,38 @@ PUBLIC  A_PainShootSkull_
 push  bp
 mov   bp, sp
 
-xchg  ax, di
-
-shr   cx, 1
-and   cl, 0FCh
-push  cx  ; bp - 2
+; pass in thing via di (or maybe si has it too)
+; pass in hi angle via ax
 
 
-mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
-xor   cx, cx  ; count = 0
+shr   ax, 1
+and   al, 0FCh
+push  ax  ; bp - 2
+
+
+mov   dx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
+mov   cx, 20 ; max skulls
+
 continue_checking_thinkers_for_skulls:
 
-
-
-mov   bx, ax
+mov   bx, dx
 sal   bx, 1
 mov   bx, word ptr ds:[bx + _mobjlookuptable]
 
-mov   dx, word ptr ds:[bx + THINKER_T.t_prevFunctype]
-and   dx, TF_FUNCBITS SHR 8
-cmp   dx, TF_MOBJTHINKER_HIGHBITS
+mov   al, byte ptr ds:[bx + THINKER_T.t_prevFunctype+1] ; hibits
+and   al, TF_FUNCBITS SHR 8
+cmp   al, TF_MOBJTHINKER_HIGHBITS SHR 8
 jne   not_thinker_do_next
 cmp   byte ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_mobjtype], MT_SKULL
 jne   not_thinker_do_next
-inc   cx
-not_thinker_do_next:
-cmp   cx, 20
-jg    exit_a_painshootskull
+dec   cx
+js    exit_a_painshootskull
 
-mov   ax, word ptr ds:[bx + THINKER_T.t_next]
-test  ax, ax
+not_thinker_do_next:
+mov   dx, word ptr ds:[bx + THINKER_T.t_next]
+test  dx, dx
 jne   continue_checking_thinkers_for_skulls
 
-exit_a_painshootskull_loop:
-cmp   cx, 20
-jle   less_than_20_skulls
-exit_a_painshootskull:
-LEAVE_MACRO 
-ret   
 
 
 less_than_20_skulls:
@@ -4132,7 +4133,7 @@ mov   bx, (SIZE THINKER_T)
 div   bx
 
 
-mov       si, ax
+xchg      ax, si
 sal       si, 1
 mov       si, word ptr ds:[si + _mobjposlookuptable]
 ;    x = actor_pos->x.w + FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, prestep.w);
@@ -4238,9 +4239,8 @@ je    exit_painattack
 do_painattack:
 call  A_FaceTarget_
 mov   es, cx
-les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   cx, es
-mov   ax, si
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
+mov   di, si
 call  A_PainShootSkull_
 exit_painattack:
 ret   
