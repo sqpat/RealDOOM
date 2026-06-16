@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/16 12:33:28
+Created on:       26/06/16 13:09:59
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -64,13 +64,13 @@ P_FLOOR_TEXT           CODE           AUTO           2448:6384       00000491
 P_INTER_TEXT           CODE           AUTO           2448:6816       00000877
 P_LIGHTS_TEXT          CODE           AUTO           2448:708e       00000294
 P_PLATS_TEXT           CODE           AUTO           2448:7322       0000027e
-P_SPEC_TEXT            CODE           AUTO           2448:75a0       00000990
-P_SWITCH_TEXT          CODE           AUTO           2448:7f30       000003a0
-P_TELEPT_TEXT          CODE           AUTO           2448:82d0       00000185
-P_TICK_TEXT            CODE           AUTO           2448:8456       000001ba
-P_USER_TEXT            CODE           AUTO           2448:8610       00000422
-P_INFO_TEXT            CODE           AUTO           2448:8a32       00000326
-AM_MAP_TEXT            CODE           AUTO           2448:8d58       00000b60
+P_SPEC_TEXT            CODE           AUTO           2448:75a0       00000992
+P_SWITCH_TEXT          CODE           AUTO           2448:7f32       000003a0
+P_TELEPT_TEXT          CODE           AUTO           2448:82d2       00000185
+P_TICK_TEXT            CODE           AUTO           2448:8458       000001ba
+P_USER_TEXT            CODE           AUTO           2448:8612       00000422
+P_INFO_TEXT            CODE           AUTO           2448:8a34       00000326
+AM_MAP_TEXT            CODE           AUTO           2448:8d5a       00000b60
 P_MATH_TEXT            CODE           AUTO           2448:98c0       000007b5
 HU_SETUP_TEXT          CODE           AUTO           2448:a076       00000248
 HU_LIB_TEXT            CODE           AUTO           2448:a2be       0000014d
@@ -177,8 +177,8 @@ Module: m_menu.obj(m_menu.ASM)
 015f:0c67*     M_StringWidth_
 015f:0442*     M_LoadGame_
 015f:0ca3*     M_StringHeight_
-015f:13bb      G_Responder_
 015f:0b6a*     M_ChangeDetail_
+015f:13bb      G_Responder_
 015f:0386*     M_DrawLoad_
 015f:05a1*     M_SaveGame_
 015f:054e*     M_SaveSelect_
@@ -389,8 +389,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 081b:32b6*     R_GetTexturePage_
 081b:3afc*     R_WriteBackFrameConstants_
 081b:09e8*     FixedMulTrigNoShiftCosine_BSPLocal_
-081b:0056*     _cachedsegmentlumpsBSPLocal
 081b:0a12*     R_ClearPlanes_
+081b:0056*     _cachedsegmentlumpsBSPLocal
 081b:21ac*     SELFMODIFY_BSP_markfloor_1_TWOSIDED
 081b:17f2*     mark_planes_dirty
 081b:11ae*     SELFMODIFY_skip_curseg_based_selfmodify_TARGET
@@ -452,8 +452,8 @@ Module: r_bspfl.obj(r_bspfl.ASM)
 12df:2d99      R_GetPatchTexture_FarFL_
 12df:32c7      R_WriteBackViewConstantsFL_
 Module: r_col24.obj(r_col24.ASM)
-163f:1011*     hack_fix_texel_3
 163f:0000*     hack_fix_texel_1
+163f:1011*     hack_fix_texel_3
 163f:0814*     hack_fix_texel_2
 163f:19e0      MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 163f:0010      R_DrawColumn24NoLoop_
@@ -521,8 +521,8 @@ Module: r_span24.obj(r_span24.ASM)
 19f8:09b4*     ENSUREALIGN_400
 19f8:09a4*     ENSUREALIGN_401
 19f8:012d*     ENSUREALIGN_406
-19f8:022d*     ENSUREALIGN_409
 19f8:0144*     ENSUREALIGN_408
+19f8:022d*     ENSUREALIGN_409
 19f8:09a7*     ENSUREALIGN_402
 19f8:0d88*     ENSUREALIGN_403
 19f8:0988*     ENSUREALIGN_410
@@ -573,10 +573,11 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 Module: r_mask24.obj(r_mask24.ASM)
 1dd8:016a*     draw_shadow_sprite
 1dd8:0580*     ENSUREALIGN_107_sprite
-1dd8:058a*     ENSUREALIGN_104_sprite
 1dd8:059c*     ENSUREALIGN_105_sprite
-1dd8:0153*     ENSUREALIGN_102
+1dd8:058a*     ENSUREALIGN_104_sprite
 1dd8:0b7c*     ENSUREALIGN_109
+1dd8:0153*     ENSUREALIGN_102
+1dd8:152d*     ENSUREALIGN_106
 1dd8:05a4*     ENSUREALIGN_101_sprite
 1dd8:0b1e*     ENSUREALIGN_111
 1dd8:0596*     ENSUREALIGN_106_sprite
@@ -587,29 +588,28 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd8:0a60*     ENSUREALIGN_113
 1dd8:093c*     ENSUREALIGN_120
 1dd8:12a3*     ENSUREALIGN_122
-1dd8:152d*     ENSUREALIGN_106
 1dd8:112a*     ENSUREALIGN_121
 1dd8:0921*     ENSUREALIGN_119
 1dd8:1517*     ENSUREALIGN_107
-1dd8:033f*     ENSUREALIGN_129
 1dd8:05d2*     ENSUREALIGN_130
 1dd8:044c*     ENSUREALIGN_132
 1dd8:0408*     ENSUREALIGN_133
-1dd8:098a*     ENSUREALIGN_118
 1dd8:098d*     ENSUREALIGN_116
+1dd8:033f*     ENSUREALIGN_129
 1dd8:14b1*     ENSUREALIGN_131
-1dd8:0bcb*     ENSUREALIGN_115
-1dd8:1237*     ENSUREALIGN_126
+1dd8:098a*     ENSUREALIGN_118
 1dd8:14c3*     ENSUREALIGN_127
 1dd8:14e9*     ENSUREALIGN_108
 1dd8:12f8*     ENSUREALIGN_123
 1dd8:1533*     ENSUREALIGN_105
 1dd8:0695*     three_page_sprite
 1dd8:0418*     ENSUREALIGN_135
+1dd8:0bcb*     ENSUREALIGN_115
 1dd8:0512*     ENSUREALIGN_132_sprite
-1dd8:1521*     ENSUREALIGN_104
+1dd8:1237*     ENSUREALIGN_126
 1dd8:0440*     ENSUREALIGN_134
 1dd8:1301*     ENSUREALIGN_124
+1dd8:1521*     ENSUREALIGN_104
 1dd8:051a*     ENSUREALIGN_131_sprite
 1dd8:0986*     ENSUREALIGN_114
 1dd8:0a93*     ENSUREALIGN_128
@@ -670,8 +670,8 @@ Module: r_maskfl.obj(r_maskfl.ASM)
 22b8:1898      R_WriteBackMaskedFrameConstantsFL_
 22b8:180b      R_WriteBackViewConstantsMaskedFL_
 Module: p_sight.obj(p_sight.ASM)
-2448:0652*     P_CrossBSPNode_
 2448:03fd*     ENSUREALIGN_908
+2448:0652*     P_CrossBSPNode_
 2448:0100      P_CheckSight_
 2448:01d6*     P_DivlineSide_
 2448:0000      P_SIGHT_STARTMARKER_
@@ -884,93 +884,93 @@ Module: p_plats.obj(p_plats.ASM)
 2448:750e      EV_PlatFunc_
 2448:7322*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-2448:7c16      P_UpdateSpecials_
+2448:7c18      P_UpdateSpecials_
 2448:765a      P_FindNextHighestFloor_
-2448:7b4e      P_PlayerInSpecialSector_
-2448:7f30*     P_SPEC_ENDMARKER_
+2448:7b50      P_PlayerInSpecialSector_
+2448:7f32*     P_SPEC_ENDMARKER_
 2448:75f6      P_FindHighestOrLowestFloorSurrounding_
 2448:75a0*     P_SPEC_STARTMARKER_
-2448:7d3e      EV_DoDonut_
+2448:7d40      EV_DoDonut_
 2448:76b6      P_FindLowestOrHighestCeilingSurrounding_
 2448:7752      P_FindMinSurroundingLight_
 2448:75a2*     getNextSectorList_
 2448:771a      P_FindSectorsFromLineTag_
 2448:78cc      P_CrossSpecialLine_
 2448:7ac2      P_ShootSpecialLine_
-2448:7ea2      P_SpawnSpecials_
+2448:7ea4      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-2448:82d0*     P_SWITCH_ENDMARKER_
-2448:7f30*     P_SWITCH_STARTMARKER_
-2448:7f30      P_ChangeSwitchTexture_
-2448:8112      P_UseSpecialLine_
+2448:82d2*     P_SWITCH_ENDMARKER_
+2448:7f32*     P_SWITCH_STARTMARKER_
+2448:7f32      P_ChangeSwitchTexture_
+2448:8114      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-2448:8455*     P_TELEPT_ENDMARKER_
-2448:82d0*     P_TELEPT_STARTMARKER_
-2448:82d0      EV_Teleport_
+2448:8457*     P_TELEPT_ENDMARKER_
+2448:82d2*     P_TELEPT_STARTMARKER_
+2448:82d2      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-2448:84ee      P_UpdateThinkerFunc_
-2448:855e*     ENSUREALIGN_902
-2448:8600      P_Random_
-2448:8456*     P_TICK_STARTMARKER_
-2448:8468      P_CreateThinkerFar_
-2448:8610*     P_TICK_ENDMARKER_
-2448:8506      P_RemoveThinker_
-2448:8530      P_Ticker_
-2448:846c      P_CreateThinker_
+2448:84f0      P_UpdateThinkerFunc_
+2448:8560*     ENSUREALIGN_902
+2448:8602      P_Random_
+2448:8458*     P_TICK_STARTMARKER_
+2448:846a      P_CreateThinkerFar_
+2448:8612*     P_TICK_ENDMARKER_
+2448:8508      P_RemoveThinker_
+2448:8532      P_Ticker_
+2448:846e      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-2448:8a32*     P_USER_ENDMARKER_
-2448:8611*     P_Thrust_
-2448:8649*     P_CalcHeight_
-2448:87ee*     P_DeathThink_
-2448:8611*     P_USER_STARTMARKER_
-2448:876d*     P_MovePlayer_
-2448:88e6      P_PlayerThink_
+2448:8a34*     P_USER_ENDMARKER_
+2448:8613*     P_Thrust_
+2448:864b*     P_CalcHeight_
+2448:87f0*     P_DeathThink_
+2448:8613*     P_USER_STARTMARKER_
+2448:876f*     P_MovePlayer_
+2448:88e8      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-2448:8c5c      GetPainChance_
-2448:8cee      GetAttackSound_
-2448:8cda      GetDeathState_
-2448:8cba      GetSeeState_
-2448:8c1c      GetXDeathState_
-2448:8c9e      GetActiveSound_
-2448:8cb0      GetPainSound_
-2448:8c6e      GetRaiseState_
-2448:8ce4      GetPainState_
-2448:8cd0      GetMissileState_
-2448:8c3e      GetMeleeState_
-2448:8d1c      GetDamage_
-2448:8d58*     P_INFO_ENDMARKER_
-2448:8c7a      GetMobjMass_
-2448:8d48      GetSpawnHealth_
-2448:8a32*     P_INFO_STARTMARKER_
+2448:8c5e      GetPainChance_
+2448:8cf0      GetAttackSound_
+2448:8cdc      GetDeathState_
+2448:8cbc      GetSeeState_
+2448:8c1e      GetXDeathState_
+2448:8ca0      GetActiveSound_
+2448:8cb2      GetPainSound_
+2448:8c70      GetRaiseState_
+2448:8ce6      GetPainState_
+2448:8cd2      GetMissileState_
+2448:8c40      GetMeleeState_
+2448:8d1e      GetDamage_
+2448:8d5a*     P_INFO_ENDMARKER_
+2448:8c7c      GetMobjMass_
+2448:8d4a      GetSpawnHealth_
+2448:8a34*     P_INFO_STARTMARKER_
 Module: am_map.obj(am_map.ASM)
-2448:8e8f*     FastMulTrig16Sine_
-2448:90fe*     AM_clearMarks_
-2448:8fd7*     AM_findMinMaxBoundaries_
-2448:8e60*     FastMulTrig16Cosine_
-2448:9057*     AM_changeWindowLoc_
-2448:9115*     AM_Start_
-2448:8d58*     AM_MAP_STARTMARKER_
-2448:91f3*     AM_minOutWindowScale_
-2448:8ee3*     AM_activateNewScale_
-2448:9370      AM_Ticker_
-2448:96e7*     AM_drawLineCharacter_
-2448:946f*     AM_drawMline_
-2448:96af*     AM_rotate_
-2448:8f38*     AM_restoreScaleAndLoc_
-2448:8ece*     CYMTOF16_
-2448:8ebe*     CXMTOF16_
-2448:97af      AM_Drawer_
-2448:8fa2*     AM_addMark_
-2448:98b8*     AM_MAP_ENDMARKER_
-2448:973c*     AM_drawPlayers_
-2448:9216      AM_Responder_
-2448:95cd*     AM_drawWalls_
-2448:944d*     DOOUTCODE_
+2448:8e91*     FastMulTrig16Sine_
+2448:8fd9*     AM_findMinMaxBoundaries_
+2448:9100*     AM_clearMarks_
+2448:8e62*     FastMulTrig16Cosine_
+2448:9059*     AM_changeWindowLoc_
+2448:9117*     AM_Start_
+2448:8d5a*     AM_MAP_STARTMARKER_
+2448:91f5*     AM_minOutWindowScale_
+2448:8ee5*     AM_activateNewScale_
+2448:9372      AM_Ticker_
+2448:96e9*     AM_drawLineCharacter_
+2448:9471*     AM_drawMline_
+2448:96b1*     AM_rotate_
+2448:8f3a*     AM_restoreScaleAndLoc_
+2448:8ed0*     CYMTOF16_
+2448:8ec0*     CXMTOF16_
+2448:97b1      AM_Drawer_
+2448:8fa4*     AM_addMark_
+2448:98ba*     AM_MAP_ENDMARKER_
+2448:973e*     AM_drawPlayers_
+2448:9218      AM_Responder_
+2448:95cf*     AM_drawWalls_
+2448:944f*     DOOUTCODE_
 Module: p_math.obj(p_math.ASM)
 2448:9912*     ENSUREALIGN_903
 2448:9964      FixedMulTrigNoShiftCosine_MapLocal_
-2448:9aa4*     ENSUREALIGN_904
 2448:9b8e*     ENSUREALIGN_905
+2448:9aa4*     ENSUREALIGN_904
 2448:9b60      FixedDiv_MapLocal_
 2448:9d98      R_PointToAngle2_16_MapLocal_
 2448:99f6*     div48_32_MapLocal_

@@ -1009,10 +1009,11 @@ mov       dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]  ; dl holds thing type.
 mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 SHIFT_MACRO_SMALL shl       bx 2
 mov       si, bx
+SHIFT_MACRO_SMALL shl       bx 2
 
-mov       al, byte ptr es:[bx + si + LINE_PHYSICS_T.lp_tag]
-mov       cx, word ptr es:[bx + si + LINE_PHYSICS_T.lp_frontsecnum]
-mov       bl, byte ptr es:[bx + si + LINE_PHYSICS_T.lp_special]
+mov       al, byte ptr es:[bx + LINE_PHYSICS_T.lp_tag]
+mov       cx, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
+mov       bl, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
 xor       ah, ah
 xor       bh, bh
 
@@ -1044,7 +1045,7 @@ cmp       bl, 24
 jne       exit_shootspecialline
 case_24:
 push      bx
-mov       bx, FLOOR_RAISEFLOOR
+mov       bl, FLOOR_RAISEFLOOR
 mov       dx, cx ; linefrontsecnum
 call      EV_DoFloor_
 do_change_switch_texture_call_pop_bx:

@@ -48,8 +48,8 @@
 #define LoadSFXWadLumpsOffset                   0x4
 #define P_SetThingPositionFarOffset             0x2AE2
 #define P_SpawnMapThingOffset                   0x2C66
-#define P_SpawnSpecialsOffset                   0x7EA2
-#define AM_DrawerOffset                         0x97AF
+#define P_SpawnSpecialsOffset                   0x7EA4
+#define AM_DrawerOffset                         0x97B1
 #define S_StartSoundFarOffset                   0xB8D4
 #define S_StartOffset                           0xB9B5
 #define M_InitOffset                            0x1182
