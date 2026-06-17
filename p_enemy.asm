@@ -3801,9 +3801,9 @@ call  P_SpawnMissile_
 
 test  si, si
 je    no_angle_mod
-mov   si, bx   ; bx is setstatereturn
-mov   bx, cx  ; es:cx is setstatereturnpos
-add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], si  ; add angle
+xchg   si, bx   ; bx is setstatereturn, gets angle
+xchg   bx, cx  ; es:cx is setstatereturnpos, get angle in cx
+add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], cx  ; add angle
 
 
 

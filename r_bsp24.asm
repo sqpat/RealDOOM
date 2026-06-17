@@ -7001,10 +7001,13 @@ SUB AX, DX  ; ; top of bot wall (backector floor height)  minus top of top wall 
 ; CMP is +1 so carry will always be 0 when branch taken
 CMP AX, (128 SHL 3)
 JAE wall_too_tall_to_not_loop
+; another possibility compared to above
+;TEST AX, 0xFC00   ; clears carry flag
+;JNZ  wall_too_tall_to_not_loop
 CMP AX, [BP - 0Ch]   ; (128 - row offset)
 wall_too_tall_to_not_loop:
 MOV AX, 0
-RCR AL, 1
+RCR AL, 1 ; al = 080h or 0
 do_selfmodify_colfunc_type_bot:
 ; todo set bot vals here?
 

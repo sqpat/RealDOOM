@@ -875,7 +875,7 @@ mov       word ptr ds:[_setStateReturn], si
 mov       bx, si  ; store in bx for return.
 
 mov       word ptr ds:[_setStateReturn_pos + 0], di
-mov       word ptr ds:[_setStateReturn_pos + 2], es  ; todo remove, set default...
+;mov       word ptr ds:[_setStateReturn_pos + 2], es  ; todo remove, set default...
 mov       cx, di
 mov       ax, word ptr [bp - 2]
 
@@ -2594,6 +2594,7 @@ push  word ptr [bp - 4]
 pop   es
 pop   cx
 mov   word ptr ds:[_setStateReturn_pos + 0], cx
+;mov   word ptr ds:[_setStateReturn_pos + 2], es
 
 mov   ax, word ptr [bp - 8]
 LEAVE_MACRO 
