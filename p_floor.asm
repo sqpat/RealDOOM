@@ -781,9 +781,9 @@ sub   sp, (010h + (MAX_ADJOINING_SECTORS_IN_WORDS))
 ; bp - 2  current secnum in innermost loop
 ; bp - 4  stairheight in innermost loop
 
-cmp   dl, STAIRS_TURBO16
+dec   dx  ;  STAIRS_TURBO16 check
 mov   dx, 0C089h ; two byte nop  ; nop if turbo16
-je    do_type_selfmodify
+jz    do_type_selfmodify
 mov   dx, ((SELFMODIFY_check_stairtype_TARGET - SELFMODIFY_check_stairtype_AFTER) SHL 8) + 0EBh
 do_type_selfmodify:
 

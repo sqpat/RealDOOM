@@ -894,13 +894,13 @@ jmp       call_do_ceiling_with_si_inc
 
 
 switch_case_8:
-inc       si ; si becomes 0
 xor       dx, dx ; STAIRS_BUILD8
 call_buildstairs:
+inc       si ; si becomes 0
 call      EV_BuildStairs_
 jmp       done_with_switch_block
 switch_case_100:
-mov       dx, STAIRS_TURBO16
+mov       dl, STAIRS_TURBO16
 jmp       call_buildstairs
 
 

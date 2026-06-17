@@ -2449,19 +2449,20 @@ pop       bx  ; todo not sure if needed
 mov   ax, si
 call  P_SpawnMissile_
 
-les   bx, dword ptr ds:[_setStateReturn_pos]
-sub   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16
+; es already set
+sub   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16 ; set its position back
 
+; bx is _setStateReturn
 push  word ptr ds:[si + MOBJ_T.m_targetRef]
-mov   si, word ptr ds:[_setStateReturn]
-pop   word ptr ds:[si + MOBJ_T.m_tracerRef]
+pop   word ptr ds:[bx + MOBJ_T.m_tracerRef] ; bx is setstatereturn
 
 
 
 ;	mo_pos->x.w += mo->momx.w;
 ;	mo_pos->y.w += mo->momy.w;
 
-lea   si, [si + MOBJ_T.m_momx]
+lea   si, [bx + MOBJ_T.m_momx]
+mov   bx, cx ; setstatereturnpos
 lodsw
 add   word ptr es:[bx + MOBJ_POS_T.mp_x+0], ax
 lodsw
@@ -2473,13 +2474,12 @@ adc   word ptr es:[bx + MOBJ_POS_T.mp_y+2], ax
 
 
 exit_a_skelmissile:
+exit_a_tracer_ret:
 ret   
 
 ENDP
 
 
-exit_a_tracer_ret:
-ret
 
 PROC    A_Tracer_ NEAR
 PUBLIC  A_Tracer_
@@ -2488,14 +2488,12 @@ test  byte ptr ds:[_gametic], 3
 jne   exit_a_tracer_ret
 
 ; pusha..?
-push  dx
-push  si
-push  di
+
 push  bp
 mov   bp, sp
-push  ax  ; bp - 2
-push  cx  ; bp - 4
-push  bx  ; bp - 6
+push  ax  ; bp - 2 ; thing
+push  cx  ; bp - 4 ; thingpos
+push  bx  ; bp - 6 ; thingpos
 
 mov   ds, cx
 mov   si, bx
@@ -2547,7 +2545,7 @@ push  word ptr ds:[si]
 
 push  ss
 pop   ds
-mov   di, word ptr [bp - 2]
+mov   di, word ptr [bp - 2] ; thing ptr
 
 sub   ax, word ptr ds:[di + MOBJ_T.m_momx + 0]
 sbb   dx, word ptr ds:[di + MOBJ_T.m_momx + 2]
@@ -2569,14 +2567,14 @@ call  P_Random_
 and   al, 3
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 
-;    if (th->tics < 1 || th->tics > 240)
+;    if (th->tics < 1 || th->tics > 240) 
 ;		th->tics = 1;
 
 
 mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
 cmp   al, 1
 jb    cap_tracer_tics_to_1
-cmp   al, 240
+cmp   al, 240 ; unsigned blah... maybe jnc and jnz instead?
 jbe   dont_cap_tracer_tics
 jmp   cap_tracer_tics_to_1
 
@@ -2593,7 +2591,8 @@ mov   ax, word ptr ds:[di + MOBJ_T.m_tracerRef]
 test  ax, ax
 jne   valid_tracerref
 jump_to_exit_a_tracer:
-jmp   exit_a_tracer
+LEAVE_MACRO 
+ret   
 
 valid_tracerref:
 
@@ -2638,7 +2637,7 @@ call  R_PointToAngle2_MapLocal_
 
 lds   si, dword ptr [bp - 6]
 
-;jmp   use_exact_angle  ; doesnt fix it?
+
 
 cmp   dx, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 jne   angle_not_exact_reaim
@@ -2686,13 +2685,18 @@ mov   si, di
 call  A_SetMomxMomyFromAngleAndGetSpeedAngle_
 
 
+;    // change slope
+;    dist = P_AproxDistance (dest->x - actor->x,
+;			    dest->y - actor->y);
+
+
 
 pop   si ; bp - 8
 
 lds   di, dword ptr [bp - 6]
 
 
-lodsw 
+lodsw           ; lodsw = destpos?
 xchg  ax, cx
 lodsw 
 xchg  ax, dx
@@ -2700,6 +2704,7 @@ lodsw
 xchg  ax, bx
 lodsw 
 xchg  ax, cx
+
 
 sub   ax, word ptr ds:[di + MOBJ_POS_T.mp_x + 0]
 sbb   dx, word ptr ds:[di + MOBJ_POS_T.mp_x + 2]
@@ -2718,7 +2723,7 @@ TRACER_SPEED = 10
 mov   bx, TRACER_SPEED  ; tracer speed. 
 cmp   dx, bx
 jb    dont_cap_dx_to_tracer_speed   
-mov   ax, 0FFFFh
+mov   bx, 0FFFFh
 jmp   skip_tracer_div
 dont_cap_dx_to_tracer_speed:
 div   bx
@@ -2726,15 +2731,18 @@ cmp   ax, 1
 jge   dont_cap_dist16_to_1
 mov   ax, 1
 dont_cap_dist16_to_1:
-skip_tracer_div:
 xchg  ax, bx ; dist16
+skip_tracer_div:
 
 pop   di ; bp - 6
 pop   ds ; bp - 4
 
-lodsw ; dest x lo
+; si already pointing at z!
+;    slope = (dest->z+40*FRACUNIT - actor->z) / dist;
+
+lodsw ; dest z lo
 xchg  ax, dx
-lodsw ; dest x hi
+lodsw ; dest z hi
 add   ax, 40
 xchg  ax, dx
 
@@ -2770,9 +2778,6 @@ pop   ds
 exit_a_tracer:
 
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
 ret   
 
 
@@ -2783,9 +2788,6 @@ push  ss
 pop   ds
 
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
 ret   
 
 
@@ -3799,12 +3801,10 @@ call  P_SpawnMissile_
 
 test  si, si
 je    no_angle_mod
-
-les   bx, dword ptr ds:[_setStateReturn_pos]
-
+mov   si, bx   ; bx is setstatereturn
+mov   bx, cx  ; es:cx is setstatereturnpos
 add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], si  ; add angle
 
-mov   si, word ptr ds:[_setStateReturn]
 
 
 ;call  A_SetMomxMomyFromAngleAndGetSpeedAngle_
@@ -4855,7 +4855,7 @@ mov   ax, si
 mov   bx, di
 call  P_SpawnMissile_
 
-mov   si, word ptr ds:[_setStateReturn]
+mov   si, bx  ; setstatereturn
 
 ;	newmobj->targetRef = targRef;
 pop   bx  ; bp - 4
@@ -4876,7 +4876,7 @@ pop   word ptr ds:[si + MOBJ_T.m_targetRef]  ; bp - 2
 
 
 xor   dx, dx 
-mov   es, word ptr ds:[_setStateReturn_pos+2]
+; es already set
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 sub   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
 

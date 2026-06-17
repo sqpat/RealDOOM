@@ -261,6 +261,7 @@ ENDP
 ALIGN_MACRO
 _special_line_switch_block:
 ; 15 per row..
+; todo rename to actual types..
 dw special_line_type_0,       special_line_case_default, special_line_case_default, special_line_case_default, special_line_case_default, special_line_case_default, special_line_type_2,       special_line_case_default, special_line_type_3,       special_line_case_default, special_line_type_4,       special_line_case_default, special_line_case_default, special_line_type_5,       special_line_type_6
 dw special_line_case_default, special_line_case_default, special_line_type_7,       special_line_case_default, special_line_type_8,       special_line_type_9,       special_line_case_default, special_line_type_10     , special_line_case_default, special_line_case_default, special_line_type_0,       special_line_type_0,       special_line_type_0,       special_line_type_11,      special_line_case_default
 dw special_line_type_0,       special_line_type_0,       special_line_type_0,       special_line_type_0,       special_line_case_default, special_line_case_default, special_line_case_default, special_line_case_default, special_line_case_default, special_line_case_default, special_line_type_12,      special_line_type_13,      special_line_type_14,      special_line_case_default, special_line_type_15
@@ -389,6 +390,7 @@ mov   bl, PLATFORM_RAISEANDCHANGE
 jmp   do_plat
 
 special_line_type_44:
+public special_line_type_44
 mov   dl, STAIRS_TURBO16
 jmp   do_buildstairs
 

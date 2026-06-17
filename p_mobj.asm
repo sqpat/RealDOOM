@@ -2336,7 +2336,7 @@ ENDP
 
 
 ALIGN_MACRO
-PROC P_SpawnMissile_ NEAR
+PROC   P_SpawnMissile_ NEAR
 PUBLIC P_SpawnMissile_
 
 ; bp + 8     type
@@ -2587,11 +2587,13 @@ mov   ax, di
 call  P_CheckMissileSpawn_
 
 mov   word ptr ds:[_setStateReturn], di
+mov   bx, di ; return in bx...
 
 push  word ptr [bp - 0Ah]
 push  word ptr [bp - 4]
-pop   word ptr ds:[_setStateReturn_pos + 2]  ; todo should be constant write
-pop   word ptr ds:[_setStateReturn_pos + 0]
+pop   es
+pop   cx
+mov   word ptr ds:[_setStateReturn_pos + 0], cx
 
 mov   ax, word ptr [bp - 8]
 LEAVE_MACRO 
