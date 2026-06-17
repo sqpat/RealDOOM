@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/16 17:58:57
+Created on:       26/06/17 10:28:12
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -519,13 +519,13 @@ Module: r_span24.obj(r_span24.ASM)
 19f7:0d46*     ENSUREALIGN_404
 19f7:0996*     ENSUREALIGN_407
 19f7:09b4*     ENSUREALIGN_400
-19f7:09a4*     ENSUREALIGN_401
 19f7:012d*     ENSUREALIGN_406
 19f7:022d*     ENSUREALIGN_409
 19f7:0144*     ENSUREALIGN_408
 19f7:09a7*     ENSUREALIGN_402
 19f7:0d88*     ENSUREALIGN_403
 19f7:0988*     ENSUREALIGN_410
+19f7:09a4*     ENSUREALIGN_401
 19f7:0c7b*     SELFMODIFY_SPAN_viewz_13_3_1
 19f7:023b*     SELFMODIFY_SELECT_port_routine
 19f7:0e97*     SELFMODIFY_SPAN_lookuppicnum
@@ -1660,4 +1660,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e650 (255568.)
 Entry point address: 2fe4:806e
-Link time: 00:00.05
+Link time: 00:00.04

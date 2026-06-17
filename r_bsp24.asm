@@ -6996,16 +6996,15 @@ jl        set_bsilheight_to_frontsectorfloorheight
 
 ; sector heights are shifted 3... 
 
-sub       dx, cx    ; top of bot wall (backector floor height)  minus top of top wall (front sector ceil height)
-neg       dx
-and       dx, (127 SHL 3)  ; mod tex height  ; dX = starting texel.
-sub       dx, word ptr [bp - 0Ch]   ; (128 - row offset)
-mov       al, ch  ; sign bit. 
-
-mov       dx, es ; restore dx
-
-and       ax, 080h
-
+MOV AX, CX
+SUB AX, DX  ; ; top of bot wall (backector floor height)  minus top of top wall (front sector ceil height)
+; CMP is +1 so carry will always be 0 when branch taken
+CMP AX, (128 SHL 3)
+JAE wall_too_tall_to_not_loop
+CMP AX, [BP - 0Ch]   ; (128 - row offset)
+wall_too_tall_to_not_loop:
+MOV AX, 0
+RCR AL, 1
 do_selfmodify_colfunc_type_bot:
 ; todo set bot vals here?
 
