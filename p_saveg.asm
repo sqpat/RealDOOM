@@ -1592,7 +1592,7 @@ PUBLIC P_ArchiveThinkers_
 
 
 les       di, dword ptr ds:[_save_p]
-mov       dx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
+mov       dx, word ptr ds:[_thinkerlist + THINKER_T.t_next] ; first thinker..
 test      dx, dx
 je        exit_archivethinkers
 loop_check_next_thinker:
@@ -1601,18 +1601,18 @@ mov       ax, (SIZE THINKER_T)
 push      dx    ; backup  th
 mul       dx
 pop       dx    ; restore th
-xchg      ax, bx
+xchg      ax, bx ; bx is thinker array offset
 
-mov       ax, word ptr ss:[bx + OFFSET _thinkerlist + THINKER_T.t_prevFunctype]
-and       ax, TF_FUNCBITS
-cmp       ax, TF_MOBJTHINKER_HIGHBITS
+mov       al, byte ptr ss:[bx + OFFSET _thinkerlist + THINKER_T.t_prevFunctype + 1]
+and       al, TF_FUNCBITS SHR 8
+cmp       al, TF_MOBJTHINKER_HIGHBITS SHR 8
+push      bx  ; store thinker
 je        do_save_next_thinker
-mov       dx, bx
+
 iterate_to_next_thinker:
 call      P_CheckRepageSaveGame_ ; run per thinker
-mov       ax, (SIZE THINKER_T)
-mul       dx
-xchg      ax, bx
+
+pop       bx  ; restore thinker
 mov       dx, word ptr ss:[bx + OFFSET _thinkerlist + THINKER_T.t_next] ; next th
 test      dx, dx
 jne       loop_check_next_thinker
