@@ -726,6 +726,8 @@ SIZEOF_STROBE_VANILLA_T = 024h
 SIZEOF_LIGHTFLASH_VANILLA_T = 024h
 SIZEOF_GLOW_VANILLA_T = 01Ch
 
+TC_ENDSPECIALS = 7
+
 jump_table_unarchive_specials:
 dw  OFFSET  load_ceiling_special    ; 0
 dw  OFFSET  load_door_special       ; 1
@@ -734,7 +736,7 @@ dw  OFFSET  load_platraise_special  ; 3
 dw  OFFSET  load_flash_special      ; 4
 dw  OFFSET  load_strobe_special     ; 5
 dw  OFFSET  load_glow_special       ; 6
-dw  OFFSET  end_specials            ; 7
+dw  OFFSET  end_specials            ; 7 TC_ENDSPECIALS
 
 PROC    P_InitThinkers_SaveG_ NEAR
 
@@ -773,20 +775,40 @@ ENDP
 
 PROC  CreateThinkerLocal_ NEAR
 
-xor    ah, ah ; clear 0 bits..;
+; todo what
+; xor    ah, ah ; clear 0 bits..;
 
 db 09Ah
 dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
+
+
 push   ds
 pop    es
-mov    ds, cx
+mov    ds, cx  ; restore 0x5000 (load scratch segment)
+
 
 ret
 
 ENDP
 
-PROC P_UnArchiveSpecials_  NEAR
+PROC  DivAndGetIndexInBX_ NEAR
+
+mov    bx, ax
+sub    ax, (_thinkerlist + THINKER_T.t_data)
+xor    dx, dx
+div    di           ; store thinkerref
+mov    di, bx
+xchg   ax, bx
+
+ret
+ENDP
+
+; store last ptr after lodsb
+_last_si:
+dw 0
+
+PROC   P_UnArchiveSpecials_  NEAR
 PUBLIC P_UnArchiveSpecials_
 
 
@@ -800,17 +822,25 @@ load_next_special:
 
 xor    ax, ax
 lodsb
+
+mov    word ptr cs:[_last_si], si
+
+; PADSAVEP
+add    si, 15  ; add si, 3 + add si, 12      ; prev, next, function
+and    si, 0FFFCh
+
+
 mov    dx, ds   ; store segreg
 push   ss
 pop    ds
-cmp    al, 7
+cmp    al, TC_ENDSPECIALS
 ja     bad_special_thinkerclass
 mov    bx, ax
 sal    bx, 1
 
 
 mov    di, (SIZE THINKER_T)
-mov    cx, dx
+mov    cx, dx  ; load data segment (05000h)
 
 jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials]
 
@@ -826,31 +856,21 @@ jmp       do_error_copy
 ; thinker_type...
 
 load_ceiling_special:
-; PADSAVEP
-add    si, 3
-and    si, 0FFFCh
 mov    ah, (TF_MOVECEILING_HIGHBITS SHR 8)
 
 call   CreateThinkerLocal_
 
+call   DivAndGetIndexInBX_
 
-mov    bx, ax
-sub    ax, (_thinkerlist + THINKER_T.t_data)
-xor    dx, dx
-div    di           ; store thinkerref
-mov    di, bx
-mov    bx, ax
-
-add    si, 12
-call   LoadInt8_
-call   LoadInt16_
-call   LoadShortHeight16_
-call   LoadShortHeight16_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadTagToVanilla
-call   LoadInt8_
-
+call   LoadInt8_            ; CEILING_T.ceiling_type
+call   LoadInt16_           ; CEILING_T.ceiling_secnum
+call   LoadShortHeight16_   ; CEILING_T.ceiling_bottomheight
+call   LoadShortHeight16_   ; CEILING_T.ceiling_topheight
+call   LoadInt8_            ; CEILING_T.ceiling_speed
+call   LoadInt8_            ; CEILING_T.ceiling_crush
+call   LoadTagToVanilla     ; CEILING_T.ceiling_direction
+call   LoadInt8_            ; CEILING_T.ceiling_tag
+call   LoadInt8_            ; CEILING_T.ceiling_olddirection
 
 
 
@@ -873,28 +893,18 @@ mov    ds, cx
 jmp    load_next_special
 
 load_door_special:
-; PADSAVEP
-add    si, 3
-and    si, 0FFFCh
 mov    ah, (TF_VERTICALDOOR_HIGHBITS SHR 8)
 call   CreateThinkerLocal_
 
+call   DivAndGetIndexInBX_
 
-mov    bx, ax
-sub    ax, (_thinkerlist + THINKER_T.t_data)
-xor    dx, dx
-div    di
-mov    di, bx
-mov    bx, ax
-
-add    si, 12
-call   LoadInt8_
-call   LoadInt16_
-call   LoadShortHeight16_
-call   LoadShortHeight16_
-call   LoadInt16_
-call   LoadInt16_
-call   LoadInt16_
+call   LoadInt8_            ; VLDOOR_T.vldoor_type          
+call   LoadInt16_           ; VLDOOR_T.vldoor_secnum        
+call   LoadShortHeight16_   ; VLDOOR_T.vldoor_topheight     
+call   LoadShortHeight16_   ; VLDOOR_T.vldoor_speed         
+call   LoadInt16_           ; VLDOOR_T.vldoor_direction     
+call   LoadInt16_           ; VLDOOR_T.vldoor_topwait       
+call   LoadInt16_           ; VLDOOR_T.vldoor_topcountdown  
 
 
 
@@ -906,30 +916,22 @@ mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics speciald
 jmp    load_next_special
 
 load_movefloor_special:
-; PADSAVEP
-add    si, 3
-and    si, 0FFFCh
+
 mov    ah, (TF_MOVEFLOOR_HIGHBITS SHR 8)
 call   CreateThinkerLocal_
 push   ds
 pop    es
 
-mov    bx, ax
-sub    ax, (_thinkerlist + THINKER_T.t_data)
-xor    dx, dx
-div    di
-mov    di, bx
-mov    bx, ax
+call   DivAndGetIndexInBX_
 
-add    si, 12
-call   LoadInt8_
-call   LoadInt8_
-call   LoadInt16_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadShortHeight16_
-call   LoadShortHeight16_
+call   LoadInt8_            ; FLOORMOVE_T.floormove_type            
+call   LoadInt8_            ; FLOORMOVE_T.floormove_crush           
+call   LoadInt16_           ; FLOORMOVE_T.floormove_secnum          
+call   LoadInt8_            ; FLOORMOVE_T.floormove_direction       
+call   LoadInt8_            ; FLOORMOVE_T.floormove_newspecial      
+call   LoadInt8_            ; FLOORMOVE_T.floormove_texture         
+call   LoadShortHeight16_   ; FLOORMOVE_T.floormove_floordestheight 
+call   LoadShortHeight16_   ; FLOORMOVE_T.floormove_speed           
 
 
 
@@ -944,32 +946,24 @@ mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics speciald
 jmp    load_next_special
 
 load_platraise_special:
-; PADSAVEP
-add    si, 3
-and    si, 0FFFCh
+
 mov    ah, (TF_PLATRAISE_HIGHBITS SHR 8)
 
 call   CreateThinkerLocal_
 
-mov    bx, ax
-sub    ax, (_thinkerlist + THINKER_T.t_data)
-xor    dx, dx
-div    di
-mov    di, bx
-mov    bx, ax
+call   DivAndGetIndexInBX_
 
-add    si, 12
-call   LoadInt16_
-call   LoadShortHeight16_
-call   LoadShortHeight16_
-call   LoadShortHeight16_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadTagToVanilla
-call   LoadInt8_
+call   LoadInt16_           ; PLAT_T.plat_secnum   
+call   LoadShortHeight16_   ; PLAT_T.plat_speed    
+call   LoadShortHeight16_   ; PLAT_T.plat_low      
+call   LoadShortHeight16_   ; PLAT_T.plat_high     
+call   LoadInt8_            ; PLAT_T.plat_wait     
+call   LoadInt8_            ; PLAT_T.plat_count    
+call   LoadInt8_            ; PLAT_T.plat_status   
+call   LoadInt8_            ; PLAT_T.plat_oldstatus
+call   LoadInt8_            ; PLAT_T.plat_crush    
+call   LoadTagToVanilla     ; PLAT_T.plat_tag      
+call   LoadInt8_            ; PLAT_T.plat_type     
 
 
 
@@ -978,7 +972,6 @@ mov    ax, word ptr es:[di-0Fh]  ; di is 0F, we want 0
 SHIFT_MACRO_SMALL shl ax 4
 
 
-; todo xchg
 xchg   ax, bx
 mov    word ptr ds:[bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
 mov    cx, ds
@@ -993,60 +986,51 @@ mov    ds, cx
 jmp    load_next_special
 
 load_flash_special:
-; PADSAVEP
-add    si, 3
-and    si, 0FFFCh
+
 mov    ah, (TF_LIGHTFLASH_HIGHBITS SHR 8)
 
 call   CreateThinkerLocal_
 
-mov    di, ax
+xchg   ax, di
 
-add    si, 12
-call   LoadInt16_
-call   LoadInt16_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadInt8_
+call   LoadInt16_   ; LIGHTFLASH_T.lightflash_secnum     
+call   LoadInt16_   ; LIGHTFLASH_T.lightflash_count      
+call   LoadInt8_    ; LIGHTFLASH_T.lightflash_maxlight   
+call   LoadInt8_    ; LIGHTFLASH_T.lightflash_minlight   
+call   LoadInt8_    ; LIGHTFLASH_T.lightflash_maxtime    
+call   LoadInt8_    ; LIGHTFLASH_T.lightflash_mintime    
 
 jmp    load_next_special
 
 load_strobe_special:
-; PADSAVEP
-add    si, 3
-and    si, 0FFFCh
+
 mov    ah, (TF_STROBEFLASH_HIGHBITS SHR 8)
 
 call   CreateThinkerLocal_
 
-mov    di, ax
+xchg   ax, di
 
-add    si, 12
-call   LoadInt16_
-call   LoadInt16_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadInt16_
-call   LoadInt16_
+call   LoadInt16_   ; STROBE_T.strobe_secnum       
+call   LoadInt16_   ; STROBE_T.strobe_count        
+call   LoadInt8_    ; STROBE_T.strobe_minlight     
+call   LoadInt8_    ; STROBE_T.strobe_maxlight     
+call   LoadInt16_   ; STROBE_T.strobe_darktime     
+call   LoadInt16_   ; STROBE_T.strobe_brighttime   
 
 jmp    load_next_special
 
 load_glow_special:
-; PADSAVEP
-add    si, 3
-and    si, 0FFFCh
+
 mov    ah, (TF_GLOW_HIGHBITS SHR 8)
 
 call   CreateThinkerLocal_
 
-mov    di, ax
+xchg   ax, di
 
-add    si, 12
-call   LoadInt16_
-call   LoadInt8_
-call   LoadInt8_
-call   LoadInt16_
+call   LoadInt16_   ; FIREFLICKER_T.fireflicker_secnum     
+call   LoadInt8_    ; FIREFLICKER_T.fireflicker_count      
+call   LoadInt8_    ; FIREFLICKER_T.fireflicker_maxlight   
+call   LoadInt16_   ; FIREFLICKER_T.fireflicker_minlight   
 
 jmp    load_next_special
 
@@ -1143,8 +1127,9 @@ ENDP
 
 PROC LoadInt16_ NEAR
 
-lodsw
-stosw
+;lodsw
+;stosw
+movsw
 inc    si
 inc    si
 ret
@@ -1189,8 +1174,9 @@ call    P_UnArchiveWorld_
 call    P_UnArchiveThinkers_
 call    P_UnArchiveSpecials_
 
-les     si, dword ptr ds:[_save_p]
-cmp     byte ptr es:[si], 01Dh
+mov     si, word ptr cs:[_last_si]  ; last before the end of the specials (save_p overshot by 15 due to a loop optim)
+mov     es, word ptr ds:[_save_p+2] ; segment
+cmp     byte ptr es:[si], 01Dh     
 jne     bad_savegame_load
 
 ; make playermobj
@@ -1209,11 +1195,11 @@ mov     word ptr ds:[_playerMobj_pos], ax
 retf
 ENDP
 
-bad_savegame_load:
 
 str_bad_savegame:
 db "Bad savegame %i", 0
 
+bad_savegame_load:
 push    si ; save_p
 push    cs
 mov     ax, OFFSET str_bad_savegame
