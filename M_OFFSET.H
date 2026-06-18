@@ -48,10 +48,10 @@
 #define LoadSFXWadLumpsOffset                   0x4
 #define P_SetThingPositionFarOffset             0x2ADE
 #define P_SpawnMapThingOffset                   0x2C4C
-#define P_SpawnSpecialsOffset                   0x7E3A
-#define AM_DrawerOffset                         0x9743
-#define S_StartSoundFarOffset                   0xB864
-#define S_StartOffset                           0xB945
+#define P_SpawnSpecialsOffset                   0x7E2A
+#define AM_DrawerOffset                         0x9733
+#define S_StartSoundFarOffset                   0xB854
+#define S_StartOffset                           0xB935
 #define M_InitOffset                            0x1182
 #define M_ResponderOffset                       0xD57
 #define M_DrawPauseOffset                       0x1364
@@ -81,7 +81,7 @@
 #define R_BSP0CodeSize                 0x364F
 #define R_BSPFLCodeSize                0x35F9
 #define WI_StuffCodeSize               0x1141
-#define PSightCodeSize                 0xB9D0
+#define PSightCodeSize                 0xB9C0
 #define WipeCodeSize                   0x5FA
 #define FinaleCodeSize                 0xB97
 #define SaveLoadCodeSize               0xBDE

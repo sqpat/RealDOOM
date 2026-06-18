@@ -2540,8 +2540,8 @@ xchg  ax, bx
 lodsw 
 xchg  ax, cx
 
-push  word ptr ds:[si+2]
-push  word ptr ds:[si]
+push  word ptr ds:[si+2] ; z hi
+push  word ptr ds:[si]   ; z lo
 
 push  ss
 pop   ds
@@ -2691,9 +2691,9 @@ call  A_SetMomxMomyFromAngleAndGetSpeedAngle_
 
 
 
-pop   si ; bp - 8
+pop   si ; bp - 8  ; retrieve destpos
 
-lds   di, dword ptr [bp - 6]
+lds   di, dword ptr [bp - 6] ; sets ds at the same time.
 
 
 lodsw           ; lodsw = destpos?
@@ -2761,31 +2761,21 @@ call  FastDiv3216u_MapLocal_
 ;    else
 ;		actor->momz.w += FRACUNIT/8;
 
-mov   cx, MOBJPOSLIST_SEGMENT
-mov   ds, cx
+xchg  ax, bx ; bx has low angle.
+mov   ax, 02000h  ; fracunit/8
 pop   di ; bp - 2
-cmp   dx, word ptr ds:[di + MOBJ_T.m_momz + 2]
+cmp   dx, word ptr ds:[di + MOBJ_T.m_momz + 2] ; high angle comp
 jl    subtract_fracover8
 jne   add_fracover8
-cmp   ax, word ptr ds:[di + MOBJ_T.m_momz + 0]
-jae   add_fracover8
-subtract_fracover8:
-sub   word ptr ds:[di + MOBJ_T.m_momz + 0], 02000h ; -fracunit / 8
-sbb   word ptr ds:[di + MOBJ_T.m_momz + 2], 0
-push  ss
-pop   ds
-
-exit_a_tracer:
-
-LEAVE_MACRO 
-ret   
-
-
+cmp   bx, word ptr ds:[di + MOBJ_T.m_momz + 0] ; low  angle comp
+jb    subtract_fracover8
 add_fracover8:
-add   word ptr ds:[di + MOBJ_T.m_momz + 0], 02000h ; fracunit / 8
-adc   word ptr ds:[di + MOBJ_T.m_momz + 2], 0
-push  ss
-pop   ds
+neg   ax  ; E000  ; - fracunit / 8
+subtract_fracover8:
+cwd       ; sets dx
+sub   word ptr ds:[di + MOBJ_T.m_momz + 0], ax ; -fracunit / 8
+sbb   word ptr ds:[di + MOBJ_T.m_momz + 2], dx
+
 
 LEAVE_MACRO 
 ret   
