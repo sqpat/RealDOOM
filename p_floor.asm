@@ -64,9 +64,9 @@ mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 ;	if (sector->ceilingheight - speed < dest) {
 
 
-mov   di, word ptr es:[si]
+mov   di, word ptr es:[si] ; sec_ceilingheight
 mov   ax, di
-sub   ax, dx 
+sub   ax, dx  ; - speed
 
 cmp   ax, bx
 jl    ceiling_down_past_dest
@@ -119,8 +119,8 @@ mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 ;	if (sector->floorheight - speed < dest) {
 
 
-mov   ax, word ptr es:[si]
-mov   di, ax
+mov   ax, word ptr es:[si] ;  ; sec_floorheight 
+mov   di, ax                  ; di = lastpost
 sub   ax, dx 
 
 cmp   ax, bx
@@ -159,20 +159,20 @@ ret
 
 ceil_down_not_past_dest:
 floor_down_not_past_dest:
-sub   word ptr es:[si], dx
+sub   word ptr es:[si], dx ; sec_ceilingheight or floorheight
 
 mov   dx, es
 mov   bx, cx ; crush
 mov   ax, si
-and   al, 0F0h ; undo the ptr
+and   al, 0F0h ; undo the ptr. si has old value.
 call  P_ChangeSector_
 
 jnc   exit_moveplanefloordown_return_floorok
 
-test  bp, bp
+test  bp, bp  ; crushed
 jne   do_second_floor_changesector_call   ; skip second check...
-test  cl, cl
-jne   exit_moveplaneceilingdown_return_floorcrushed
+test  cl, cl ; if crush == true
+je    exit_moveplaneceilingdown_return_floorcrushed
 
 
 do_second_floor_changesector_call:
@@ -235,8 +235,8 @@ jnc   exit_moveplanefloorup_return_floorok
 mov   al, 0 ; to force a ret 0 below...
 test  bp, bp  ; skip 2nd call if 1
 jne   exit_moveplanefloorup_return_floorok
-test  cl, cl
-jne   exit_moveplanefloorup_return_floorcrushed
+test  cl, cl ; if crush == true
+je    exit_moveplanefloorup_return_floorcrushed
 jmp   do_second_floor_changesector_call
 
 
