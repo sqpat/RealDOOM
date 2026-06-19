@@ -251,137 +251,81 @@ ENDP
 ; cx:bx y
 
 ; todo make this take argument as si or something
-
+test_dy_above_zero:
+    XOR  AX, AX
+    CMP  AX, WORD PTR [SI + DIVLINE_T.dl_dy] ; Invert line.dy
+    SBB  AX, WORD PTR [SI + DIVLINE_T.dl_dy + 2]
+    ROL  AX, 1
+    AND  AL, 1 ; Return inverted line.dy sign bit
+    RET
+node_dx_zero:
+    SUB  AX, WORD PTR [SI + DIVLINE_T.dl_x]
+    SBB  DX, WORD PTR [SI + DIVLINE_T.dl_x + 2]
+    JL   test_dy_above_zero
+    OR   AX, DX
+    JZ   return_2A
+    XOR   AX, AX
+    MOV   AH, BYTE PTR [SI + DIVLINE_T.dl_dy + 3]
+    ROL   AX, 1 ; Return line.dy sign bit
+    RET
 ALIGN_MACRO
 PROC    P_DivlineSide_ NEAR
 PUBLIC  P_DivlineSide_
-
-
-
-;    if (!node->dx.w) {
-;		if (x.w==node->x.w){
-;			return 2;
-;		}
-;		
-;		if (x.w <= node->x.w){
-;			return node->dy.w > 0;
-;		}
-;
-;		return node->dy.w < 0;
- ;   }
-	; todo reduce register juggling...
-
-	mov  di, bx
-	mov  bx, ax
-
-	mov  ax, dx
-	mov  dx, cx
-	mov  cx, word ptr ds:[si + 0Ah]	; if (!node->dx.w) {  ; todo offsets.
-	or   cx, word ptr ds:[si + 8]
-	; todo seems to be some repeated logic in here...
-	jne  node_dx_nonzero
-	cmp  ax, word ptr ds:[si + 2]
-	jne  node_dx_not_x
-	cmp  bx, word ptr ds:[si]
-	je   return_2
-	cmp  ax, word ptr ds:[si + 2]
-	node_dx_not_x:
-	jl   x_less_than_nodex
-	jne  x_more_than_nodex
-	cmp  bx, word ptr ds:[si]
-	ja   x_more_than_nodex
-	x_less_than_nodex:
-	mov  ax, word ptr ds:[si + 0Eh]
-	test ax, ax
-	jg   divline_side_return_1
-	jne  return_0
-	cmp  word ptr ds:[si + 0Ch], 0
-	jbe  return_0
-	divline_side_return_1:
-	mov  ax, 1
-	ret
-ALIGN_MACRO
-
-	return_2:
-	mov  ax, 2
-	ret
-ALIGN_MACRO
-	return_0:
-	xor  ax, ax
-	ret
-ALIGN_MACRO
-	x_more_than_nodex:
-	mov  ax, word ptr ds:[si + 0Eh]
-	test ax, ax
-	jl   divline_side_return_1
-	xor  ax, ax
-	ret
-ALIGN_MACRO
-	node_dx_nonzero:
-	mov  cx, word ptr ds:[si + 0Eh]
-	or   cx, word ptr ds:[si + 0Ch]
-	jne  node_dy_nonzero
-	cmp  ax, word ptr ds:[si + 6]
-	jne  node_dy_not_y
-	cmp  bx, word ptr ds:[si + 4]
-	je   return_2
-	node_dy_not_y:
-	mov  ax, word ptr ds:[si + 6]
-	cmp  dx, ax
-	jl   y_less_than_nodey
-	jne  y_more_than_nodey
-	cmp  di, word ptr ds:[si + 4]
-	ja   y_more_than_nodey
-	y_less_than_nodey:
-	mov  ax, word ptr ds:[si + 0Ah]
-	test ax, ax
-	jl   divline_side_return_1
-	xor  ax, ax
-	ret
-ALIGN_MACRO
-	y_more_than_nodey:
-	mov  ax, word ptr ds:[si + 0Ah]
-	test ax, ax
-	jg   divline_side_return_1
-	jne  return_0_2
-	cmp  word ptr ds:[si + 8], 0
-	ja   divline_side_return_1
-	return_0_2:
-	xor  ax, ax
-	ret
-ALIGN_MACRO
-	node_dy_nonzero:
-	sub  bx, word ptr ds:[si]
-	sbb  ax, word ptr ds:[si + 2]
-
-	sub  di, word ptr ds:[si + 4]
-	sbb  dx, word ptr ds:[si + 6]
-	mov  di, dx
-
-	imul word ptr ds:[si + 0Eh]
-
-	mov  bx, dx
-	xchg ax, di	; bx:di gets result..
-	imul word ptr ds:[si + 0Ah]
-	cmp  dx, bx
-	jl   return_0_2
-	jne  compare_leftright
-	cmp  ax, di
-	jb   return_0_2
-	compare_leftright:
-	cmp  bx, dx
-	je   compare_leftright_low
-	return_1_2:
-	mov  ax, 1
-	ret
-ALIGN_MACRO
-	compare_leftright_low:
-	cmp  di, ax
-	jne  return_1_2
-	mov  ax, 2
-	ret
-
-
+    MOV  DI, WORD PTR [SI + DIVLINE_T.dl_dx]
+    OR   DI, WORD PTR [SI + DIVLINE_T.dl_dx + 2]
+    JZ   node_dx_zero
+    MOV  ES, BP
+    MOV  BP, WORD PTR [SI + DIVLINE_T.dl_dy]
+    MOV  DI, WORD PTR [SI + DIVLINE_T.dl_dy + 2]
+    OR   BP, DI
+    JZ   node_dy_zero
+    MOV  BP, ES
+    CMP  AX, WORD PTR [SI + DIVLINE_T.dl_x]
+    SBB  DX, WORD PTR [SI + DIVLINE_T.dl_x + 2]
+    MOV  AX, DX
+    IMUL DI
+    CMP  BX, WORD PTR [SI + DIVLINE_T.dl_y]
+    SBB  CX, WORD PTR [SI + DIVLINE_T.dl_y + 2]
+    MOV  DI, DX
+    XCHG AX, CX
+    IMUL WORD PTR [SI + DIVLINE_T.dl_dx + 2]
+    SUB  AX, CX
+    SBB  DX, DI
+    JL   return_0
+    OR   AX, DX
+    JZ   return_2A
+    MOV  AL, 1
+    RET
+return_2B:
+    MOV   BP, ES
+return_2A:
+    MOV  AL, 2
+    RET
+return_0:
+    XOR  AX, AX
+    RET
+node_dy_zero:
+    MOV  DI, WORD PTR [SI + DIVLINE_T.dl_y]
+    MOV  BP, WORD PTR [SI + DIVLINE_T.dl_y + 2]
+    XOR  AX, DI
+    XOR  DX, BP
+    OR   AX, DX
+    JZ   return_2B
+    XOR  AX, AX
+    CMP  DI, BX
+    SBB  BP, CX
+    MOV  BP, ES
+    MOV  DX, WORD PTR [SI + DIVLINE_T.dl_dx + 2]
+    JL   test_dx_below_zero
+    CMP  AX, WORD PTR [SI + DIVLINE_T.dl_dx] ; Invert line.dx
+    SBB  AX, DX
+    ROL  AX, 1
+    AND  AL, 1 ; Return inverted line.dx sign bit
+    RET
+test_dx_below_zero:
+    SHL  DX, 1
+    RCL  AX, 1 ; Return line.dx sign bit
+    RET
 ENDP
 
 ; bx is always equal to strace
@@ -747,8 +691,8 @@ mov   dx, es
 ; si still divl from above
 push  di
 call  P_DivlineSide_
-pop   di
-cmp   di, ax
+pop   bx
+cmp   bl, al
 je   side_crossed
 
 test  byte ptr [bp - 2], ML_TWOSIDED		; test flag

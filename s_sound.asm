@@ -242,8 +242,7 @@ done_with_angle_adjustment:
 
 ; fine angle
 mov   bx, dx
-sar   bx, 1
-sar   bx, 1
+SHIFT_MACRO SHR BX 2
 
 mov   cx, FINESINE_SEGMENT
 mov   es, cx
@@ -845,7 +844,7 @@ pop   bx
 pop   cx
 push  es
 
-call  S_AdjustSoundParamsSep_  ; todo inline only use?
+call  S_AdjustSoundParamsSep_
 pop   cx ; volume
 jmp   done_with_vol_adjustment
 
