@@ -172,7 +172,7 @@ jnc   exit_moveplanefloordown_return_floorok
 test  bp, bp  ; crushed
 jne   do_second_floor_changesector_call   ; skip second check...
 test  cl, cl ; if crush == true
-je    exit_moveplaneceilingdown_return_floorcrushed
+jne   exit_moveplaneceilingdown_return_floorcrushed
 
 
 do_second_floor_changesector_call:
@@ -236,7 +236,7 @@ mov   al, 0 ; to force a ret 0 below...
 test  bp, bp  ; skip 2nd call if 1
 jne   exit_moveplanefloorup_return_floorok
 test  cl, cl ; if crush == true
-je    exit_moveplanefloorup_return_floorcrushed
+jne   exit_moveplanefloorup_return_floorcrushed
 jmp   do_second_floor_changesector_call
 
 

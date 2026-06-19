@@ -244,90 +244,78 @@ ret
 
 ENDP
 
+STACK_DIVLINE_POSITION = 01Ah
+
 ;int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) {
 
 ; node si
 ; dx:ax x
 ; cx:bx y
 
-; todo make this take argument as si or something
 test_dy_above_zero:
-    XOR  AX, AX
-    CMP  AX, WORD PTR [SI + DIVLINE_T.dl_dy] ; Invert line.dy
-    SBB  AX, WORD PTR [SI + DIVLINE_T.dl_dy + 2]
-    ROL  AX, 1
-    AND  AL, 1 ; Return inverted line.dy sign bit
+    MOV AX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dy + 2]
+    NEG AX
+    ROL AX, 1
+    AND AL, 1
     RET
+
 node_dx_zero:
-    SUB  AX, WORD PTR [SI + DIVLINE_T.dl_x]
-    SBB  DX, WORD PTR [SI + DIVLINE_T.dl_x + 2]
-    JL   test_dy_above_zero
-    OR   AX, DX
-    JZ   return_2A
-    XOR   AX, AX
-    MOV   AH, BYTE PTR [SI + DIVLINE_T.dl_dy + 3]
-    ROL   AX, 1 ; Return line.dy sign bit
+    SUB AX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_x + 2]
+    JS test_dy_above_zero
+    OR AX, DX
+    JZ return_2
+    XOR AX, AX
+    MOV AH, BYTE PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dy + 3]
+    ROL AX, 1
     RET
+
 ALIGN_MACRO
 PROC    P_DivlineSide_ NEAR
 PUBLIC  P_DivlineSide_
-    MOV  DI, WORD PTR [SI + DIVLINE_T.dl_dx]
-    OR   DI, WORD PTR [SI + DIVLINE_T.dl_dx + 2]
-    JZ   node_dx_zero
-    MOV  ES, BP
-    MOV  BP, WORD PTR [SI + DIVLINE_T.dl_dy]
-    MOV  DI, WORD PTR [SI + DIVLINE_T.dl_dy + 2]
-    OR   BP, DI
-    JZ   node_dy_zero
-    MOV  BP, ES
-    CMP  AX, WORD PTR [SI + DIVLINE_T.dl_x]
-    SBB  DX, WORD PTR [SI + DIVLINE_T.dl_x + 2]
-    MOV  AX, DX
+    MOV AX, ES
+    MOV CX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dx + 2]
+    JCXZ node_dx_zero
+    MOV DI, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dy + 2]
+    TEST DI, DI
+    JZ node_dy_zero
+    SUB AX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_x + 2]
     IMUL DI
-    CMP  BX, WORD PTR [SI + DIVLINE_T.dl_y]
-    SBB  CX, WORD PTR [SI + DIVLINE_T.dl_y + 2]
-    MOV  DI, DX
-    XCHG AX, CX
-    IMUL WORD PTR [SI + DIVLINE_T.dl_dx + 2]
-    SUB  AX, CX
-    SBB  DX, DI
-    JL   return_0
-    OR   AX, DX
-    JZ   return_2A
-    MOV  AL, 1
+    MOV DI, WORD PTR [SI + 2]
+    SUB DI, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_y + 2]
+    XCHG AX, DI
+    MOV SI, DX
+    IMUL CX
+    SUB AX, DI
+    SBB DX, SI
+    JS return_0
+    OR AX, DX
+    JZ return_2
+    MOV AL, 1
     RET
-return_2B:
-    MOV   BP, ES
-return_2A:
-    MOV  AL, 2
+
+return_2:
+    MOV AL, 2
     RET
+
 return_0:
-    XOR  AX, AX
+    XOR AX, AX
     RET
+
 node_dy_zero:
-    MOV  DI, WORD PTR [SI + DIVLINE_T.dl_y]
-    MOV  BP, WORD PTR [SI + DIVLINE_T.dl_y + 2]
-    XOR  AX, DI
-    XOR  DX, BP
-    OR   AX, DX
-    JZ   return_2B
-    XOR  AX, AX
-    CMP  DI, BX
-    SBB  BP, CX
-    MOV  BP, ES
-    MOV  DX, WORD PTR [SI + DIVLINE_T.dl_dx + 2]
-    JL   test_dx_below_zero
-    CMP  AX, WORD PTR [SI + DIVLINE_T.dl_dx] ; Invert line.dx
-    SBB  AX, DX
-    ROL  AX, 1
-    AND  AL, 1 ; Return inverted line.dx sign bit
-    RET
+    MOV DI, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_y + 2]
+    XOR AX, DI
+    OR DX, AX
+    JZ return_2
+    XOR AX, AX
+    CMP AX, WORD PTR [SI]
+    SBB DI, WORD PTR [SI + 2]
+    JGE test_dx_below_zero
+    NEG CX
 test_dx_below_zero:
-    SHL  DX, 1
-    RCL  AX, 1 ; Return line.dx sign bit
+    SHL CX, 1
+    RCL AX, 1
     RET
 ENDP
-
 ; bx is always equal to strace
 ALIGN_MACRO
 PROC    P_DivlineSide16_ NEAR
@@ -670,29 +658,14 @@ mov   ax, cx				; backed up v2.x
 call  P_DivlineSide16_
 cmp   ax, di
 je    cross_subsector_mainloop_increment
-; set up divl
-xor   ax, ax
-mov   word ptr [bp - 01Ah], ax
-mov   word ptr [bp - 016h], ax
-mov   word ptr [bp - 012h], ax
-mov   word ptr [bp - 00Eh], ax
-
-les   bx, dword ptr ds:[_strace + 4] 
-mov   cx, es
-les   ax, dword ptr ds:[_strace] 
-mov   dx, es
-lea   si, [bp - 01Ah]
-call  P_DivlineSide_
-mov   di, ax
-les   bx, dword ptr ds:[_cachedt2y] 
-mov   cx, es
-les   ax, dword ptr ds:[_cachedt2x] 
-mov   dx, es
-; si still divl from above
-push  di
-call  P_DivlineSide_
-pop   bx
-cmp   bl, al
+LES   DX, DWORD PTR ds:[_strace]
+MOV   SI, OFFSET _strace + 4
+CALL  P_DivlineSide_
+XCHG  AX, BX
+LES   DX, DWORD PTR ds:[_cachedt2x]
+MOV   SI, OFFSET _cachedt2y
+CALL  P_DivlineSide_
+CMP   BL, AL
 je   side_crossed
 
 test  byte ptr [bp - 2], ML_TWOSIDED		; test flag
