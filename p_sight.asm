@@ -340,17 +340,17 @@ PUBLIC  P_DivlineSide16_
 
 	push cx
 	xchg ax, cx
-	mov  ax, word ptr ds:[bx + 0Ah]  ; todo offsets
-	or   ax, word ptr ds:[bx + 8]
+	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dx + 2]  ; todo offsets
+	or   ax, word ptr ds:[bx + DIVLINE_T.dl_dx + 0]
 	jne  node_dx_nonzero_16
-	cmp  cx, word ptr ds:[bx + 2]
+	cmp  cx, word ptr ds:[bx + DIVLINE_T.dl_x + 2]
 	je   return_2_16
-	mov  ax, word ptr ds:[bx + 0Eh]
+	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dy + 2]
 	jg   test_x_highbits_16
 	test ax, ax
 	jg   return_1_16
 	jne  return_0_divlineside_16
-	cmp  word ptr ds:[bx + 0Ch], 0
+	cmp  word ptr ds:[bx + DIVLINE_T.dl_dy + 0], 0
 	jbe  return_0_divlineside_16
 	return_1_16:
 	mov  ax, 1
@@ -375,15 +375,15 @@ ALIGN_MACRO
 	ret  
 ALIGN_MACRO
 	node_dx_nonzero_16:
-	mov  ax, word ptr ds:[bx + 0Eh]
-	or   ax, word ptr ds:[bx + 0Ch]
+	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dy + 2]
+	or   ax, word ptr ds:[bx + DIVLINE_T.dl_dy + 0]
 	jne  node_dy_nonzero_16
-	mov  ax, word ptr ds:[bx + 6]
+	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_y + 2]
 	cmp  cx, ax
 	je   return_2_16
 	cmp  dx, ax
 	jg   test_y_highbits_16
-	mov  ax, word ptr ds:[bx + 0Ah]
+	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dx + 2]
 	test ax, ax
 	jl   return_1_16
 	xor  ax, ax
@@ -392,11 +392,11 @@ ALIGN_MACRO
 ALIGN_MACRO
 
 	test_y_highbits_16:
-	mov  ax, word ptr ds:[bx + 0Ah]
+	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dx + 2]
 	test ax, ax
 	jg   return_1_16
 	jne  return_0_divlineside_16_2
-	cmp  word ptr ds:[bx + 8], 0
+	cmp  word ptr ds:[bx + DIVLINE_T.dl_dx + 0], 0
 	ja   return_1_16
 	return_0_divlineside_16_2:
 	xor  ax, ax
@@ -408,21 +408,21 @@ ALIGN_MACRO
 	push di	; need this extra register
 	; todo just mov and neg?	
 	xor  ax, ax
-	sub  ax, word ptr ds:[bx]
-	sbb  cx, word ptr ds:[bx + 2]
+	sub  ax, word ptr ds:[bx + DIVLINE_T.dl_x + 0]
+	sbb  cx, word ptr ds:[bx + DIVLINE_T.dl_x + 2]
 
 	mov  di, dx
 
 	xor  ax, ax
-	sub  ax, word ptr ds:[bx + 4]
-	sbb  di, word ptr ds:[bx + 6]
+	sub  ax, word ptr ds:[bx + DIVLINE_T.dl_y + 0]
+	sbb  di, word ptr ds:[bx + DIVLINE_T.dl_y + 2]
 
 	xchg ax, cx		
-	imul word ptr ds:[bx + 0Eh]			; lots of cycles spent here!
+	imul word ptr ds:[bx + DIVLINE_T.dl_dy + 2]			; lots of cycles spent here!
 	xchg ax, di		; cx:di gets result
 	mov  cx, dx
 	
-	imul word ptr ds:[bx + 0Ah]
+	imul word ptr ds:[bx + DIVLINE_T.dl_dx + 2]
 	cmp  dx, cx
 	jl   return_0_divlineside_16_3
 	jne  test_right_left_16
@@ -649,8 +649,8 @@ SHIFT_MACRO_SMALL shl   di 2
 and   bh, (VERTEX_OFFSET_MASK SHR 8)
 SHIFT_MACRO_SMALL shl   bx 2
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
-mov   si, word ptr es:[di]		; v1.x
-mov   dx, word ptr es:[di + 2]  ; v1.y into dx
+mov   si, word ptr es:[di + VERTEX_T.v_x]		; v1.x
+mov   dx, word ptr es:[di + VERTEX_T.v_y]  ; v1.y into dx
 les   ax, dword ptr es:[bx]		; v2.x
 mov   cx, ax					; back up v2.x (es backs up v2.y)
 
@@ -757,19 +757,19 @@ mov   di, OFFSET _strace
 ; inlined P_InterceptVector2_
 
 lea   si, [bp - 01Ah]
-mov   bx, word ptr ds:[di + 8]
-mov   cx, word ptr ds:[di + 0Ah]
-mov   ax, word ptr ds:[si + 0Ch]
-mov   dx, word ptr ds:[si + 0Eh]
+mov   bx, word ptr ds:[di + DIVLINE_T.dl_dx + 0]
+mov   cx, word ptr ds:[di + DIVLINE_T.dl_dx + 2]
+mov   ax, word ptr ds:[si + DIVLINE_T.dl_dy + 0]
+mov   dx, word ptr ds:[si + DIVLINE_T.dl_dy + 2]
 
 call  FixedMul2432_MapLocal_
 
 mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
-mov   bx, word ptr ds:[di + 0Ch]
-mov   cx, word ptr ds:[di + 0Eh]
-mov   ax, word ptr ds:[si + 8]
-mov   dx, word ptr ds:[si + 0Ah]
+mov   bx, word ptr ds:[di + DIVLINE_T.dl_dy + 0]
+mov   cx, word ptr ds:[di + DIVLINE_T.dl_dy + 2]
+mov   ax, word ptr ds:[si + DIVLINE_T.dl_dx + 0]
+mov   dx, word ptr ds:[si + DIVLINE_T.dl_dx + 2]
 
 call  FixedMul2432_MapLocal_
 
@@ -781,23 +781,23 @@ mov   word ptr [bp - 01Eh], bx
 mov   word ptr [bp - 01Ch], ax
 or    ax, bx
 je    denominator_0
-mov   bx, word ptr ds:[si + 0Ch]
-mov   cx, word ptr ds:[si + 0Eh]
-mov   ax, word ptr ds:[si]
-mov   dx, word ptr ds:[si + 2]
-sub   ax, word ptr ds:[di]
-sbb   dx, word ptr ds:[di + 2]
+mov   bx, word ptr ds:[si + DIVLINE_T.dl_dy + 0]
+mov   cx, word ptr ds:[si + DIVLINE_T.dl_dy + 2]
+mov   ax, word ptr ds:[si + DIVLINE_T.dl_x + 0]
+mov   dx, word ptr ds:[si + DIVLINE_T.dl_x + 2]
+sub   ax, word ptr ds:[di + DIVLINE_T.dl_x + 0]
+sbb   dx, word ptr ds:[di + DIVLINE_T.dl_x + 2]
 
 call  FixedMul2432_MapLocal_
 
 mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
-mov   bx, word ptr ds:[si + 8]
-mov   cx, word ptr ds:[si + 0Ah]
-mov   ax, word ptr ds:[di + 4]
-mov   dx, word ptr ds:[di + 6]
-sub   ax, word ptr ds:[si + 4]
-sbb   dx, word ptr ds:[si + 6]
+mov   bx, word ptr ds:[si + DIVLINE_T.dl_dx + 0]
+mov   cx, word ptr ds:[si + DIVLINE_T.dl_dx + 2]
+mov   ax, word ptr ds:[di + DIVLINE_T.dl_y + 0]
+mov   dx, word ptr ds:[di + DIVLINE_T.dl_y + 2]
+sub   ax, word ptr ds:[si + DIVLINE_T.dl_y + 0]
+sbb   dx, word ptr ds:[si + DIVLINE_T.dl_y + 2]
 
 call  FixedMul2432_MapLocal_
 
@@ -832,16 +832,12 @@ je    done_setting_bottomslope
 ; fixed height from shortheight
 
 xor   cx, cx
-sar   bx, 1
-rcr   cx, 1
-sar   bx, 1
-rcr   cx, 1
-sar   bx, 1
-rcr   cx, 1
+SHIFT32_MACRO_RIGHT bx cx 3
 
 ; BX:CX has what should become dx:ax
 ; dx:ax has what should become cx:bx...
 
+; todo selfmodify
 xchg ax, cx
 sub   ax, word ptr ds:[_sightzstart]
 xchg dx, bx
@@ -872,13 +868,9 @@ je    done_setting_topslope
 xor   ax, ax
 SELFMODIFY_PSIGHT_setopentop:
 mov   dx, 01000h		; opentop
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
+SHIFT32_MACRO_RIGHT dx ax 3
 
+; todo selfmodify
 sub   ax, word ptr ds:[_sightzstart]
 sbb   dx, word ptr ds:[_sightzstart + 2]
 
