@@ -143,6 +143,12 @@ SHIFT32_MACRO_RIGHT dx di 2
 sub   cx, di
 sbb   ax, dx
 
+; do while this is in ax
+mov   word ptr cs:[SELFMODIFY_psight_sightzstart_hi_1+2], ax
+mov   word ptr cs:[SELFMODIFY_psight_sightzstart_hi_2+2], ax
+mov   word ptr cs:[SELFMODIFY_psight_sightzstart_lo_1+1], cx
+mov   word ptr cs:[SELFMODIFY_psight_sightzstart_lo_2+1], cx
+
 xchg  ax, di  ; swap. todo find a way to work this out
 
 ; bx tied up holding t2_pos for a while
@@ -164,7 +170,7 @@ adc   dx, si
 
 mov   si, bp  ; si gets mobjpos_t
 mov   bp, di  ; bp gets sightzstart hi (todo remove)
-mov   di, OFFSET _sightzstart
+mov   di, OFFSET _topslope
 
 sub   ax, cx			; subtract sightzstart	
 sbb   dx, bp
@@ -178,14 +184,6 @@ pop   es
 ; ds:si is t1_pos. ds_bx is t2_pos
 
 ; TODO all this should go on stack (push not stosw.)
-
-; write _sightzstart
-xchg  ax, cx
-stosw
-xchg  ax, cx
-xchg  ax, bp
-stosw
-xchg  ax, bp
 
 ; write topslope
 stosw
@@ -206,19 +204,28 @@ stosw
 
 ;di = _cachedt2x
 lodsw
-stosw
+
+mov   word ptr cs:[SELFMODIFY_psight_cachedt2x_lo_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_cachedt2x_lo_2+1], ax
+
 xchg  ax, dx
 lodsw
-stosw
+mov   word ptr cs:[SELFMODIFY_psight_cachedt2x_hi_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_cachedt2x_hi_2+1], ax
+
 xchg  ax, cx	; cx:dx has si, si
 
 
 ;di = _cachedt2y
 lodsw
-stosw
+mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_lo_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_lo_2+1], ax
 xchg  ax, bp
 lodsw
-stosw			; ax:bp has si+4, si+6
+mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_hi_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_hi_2+1], ax
+
+add   di, 8
 
 mov   si, bx    ; bx now free.
 
@@ -288,7 +295,6 @@ node_dx_zero:
 ALIGN_MACRO
 PROC    P_DivlineSide_ NEAR
 PUBLIC  P_DivlineSide_
-    MOV AX, ES
     MOV CX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dx + 2]
     JCXZ node_dx_zero
     MOV DI, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dy + 2]
@@ -296,7 +302,7 @@ PUBLIC  P_DivlineSide_
     JZ node_dy_zero
     SUB AX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_x + 2]
     IMUL DI
-    MOV DI, WORD PTR [SI + 2]
+    MOV DI, ES
     SUB DI, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_y + 2]
     XCHG AX, DI
     MOV SI, DX
@@ -323,8 +329,9 @@ node_dy_zero:
     OR DX, AX
     JZ return_2
     XOR AX, AX
-    CMP AX, WORD PTR [SI]
-    SBB DI, WORD PTR [SI + 2]
+    CMP AX, SI
+	MOV SI, ES
+    SBB DI, SI
     JGE test_dx_below_zero
     NEG CX
 test_dx_below_zero:
@@ -677,11 +684,20 @@ cmp   ax, di
 je    cross_subsector_mainloop_increment
 
 LES   DX, DWORD PTR ds:[_strace]
-MOV   SI, OFFSET _strace + 4
+MOV   AX, ES
+LES   SI, DWORD PTR ds:[_strace+4]
 CALL  P_DivlineSide_
 XCHG  AX, BX
-LES   DX, DWORD PTR ds:[_cachedt2x]
-MOV   SI, OFFSET _cachedt2y
+SELFMODIFY_psight_cachedt2x_lo_2:
+MOV   DX, 01000h
+SELFMODIFY_psight_cachedt2x_hi_2:
+MOV AX, 01000h
+
+SELFMODIFY_psight_cachedt2y_hi_2:
+MOV SI, 01000h
+MOV ES, SI
+SELFMODIFY_psight_cachedt2y_lo_2:
+MOV SI, 01000h
 CALL  P_DivlineSide_
 CMP   BL, AL
 je   side_crossed
@@ -839,9 +855,11 @@ SHIFT32_MACRO_RIGHT bx cx 3
 
 ; todo selfmodify
 xchg ax, cx
-sub   ax, word ptr ds:[_sightzstart]
+SELFMODIFY_psight_sightzstart_lo_1:
+sub   ax, 01000h
 xchg dx, bx
-sbb   dx, word ptr ds:[_sightzstart + 2]
+SELFMODIFY_psight_sightzstart_hi_1:
+sbb   dx, 01000h
 xchg cx, bx			;  frac into cx:bx
 
 call  FixedDiv_MapLocal_
@@ -871,8 +889,11 @@ mov   dx, 01000h		; opentop
 SHIFT32_MACRO_RIGHT dx ax 3
 
 ; todo selfmodify
-sub   ax, word ptr ds:[_sightzstart]
-sbb   dx, word ptr ds:[_sightzstart + 2]
+
+SELFMODIFY_psight_sightzstart_lo_2:
+sub   ax, 01000h
+SELFMODIFY_psight_sightzstart_hi_2:
+sbb   dx, 01000h
 
 les   bx, dword ptr [bp - 8]	; load frac into cx:bx
 mov   cx, es
@@ -958,11 +979,15 @@ add   bx, word ptr [bp - 4]
 mov   ax, word ptr es:[bx]
 call  P_CrossBSPNode_
 jnc   exit_crossbspnode
-mov   si, OFFSET _cachedt2x
-les   bx, dword ptr ds:[si + 4]	; cachedt2y
-mov   cx, es
-les   ax, dword ptr ds:[si] 
-mov   dx, es
+
+SELFMODIFY_psight_cachedt2y_lo_1:
+mov   bx, 01000h
+SELFMODIFY_psight_cachedt2y_hi_1:
+mov   cx, 01000h
+SELFMODIFY_psight_cachedt2x_lo_1:
+mov   ax, 01000h
+SELFMODIFY_psight_cachedt2x_hi_1:
+mov   dx, 01000h
 
 mov   si, NODES_SEGMENT
 mov   es, si
