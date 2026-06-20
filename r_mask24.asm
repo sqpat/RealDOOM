@@ -4089,7 +4089,7 @@ ALIGN_MACRO
    shl  ebx, 010h
    shld ecx, ebx, 010h
 
-   test ecb, ecx
+   test ecx, ecx
    je   return_max
    continue_div:
 
@@ -4097,7 +4097,7 @@ ALIGN_MACRO
    div ecx
 
    ; set up return
-   shld edx, eax, 0x10
+   shld edx, eax, 010h
 
    ; ?only write to dc_iscale_hi when nonzero.
    mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dl
