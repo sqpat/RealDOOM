@@ -205,25 +205,25 @@ stosw
 ;di = _cachedt2x
 lodsw
 
-mov   word ptr cs:[SELFMODIFY_psight_cachedt2x_lo_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_cachedt2x_lo_2+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_t2x_lo_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_t2x_lo_2+1], ax
 
 xchg  ax, dx
 lodsw
-mov   word ptr cs:[SELFMODIFY_psight_cachedt2x_hi_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_cachedt2x_hi_2+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_t2x_hi_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_t2x_hi_2+1], ax
 
 xchg  ax, cx	; cx:dx has si, si
 
 
 ;di = _cachedt2y
 lodsw
-mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_lo_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_lo_2+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_t2y_lo_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_t2y_lo_2+1], ax
 xchg  ax, bp
 lodsw
-mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_hi_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_hi_2+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_t2y_hi_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_t2y_hi_2+1], ax
 
 add   di, 8     ; skipped the above two
 
@@ -253,12 +253,16 @@ stosw
 xchg   ax, dx
 stosw
 
-mov  ax, ss
-mov  ds, ax	; restore ds..
 
-mov   ax, word ptr ds:[_numnodes]
-dec   ax
+MOV   AX, WORD PTR SS:[_numnodes]
+DEC   AX
+MOV   DX, NODES_SEGMENT
+MOV   DS, DX
+
 call  P_CrossBSPNode_ ; return carry thru 
+
+mov   dx, ss
+mov   ds, dx
 
 pop   bp
 pop   di
@@ -280,20 +284,20 @@ STACK_DIVLINE_POSITION = 012h
 ALIGN_MACRO
 PROC    P_DivlineSide_ NEAR
 PUBLIC  P_DivlineSide_
-    MOV  CX, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+    MOV  CX, WORD PTR DS:[SI + NODE_T.n_dx]
     JCXZ node_dx_zero
-    MOV  DI, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_dy]
+    MOV  DI, WORD PTR DS:[SI + NODE_T.n_dy]
     TEST DI, DI
     JZ   node_dy_zero
-    SUB  AX, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_x]
+    SUB  AX, WORD PTR DS:[SI + NODE_T.n_x]
     IMUL DI
     MOV  DI, ES
-    SUB  DI, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_y]
+    SUB  DI, WORD PTR DS:[SI + NODE_T.n_y]
     XCHG AX, DI
-    MOV  SI, DX
+    MOV  BP, DX
     IMUL CX
     SUB  AX, DI
-    SBB  DX, SI
+    SBB  DX, BP
     JS   return_0
     OR   AX, DX
     JZ   return_2
@@ -312,14 +316,14 @@ return_0:
 
 ALIGN_MACRO
 node_dy_zero:
-    MOV  DI, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_y]
+    MOV  DI, WORD PTR DS:[SI + NODE_T.n_y]
     XOR  AX, DI
     OR   DX, AX
     JZ   return_2
     XOR  AX, AX
-    CMP  AX, SI
-	MOV  SI, ES
-    SBB  DI, SI
+    CMP  AX, BP
+	MOV  BP, ES
+    SBB  DI, BP
     JGE  test_dx_below_zero
     NEG  CX
 ALIGN_MACRO
@@ -330,7 +334,7 @@ test_dx_below_zero:
 ENDP
 ALIGN_MACRO
 test_dy_above_zero:
-    MOV AX, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_dy]
+    MOV AX, WORD PTR DS:[SI + NODE_T.n_dy]
     NEG AX
     ROL AX, 1
     AND AL, 1
@@ -338,12 +342,12 @@ test_dy_above_zero:
 
 ALIGN_MACRO
 node_dx_zero:
-    SUB AX, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_x]
+    SUB AX, WORD PTR DS:[SI + NODE_T.n_x]
     JS test_dy_above_zero
     OR AX, DX
     JZ return_2
     XOR AX, AX
-    MOV AH, BYTE PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_dy + 1]
+    MOV AH, BYTE PTR DS:[SI + NODE_T.n_dy + 1]
     ROL AX, 1
     RET
 
@@ -471,37 +475,6 @@ ALIGN_MACRO
 
 ENDP
 
-; returns 0 1 or 2?
-ALIGN_MACRO
-PROC    P_DivlineSideNode_ NEAR
-PUBLIC  P_DivlineSideNode_
-
-
-
-; AX:DX as x
-; ES:SI as y
-; DS:BP-STACK_DIVLINE_POSITION as node
-
-push    bp
-
-mov     bp, word ptr [bp - 6]
-SHIFT_MACRO shl bp 3
-
-mov     cx, NODES_SEGMENT
-mov     ds, cx
-add     bp, STACK_DIVLINE_POSITION ; DS:BP set
-
-call    P_DivlineSide_
-
-cbw     ; ax, not al result.
-pop     bp
-mov     cx, ss
-mov     ds, cx
-
-ret   
-
-ENDP
-
 
 
 ; return in carry
@@ -615,23 +588,29 @@ call  P_DivlineSide16_
 cmp   ax, di
 je    cross_subsector_mainloop_increment
 
+push  bp
+
+LEA   SI, [BP - STACK_DIVLINE_POSITION]
+
 LES   DX, DWORD PTR ds:[_strace]
 MOV   AX, ES
-LES   SI, DWORD PTR ds:[_strace+4]
+LES   BP, DWORD PTR ds:[_strace+4]
 CALL  P_DivlineSide_
 XCHG  AX, BX ; store result
 
 
-SELFMODIFY_psight_cachedt2x_lo_2:
+SELFMODIFY_psight_t2x_lo_2:
 MOV   DX, 01000h
-SELFMODIFY_psight_cachedt2x_hi_2:
+SELFMODIFY_psight_t2x_hi_2:
 MOV   AX, 01000h
-SELFMODIFY_psight_cachedt2y_hi_2:
-MOV   SI, 01000h
-MOV   ES, SI
-SELFMODIFY_psight_cachedt2y_lo_2:
-MOV   SI, 01000h
+SELFMODIFY_psight_t2y_hi_2:
+MOV   BP, 01000h
+MOV   ES, BP
+SELFMODIFY_psight_t2y_lo_2:
+MOV   BP, 01000h
 CALL  P_DivlineSide_
+
+pop   bp
 
 CMP   BL, AL
 je    side_crossed
@@ -874,96 +853,95 @@ ENDP
 
 ;return carry
 ALIGN_MACRO
+cross_bsp_node_return_true:
+    STC
+cross_bsp_node_return_false:
+    POP SI
+    RET
+ALIGN_MACRO
 PROC    P_CrossBSPNode_ NEAR
 PUBLIC  P_CrossBSPNode_
-
-PUSHA_NO_AX_OR_BP_MACRO
-push  bp
-mov   bp, sp
-sub   sp, 4
-push  ax				; bp - 6
-test  ah, (NF_SUBSECTOR SHR 8)
-jne    is_subsector
-
+    ; Register state
+    ; DS = NODES_SEGMENT
+    ; SS = FIXED_DS_SEGMENT
+    ; AX = bspnum
+    SHL  AX, 1
+    JC   is_subsector
+    PUSH SI
 iterate_bsp_recursion:
-
-
-LES   DX, DWORD PTR ds:[_strace]
-MOV   AX, ES
-LES   SI, DWORD PTR ds:[_strace+4]
-
-call  P_DivlineSideNode_
-and   ax, 1
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr [bp - 6]
-SHIFT_MACRO_SMALL shl ax 2
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr [bp - 2]
-mov   bx, ax
-mov   di, ax
-add   bx, ax
-mov   ax, NODE_CHILDREN_SEGMENT
-mov   es, ax
-add   bx, word ptr [bp - 4]
-mov   ax, word ptr es:[bx]
-call  P_CrossBSPNode_
-jnc   exit_crossbspnode
-
-SELFMODIFY_psight_cachedt2x_lo_1:
-MOV   DX, 01000h
-SELFMODIFY_psight_cachedt2x_hi_1:
-MOV   AX, 01000h
-SELFMODIFY_psight_cachedt2y_hi_1:
-MOV   SI, 01000h
-MOV   ES, SI
-SELFMODIFY_psight_cachedt2y_lo_1:
-MOV   SI, 01000h
-
-push  di
-call  P_DivlineSideNode_
-pop   di
-cmp   di, ax
-je    cross_bsp_node_return_1
-mov   ax, NODE_CHILDREN_SEGMENT
-mov   es, ax
-mov   ax, word ptr [bp - 2]
-xor   al, 1
-mov   bx, word ptr [bp - 4]
-sal   ax, 1		
-add   bx, ax ; add side offset
-
-; this right here!!! inlined function call to itself.
-
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 6], ax
-test  ah, (NF_SUBSECTOR SHR 8)
-je    iterate_bsp_recursion
-
-; this fallthru should be impossible???? not sure
+    SHL  AX, 1
+    SHL  AX, 1
+    XCHG AX, SI
+    LES  DX, DWORD PTR SS:[_strace]
+    MOV  AX, ES
+    LES  BP, DWORD PTR SS:[_strace + 4]
+    ; Register state
+    ; DS = NODES_SEGMENT
+    ; SS = FIXED_DS_SEGMENT
+    ; AX:DS = _strace.x
+    ; ES:BP = _strace.y
+    ; SI = bspnum * 8
+    CALL P_DivlineSide_
+    AND  AX, 1
+    PUSH AX ; Store side for later
+    XCHG AX, BX
+    SHL  BX, 1
+    SHR  SI, 1
+    MOV  AX, NODE_CHILDREN_SEGMENT
+    MOV  ES, AX
+    MOV  AX, WORD PTR ES:[BX + SI]
+    ; Register state
+    ; DS = NODES_SEGMENT
+    ; SS = FIXED_DS_SEGMENT
+    ; AX = bsp->children[side]
+    ; BX = side * 2
+    ; SI = bspnum * 4
+    CALL P_CrossBSPNode_
+    POP  BX ; Retrieve side
+    JNC  cross_bsp_node_return_false
+    SHL  SI, 1
+SELFMODIFY_psight_t2x_lo_1:
+    MOV  DX, 01000h
+SELFMODIFY_psight_t2x_hi_1:
+    MOV  AX, 01000h
+SELFMODIFY_psight_t2y_hi_1:
+    MOV  BP, 01000h
+    MOV  ES, BP
+SELFMODIFY_psight_t2y_lo_1:
+    MOV  BP, 01000h
+    ; Register state
+    ; DS = NODES_SEGMENT
+    ; SS = FIXED_DS_SEGMENT
+    ; AX:DX = t2.x
+    ; BX = side
+    ; ES:BP = t2.y
+    ; SI = bspnum * 8
+    CALL P_DivlineSide_
+    CMP  BL, AL
+    JE   cross_bsp_node_return_true
+    MOV  AX, NODE_CHILDREN_SEGMENT
+    MOV  ES, AX
+    XOR  BL, 1
+    SHL  BL, 1
+    SHR  SI, 1
+    MOV  AX, WORD PTR ES:[BX + SI]
+    SHL  AX, 1
+    JNC  iterate_bsp_recursion
+    POP  SI
 is_subsector:
-mov   ax, word ptr [bp - 6]
-cmp   ax, 0FFFFh
-jne   do_subsector_flag
-; call with 0
-xor   ax, ax
-do_cross_subsector_call:
-call  P_CrossSubsector_
-exit_crossbspnode:
-LEAVE_MACRO 
-POPA_NO_AX_OR_BP_MACRO
-ret   
-ALIGN_MACRO
-do_subsector_flag:
-and   ah, (NOT_NF_SUBSECTOR SHR 8)
-jmp   do_cross_subsector_call
-ALIGN_MACRO
-cross_bsp_node_return_1:
-stc
-LEAVE_MACRO
-POPA_NO_AX_OR_BP_MACRO
-ret   
-
+    XOR  AX, -2 ; 0xFFFE
+    JZ   is_subsector_neg_one
+    XOR  AX, -2
+    SHR  AX, 1
+is_subsector_neg_one:
+    push  ss
+	pop   ds
+	call  P_CrossSubsector_
+	mov   dx, NODES_SEGMENT
+	mov   ds, dx
+	ret
 ENDP
+
 
 PROC    P_SIGHT_ENDMARKER_
 PUBLIC  P_SIGHT_ENDMARKER_
