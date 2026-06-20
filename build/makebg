@@ -183,6 +183,7 @@ bingen.exe : $(GLOBOBJS)
 !endif
 !endif
 !endif
+!endif
  wstrip bingen.exe
 
 obj.obj : obj\
