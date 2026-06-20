@@ -548,8 +548,8 @@ _inhelpscreens =    			     _NULL_OFFSET + 0051Fh
 ;_sightzstart =				         _NULL_OFFSET + 00524h ; no longer used
 _topslope =				         	 _NULL_OFFSET + 00528h ; THESE HAVE TO BE ADJACENT
 _bottomslope =					     _NULL_OFFSET + 0052Ch ; THESE HAVE TO BE ADJACENT
-;_cachedt2x =				         _NULL_OFFSET + 00530h ; THESE HAVE TO BE ADJACENT
-;_cachedt2y =					     _NULL_OFFSET + 00534h ; THESE HAVE TO BE ADJACENT
+;_cachedt2x =				         _NULL_OFFSET + 00530h ; no longer used
+;_cachedt2y =					     _NULL_OFFSET + 00534h ; no longer used
 _strace =					         _NULL_OFFSET + 00538h ; THESE HAVE TO BE ADJACENT
 
 _gametime = 				         _NULL_OFFSET + 00548h

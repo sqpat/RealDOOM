@@ -225,7 +225,7 @@ lodsw
 mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_hi_1+1], ax
 mov   word ptr cs:[SELFMODIFY_psight_cachedt2y_hi_2+1], ax
 
-add   di, 8
+add   di, 8     ; skipped the above two
 
 mov   si, bx    ; bx now free.
 
@@ -280,15 +280,15 @@ STACK_DIVLINE_POSITION = 012h
 ALIGN_MACRO
 PROC    P_DivlineSide_ NEAR
 PUBLIC  P_DivlineSide_
-    MOV  CX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+    MOV  CX, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
     JCXZ node_dx_zero
-    MOV  DI, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dy]
+    MOV  DI, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_dy]
     TEST DI, DI
     JZ   node_dy_zero
-    SUB  AX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_x]
+    SUB  AX, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_x]
     IMUL DI
     MOV  DI, ES
-    SUB  DI, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_y]
+    SUB  DI, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_y]
     XCHG AX, DI
     MOV  SI, DX
     IMUL CX
@@ -312,7 +312,7 @@ return_0:
 
 ALIGN_MACRO
 node_dy_zero:
-    MOV  DI, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_y]
+    MOV  DI, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_y]
     XOR  AX, DI
     OR   DX, AX
     JZ   return_2
@@ -330,7 +330,7 @@ test_dx_below_zero:
 ENDP
 ALIGN_MACRO
 test_dy_above_zero:
-    MOV AX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dy]
+    MOV AX, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_dy]
     NEG AX
     ROL AX, 1
     AND AL, 1
@@ -338,12 +338,12 @@ test_dy_above_zero:
 
 ALIGN_MACRO
 node_dx_zero:
-    SUB AX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_x]
+    SUB AX, WORD PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_x]
     JS test_dy_above_zero
     OR AX, DX
     JZ return_2
     XOR AX, AX
-    MOV AH, BYTE PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dy + 1]
+    MOV AH, BYTE PTR DS:[BP - STACK_DIVLINE_POSITION + NODE_T.n_dy + 1]
     ROL AX, 1
     RET
 
@@ -477,105 +477,27 @@ PROC    P_DivlineSideNode_ NEAR
 PUBLIC  P_DivlineSideNode_
 
 
-SHIFT_MACRO_SMALL shl si 3
 
-; es is NODES_SEGMENT
-cmp   word ptr es:[si + 4], 0
-jne   node_dx_nonzero_node
+; AX:DX as x
+; ES:SI as y
+; DS:BP-STACK_DIVLINE_POSITION as node
 
-;		temp.h.intbits = node->x;
-;		temp.h.fracbits = 0;
-;
-;		if (x.w==temp.w){
-;			return 2;
-;		}
-;		
-;		if (x.w <= temp.w){
-;			return node->dy > 0;
-;		}
-;
-;		return node->dy < 0;
+push    bp
 
+mov     bp, word ptr [bp - 6]
+SHIFT_MACRO shl bp 3
 
-cmp   dx, word ptr es:[si]
-jne   node_dx_compare_1
-test  ax, ax
-je    return_2_node
-cmp   dx, word ptr es:[si]
-node_dx_compare_1:
-jl    node_dx_compare_2
-jne   node_dx_compare_3
-test  ax, ax
-jbe   node_dx_compare_2
-node_dx_compare_3:
-cmp   word ptr es:[si + 6], 0
-jl    return_1_node
-return_0_node:
-xor   ax, ax
-ret   
-ALIGN_MACRO
-return_2_node:
-mov   ax, 2
-ret   
-ALIGN_MACRO
-node_dx_compare_2:
-cmp   word ptr es:[si + 6], 0
-jle   return_0_node
-return_1_node:
-mov   ax, 1
-ret   
-ALIGN_MACRO
+mov     cx, NODES_SEGMENT
+mov     ds, cx
+add     bp, STACK_DIVLINE_POSITION ; DS:BP set
 
-node_dx_nonzero_node:
-cmp   word ptr es:[si + 6], 0
-jne   node_dy_nonzero_node
-cmp   dx, word ptr es:[si + 2]
-jne   node_dy_compare_1
-test  ax, ax
-je    return_2_node
-node_dy_compare_1:
-cmp   cx, word ptr es:[si + 2]
-jl    node_dy_compare_2
-jne   node_dy_compare_3
-cmp   bx, 0
-jbe   node_dy_compare_2
-node_dy_compare_3:
-cmp   word ptr es:[si + 4], 0
-jle   return_0_node
-mov   ax, 1
-ret   
-ALIGN_MACRO
-node_dy_compare_2:
-cmp   word ptr es:[si + 4], 0
-jge   return_0_node
-return_1_node_2:
-mov   ax, 1
-ret   
-ALIGN_MACRO
+call    P_DivlineSide_
 
-node_dy_nonzero_node:
-sub   dx, word ptr es:[si]
-sub   cx, word ptr es:[si + 2]
-xchg  ax, dx
-imul  word ptr es:[si + 6]
+cbw     ; ax, not al result.
+pop     bp
+mov     cx, ss
+mov     ds, cx
 
-xchg  ax, cx
-mov   bx, dx				; result to bx:cx
-imul  word ptr es:[si + 4]
-cmp   dx, bx
-jl    return_0_node
-jne   compare_leftright_node
-cmp   ax, cx
-jae   compare_leftright_node
-xor   ax, ax
-ret
-ALIGN_MACRO
-compare_leftright_node:
-cmp   bx, dx
-jne   return_1_node_2
-cmp   cx, ax
-jne   return_1_node_2
-mov   ax, 2
 ret   
 
 ENDP
@@ -964,15 +886,11 @@ test  ah, (NF_SUBSECTOR SHR 8)
 jne    is_subsector
 
 iterate_bsp_recursion:
-mov   si, OFFSET _strace
-les   bx, dword ptr ds:[si + 4]
-mov   cx, es
-les   ax, dword ptr ds:[si]
-mov   dx, es
 
-mov   si, NODES_SEGMENT		; todo move this out?
-mov   es, si
-mov   si, word ptr [bp - 6]
+
+LES   DX, DWORD PTR ds:[_strace]
+MOV   AX, ES
+LES   SI, DWORD PTR ds:[_strace+4]
 
 call  P_DivlineSideNode_
 and   ax, 1
@@ -991,19 +909,19 @@ mov   ax, word ptr es:[bx]
 call  P_CrossBSPNode_
 jnc   exit_crossbspnode
 
-SELFMODIFY_psight_cachedt2y_lo_1:
-mov   bx, 01000h
-SELFMODIFY_psight_cachedt2y_hi_1:
-mov   cx, 01000h
 SELFMODIFY_psight_cachedt2x_lo_1:
-mov   ax, 01000h
+MOV   DX, 01000h
 SELFMODIFY_psight_cachedt2x_hi_1:
-mov   dx, 01000h
+MOV   AX, 01000h
+SELFMODIFY_psight_cachedt2y_hi_1:
+MOV   SI, 01000h
+MOV   ES, SI
+SELFMODIFY_psight_cachedt2y_lo_1:
+MOV   SI, 01000h
 
-mov   si, NODES_SEGMENT
-mov   es, si
-mov   si, word ptr [bp - 6]
+push  di
 call  P_DivlineSideNode_
+pop   di
 cmp   di, ax
 je    cross_bsp_node_return_1
 mov   ax, NODE_CHILDREN_SEGMENT
