@@ -544,7 +544,8 @@ _currentsong_ticks_to_process =      _NULL_OFFSET + 0051Ch
 _loops_enabled =    			     _NULL_OFFSET + 0051Eh
 _inhelpscreens =    			     _NULL_OFFSET + 0051Fh
 
-_sightzstart =				         _NULL_OFFSET + 00524h
+
+_sightzstart =				         _NULL_OFFSET + 00524h ; THESE HAVE TO BE ADJACENT
 _topslope =				         	 _NULL_OFFSET + 00528h ; THESE HAVE TO BE ADJACENT
 _bottomslope =					     _NULL_OFFSET + 0052Ch ; THESE HAVE TO BE ADJACENT
 _cachedt2x =				         _NULL_OFFSET + 00530h ; THESE HAVE TO BE ADJACENT
@@ -556,11 +557,8 @@ _maketic = 				             _NULL_OFFSET + 0054Ch
 _starttime = 				         _NULL_OFFSET + 0054Eh
 
 
-;550-560 free todo
-
-
 ; ceilings plats buttonlist
-
+; todo move this high when possible
 ;3c or 60 bytes
 _activeceilings =                    _NULL_OFFSET + 00550h  ; THESE HAVE TO BE ADJACENT
 ;24 or 36 bytes

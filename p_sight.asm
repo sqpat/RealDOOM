@@ -68,127 +68,143 @@ _rndtable_9000:
 ALIGN_MACRO
 PROC    P_CheckSight_ NEAR
 PUBLIC  P_CheckSight_
+  PUSH SI
+  PUSH DI
+    
+  XCHG AX, DI
+  MOV SI, DX
+    
+  MOV DX, REJECTMATRIX_SEGMENT
+  MOV ES, DX
+    
+  MOV AX, WORD PTR ds:[_numsectors]
+  MUL WORD PTR ds:[DI + MOBJ_T.m_secnum]
+  ADD AX, WORD PTR ds:[SI + MOBJ_T.m_secnum]
+  ADC DX, 0
 
-push  si
-push  di
+IF COMPISA LE COMPILE_286
+  MOV DH, CL ; DH can't change lookup value
 
-push  dx		; bp - 2
+  MOV   CL, 7
+  AND   CL, AL
 
-mov   si, cx    ; si gets t2_pos
+  SHIFT32_MACRO_RIGHT DL AX 3
+  XCHG  AX, SI
 
-; todo clean up this di shuffling
-mov   es, ax    ; es holds t1
-mov   di, dx    ; di gets t2
-mov   ax, word ptr ds:[di + MOBJ_T.m_secnum]
-cwd   
-
-xchg  ax, cx  ; back up low
-mov   di, es    ; di gets t1 
-mov   ax, word ptr ds:[di + MOBJ_T.m_secnum]
-mov   di, dx  ; back up high	di:cx holds first result
-
-mul   word ptr ds:[_numsectors]
-add   ax, cx
-adc   dx, di
-
-; generate reject bitmap lookup
-mov   cx, ax	; cx is preshifted	
-and   cl, 7		; will shift by this amount for bit count
-
-; divide by 8 for 8 bits per byte..
-SHIFT32_MACRO_RIGHT dx ax 3
-
-xchg  di, ax 			; di gets post-shifted.
-
-mov   al, 1
-shl   al, cl			; dl stores bit for bit test
-
-mov   cx, es			; store t1 again
-
-mov   dx, REJECTMATRIX_SEGMENT
-mov   es, dx
-
-test  al, byte ptr es:[di]	; bit test the byte
-
-je    not_in_reject_table
-clc
-
-pop   dx	; clean out the push earlier...
-pop   di
-pop   si
-ret 
+  MOV   DL, 1
+  SHL   DL, CL
+  
+  TEST  DL, BYTE PTR ES:[SI]
+  JZ    not_in_reject_table
+ELSE
+  MOVZX EDX, DX
+  SHL   EDX, 12
+  BT    WORD PTR ES:[EDX], AX
+  JNC   not_in_reject_table
+ENDIF
+  CLC
+  POP  DI
+  POP  SI
+  RET
 ALIGN_MACRO
 
 not_in_reject_table:
+IF COMPISA LE COMPILE_286
+  MOV  CL, DH ; restore CL
+  XCHG AX, SI ; restore SI with t2
+ENDIF
+
+; cx/bx properly have t1/t2
+
 inc   word ptr ds:[_validcount_global]
 
 
-mov   ax, MOBJPOSLIST_SEGMENT
-mov   es, ax
-push  si  					; store for now
+mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR] ; todo go straight to ds with this once everything moves to stack
 
-; todo is lds worth it for these dword reads..
-mov   di, cx				; grab t1 again
+push  bp
+mov   bp, cx ; hold t2
+
+; bx tied up holding t2_pos for a while
+; bp has t1_pos
+; si has t2
+; di has t1
 
 ;    sightzstart = t1_pos->z.w + t1->height.w - (t1->height.w>>2);
 
-mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-mov   si, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-mov   ax, word ptr ds:[di + MOBJ_T.m_height + 0]
-mov   dx, word ptr ds:[di + MOBJ_T.m_height + 2]
-add   cx, ax
-adc   si, dx			; si:cx result
+les   cx, dword ptr es:[bx + MOBJ_POS_T.mp_z + 0]
+mov   ax, es
+les   di, dword ptr ds:[di + MOBJ_T.m_height + 0] ; last use of t1
+mov   dx, es
+add   cx, di
+adc   ax, dx			; ax:cx result
 
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sub   cx, ax
-sbb   si, dx
-mov   word ptr ds:[_sightzstart], cx	; cx has sightzstart
-mov   word ptr ds:[_sightzstart + 2], si
+SHIFT32_MACRO_RIGHT dx di 2
 
-xchg  ax, si				; ax gets sightzstart+2
-pop   si					; recover si
-pop   di 					; grab t2 again
-push  bx					; store this... we dont need it for a while
-xchg  ax, bx				; bx gets sightzstart+2
+sub   cx, di
+sbb   ax, dx
+
+xchg  ax, di  ; swap. todo find a way to work this out
+
+; bx tied up holding t2_pos for a while
+; bp has t1_pos
+; si has t2
+; di:cx has sightzstart
+; ax, dx free
 
 ;    topslope = (t2_pos->z.w+t2->height.w) - sightzstart;
+les   ax, dword ptr ds:[si + MOBJ_T.m_height + 0] ; last use of t2 
+mov   dx, es
 
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_z + 0]
-mov   dx, word ptr es:[si + MOBJ_POS_T.mp_z + 2]
-add   ax, word ptr ds:[di + MOBJ_T.m_height + 0]
-adc   dx, word ptr ds:[di + MOBJ_T.m_height + 2]	; last di use...
+mov   ds, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
+
+les   si, dword ptr ds:[bp + MOBJ_POS_T.mp_z + 0] ; si is free
+add   ax, si
+mov   si, es
+adc   dx, si
+
+mov   si, bp  ; si gets mobjpos_t
+mov   bp, di  ; bp gets sightzstart hi (todo remove)
+mov   di, OFFSET _sightzstart
+
 sub   ax, cx			; subtract sightzstart	
-sbb   dx, bx
+sbb   dx, bp
 
 ; swap es and ds...
-push  ds
-push  es
-pop   ds
+push  ss
 pop   es
 
-mov   di, OFFSET _topslope
+; bp:cx is still sightzstart
+; es:di is pointing to our vars, but wille ventually be pushes
+; ds:si is t1_pos. ds_bx is t2_pos
+
+; TODO all this should go on stack (push not stosw.)
+
+; write _sightzstart
+xchg  ax, cx
+stosw
+xchg  ax, cx
+xchg  ax, bp
+stosw
+xchg  ax, bp
 
 ; write topslope
 stosw
 xchg  ax, dx
 stosw
 
-; cx:bx has sightzstart still..
+; cx:bp has sightzstart 
 
 mov   ax, word ptr ds:[si + MOBJ_POS_T.mp_z + 0]
 mov   dx, word ptr ds:[si + MOBJ_POS_T.mp_z + 2]
-sub   ax, cx			; subtract sightzstart
-sbb   dx, bx
+sub   ax, cx			; subtract sightzstart. last use of bx/bp
+sbb   dx, bp
 ; write bottomslope
 stosw
 xchg  ax, dx
 stosw
 
-; carried over address from above
-;mov   di, OFFSET _cachedt2x
+
+;di = _cachedt2x
 lodsw
 stosw
 xchg  ax, dx
@@ -196,36 +212,36 @@ lodsw
 stosw
 xchg  ax, cx	; cx:dx has si, si
 
-; carried over address from above
-;mov   di, OFFSET _cachedt2y	; todo remove once adjacent...
+
+;di = _cachedt2y
 lodsw
 stosw
-xchg  ax, bx
+xchg  ax, bp
 lodsw
-stosw			; ax:bx has si+4, si+6
+stosw			; ax:bp has si+4, si+6
 
-pop   si		; restore old bx (t1 pos?)
+mov   si, bx    ; bx now free.
 
-; carried over address from above
-;mov   di, OFFSET _strace
 
-movsw
-movsw
-movsw
-movsw
+;di = _strace
 
-; writing _strace + 8 now.
+movsw ; x lo
+movsw ; x hi
+movsw ; y lo
+movsw ; y hi
+
+; di =  _strace + 8 (dx, dy fields)
 
 xchg   ax, dx
-sub    ax, word ptr ds:[si - 8]
-sbb    cx, word ptr ds:[si - 6]
+sub    ax, word ptr ds:[si - 8] ; MOBJ_POS_T.mp_x + 0
+sbb    cx, word ptr ds:[si - 6] ; MOBJ_POS_T.mp_x + 2
 stosw
 xchg   ax, cx
 stosw
 
-xchg   ax, bx
-sub    ax, word ptr ds:[si - 4]
-sbb    dx, word ptr ds:[si - 2]
+xchg   ax, bp
+sub    ax, word ptr ds:[si - 4] ; MOBJ_POS_T.mp_y + 0
+sbb    dx, word ptr ds:[si - 2] ; MOBJ_POS_T.mp_y + 2
 stosw
 xchg   ax, dx
 stosw
@@ -237,7 +253,7 @@ mov   ax, word ptr ds:[_numnodes]
 dec   ax
 call  P_CrossBSPNode_ ; return carry thru 
 
-
+pop   bp
 pop   di
 pop   si
 ret 
@@ -316,6 +332,7 @@ test_dx_below_zero:
     RCL AX, 1
     RET
 ENDP
+
 ; bx is always equal to strace
 ALIGN_MACRO
 PROC    P_DivlineSide16_ NEAR
@@ -658,6 +675,7 @@ mov   ax, cx				; backed up v2.x
 call  P_DivlineSide16_
 cmp   ax, di
 je    cross_subsector_mainloop_increment
+
 LES   DX, DWORD PTR ds:[_strace]
 MOV   SI, OFFSET _strace + 4
 CALL  P_DivlineSide_

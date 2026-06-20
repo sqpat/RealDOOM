@@ -46,10 +46,10 @@
 #define F_ResponderOffset                       0xA42
 #define F_DrawerOffset                          0xA6C
 #define LoadSFXWadLumpsOffset                   0x4
-#define P_SetThingPositionFarOffset             0x2A70
-#define P_SpawnMapThingOffset                   0x2BDE
-#define P_SpawnSpecialsOffset                   0x7DBC
-#define AM_DrawerOffset                         0x96C5
+#define P_SetThingPositionFarOffset             0x2A64
+#define P_SpawnMapThingOffset                   0x2BD2
+#define P_SpawnSpecialsOffset                   0x7DB0
+#define AM_DrawerOffset                         0x96B9
 #define S_StartSoundFarOffset                   0xB7E4
 #define S_StartOffset                           0xB8C5
 #define M_InitOffset                            0x1182
