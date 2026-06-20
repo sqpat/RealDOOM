@@ -267,7 +267,8 @@ ret
 
 ENDP
 
-STACK_DIVLINE_POSITION = 01Ah
+STACK_DIVLINE_POSITION = 012h
+
 
 ;int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) {
 
@@ -275,70 +276,78 @@ STACK_DIVLINE_POSITION = 01Ah
 ; dx:ax x
 ; cx:bx y
 
+
+ALIGN_MACRO
+PROC    P_DivlineSide_ NEAR
+PUBLIC  P_DivlineSide_
+    MOV  CX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+    JCXZ node_dx_zero
+    MOV  DI, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dy]
+    TEST DI, DI
+    JZ   node_dy_zero
+    SUB  AX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_x]
+    IMUL DI
+    MOV  DI, ES
+    SUB  DI, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_y]
+    XCHG AX, DI
+    MOV  SI, DX
+    IMUL CX
+    SUB  AX, DI
+    SBB  DX, SI
+    JS   return_0
+    OR   AX, DX
+    JZ   return_2
+    MOV  AL, 1
+    RET
+
+ALIGN_MACRO
+return_2:
+    MOV  AL, 2
+    RET
+
+ALIGN_MACRO
+return_0:
+    XOR  AX, AX
+    RET
+
+ALIGN_MACRO
+node_dy_zero:
+    MOV  DI, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_y]
+    XOR  AX, DI
+    OR   DX, AX
+    JZ   return_2
+    XOR  AX, AX
+    CMP  AX, SI
+	MOV  SI, ES
+    SBB  DI, SI
+    JGE  test_dx_below_zero
+    NEG  CX
+ALIGN_MACRO
+test_dx_below_zero:
+    SHL  CX, 1
+    RCL  AX, 1
+    RET
+ENDP
+ALIGN_MACRO
 test_dy_above_zero:
-    MOV AX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dy + 2]
+    MOV AX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dy]
     NEG AX
     ROL AX, 1
     AND AL, 1
     RET
 
+ALIGN_MACRO
 node_dx_zero:
-    SUB AX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_x + 2]
+    SUB AX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_x]
     JS test_dy_above_zero
     OR AX, DX
     JZ return_2
     XOR AX, AX
-    MOV AH, BYTE PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dy + 3]
+    MOV AH, BYTE PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dy + 1]
     ROL AX, 1
     RET
 
-ALIGN_MACRO
-PROC    P_DivlineSide_ NEAR
-PUBLIC  P_DivlineSide_
-    MOV CX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dx + 2]
-    JCXZ node_dx_zero
-    MOV DI, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_dy + 2]
-    TEST DI, DI
-    JZ node_dy_zero
-    SUB AX, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_x + 2]
-    IMUL DI
-    MOV DI, ES
-    SUB DI, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_y + 2]
-    XCHG AX, DI
-    MOV SI, DX
-    IMUL CX
-    SUB AX, DI
-    SBB DX, SI
-    JS return_0
-    OR AX, DX
-    JZ return_2
-    MOV AL, 1
-    RET
 
-return_2:
-    MOV AL, 2
-    RET
-
-return_0:
-    XOR AX, AX
-    RET
-
-node_dy_zero:
-    MOV DI, WORD PTR [BP - STACK_DIVLINE_POSITION + DIVLINE_T.dl_y + 2]
-    XOR AX, DI
-    OR DX, AX
-    JZ return_2
-    XOR AX, AX
-    CMP AX, SI
-	MOV SI, ES
-    SBB DI, SI
-    JGE test_dx_below_zero
-    NEG CX
-test_dx_below_zero:
-    SHL CX, 1
-    RCL AX, 1
-    RET
-ENDP
 
 ; bx is always equal to strace
 ALIGN_MACRO
@@ -572,6 +581,7 @@ ret
 ENDP
 
 
+
 ; return in carry
 ALIGN_MACRO
 PROC    P_CrossSubsector_ NEAR
@@ -582,14 +592,14 @@ PUBLIC  P_CrossSubsector_
 ; bp - 6	frac hibits
 ; bp - 8    frac lonits
 ; bp - 0A   count
-; bp - 0C 	(divl end)  
+; bp - 0C   (divl end)
 ; bp - 0E   (divl)
 ; bp - 010  (divl)
-; bp - 012	(divl)
-; bp - 014  (divl)
-; bp - 016  (divl)
-; bp - 018  (divl)
-; bp - 01A  divl start
+; bp - 012  divl start (NODE_T struct)
+; bp - 014 	 unused
+; bp - 016   unused
+; bp - 018   unused
+; bp - 01A	 unused
 ; bp - 01Ch   [used by inlined P_InterceptVector2_ ]
 ; bp - 01Eh   [used by inlined P_InterceptVector2_ ]
 ; bp - 020h	  [used by inlined P_InterceptVector2_ ]
@@ -662,15 +672,15 @@ les   ax, dword ptr es:[bx]		; v2.x
 mov   cx, ax					; back up v2.x (es backs up v2.y)
 
 sub   ax, si
-mov   word ptr [bp - 010h], ax   ;	divl.dx.h.intbits = v2.x - v1.x;
+mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx], ax   ;	divl.dx.h.intbits = v2.x - v1.x;
 mov   ax, es					; v2.y
 sub   ax, dx
 
-mov   word ptr [bp - 0Ch], ax  ;	divl.dy.h.intbits = v2.y - v1.y;
-mov   word ptr [bp - 014h], dx	;   v1.y
+mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy], ax  ;	divl.dy.h.intbits = v2.y - v1.y;
+mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y], dx	;   v1.y
 
 xchg  ax, si					; ax gets v1.x
-mov   word ptr [bp - 018h], ax  ;   v1.x
+mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_x], ax  ;   v1.x
 
 mov   bx, OFFSET _strace
 
@@ -687,20 +697,22 @@ LES   DX, DWORD PTR ds:[_strace]
 MOV   AX, ES
 LES   SI, DWORD PTR ds:[_strace+4]
 CALL  P_DivlineSide_
-XCHG  AX, BX
+XCHG  AX, BX ; store result
+
+
 SELFMODIFY_psight_cachedt2x_lo_2:
 MOV   DX, 01000h
 SELFMODIFY_psight_cachedt2x_hi_2:
-MOV AX, 01000h
-
+MOV   AX, 01000h
 SELFMODIFY_psight_cachedt2y_hi_2:
-MOV SI, 01000h
-MOV ES, SI
+MOV   SI, 01000h
+MOV   ES, SI
 SELFMODIFY_psight_cachedt2y_lo_2:
-MOV SI, 01000h
+MOV   SI, 01000h
 CALL  P_DivlineSide_
+
 CMP   BL, AL
-je   side_crossed
+je    side_crossed
 
 test  byte ptr [bp - 2], ML_TWOSIDED		; test flag
 je    jump_to_cross_bsp_node_return_0_2	; todo optim out fallthru
@@ -772,11 +784,11 @@ mov   di, OFFSET _strace
 
 ; inlined P_InterceptVector2_
 
-lea   si, [bp - 01Ah]
+lea   si, [bp - STACK_DIVLINE_POSITION]  ; divl NODE_T
 mov   bx, word ptr ds:[di + DIVLINE_T.dl_dx + 0]
 mov   cx, word ptr ds:[di + DIVLINE_T.dl_dx + 2]
-mov   ax, word ptr ds:[si + DIVLINE_T.dl_dy + 0]
-mov   dx, word ptr ds:[si + DIVLINE_T.dl_dy + 2]
+xor   ax, ax
+mov   dx, word ptr ds:[si + NODE_T.n_dy]
 
 call  FixedMul2432_MapLocal_
 
@@ -784,8 +796,8 @@ mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
 mov   bx, word ptr ds:[di + DIVLINE_T.dl_dy + 0]
 mov   cx, word ptr ds:[di + DIVLINE_T.dl_dy + 2]
-mov   ax, word ptr ds:[si + DIVLINE_T.dl_dx + 0]
-mov   dx, word ptr ds:[si + DIVLINE_T.dl_dx + 2]
+xor   ax, ax
+mov   dx, word ptr ds:[si + NODE_T.n_dx]
 
 call  FixedMul2432_MapLocal_
 
@@ -797,10 +809,10 @@ mov   word ptr [bp - 01Eh], bx
 mov   word ptr [bp - 01Ch], ax
 or    ax, bx
 je    denominator_0
-mov   bx, word ptr ds:[si + DIVLINE_T.dl_dy + 0]
-mov   cx, word ptr ds:[si + DIVLINE_T.dl_dy + 2]
-mov   ax, word ptr ds:[si + DIVLINE_T.dl_x + 0]
-mov   dx, word ptr ds:[si + DIVLINE_T.dl_x + 2]
+xor   bx, bx
+mov   cx, word ptr ds:[si + NODE_T.n_dy]
+xor   ax, ax
+mov   dx, word ptr ds:[si + NODE_T.n_x]
 sub   ax, word ptr ds:[di + DIVLINE_T.dl_x + 0]
 sbb   dx, word ptr ds:[di + DIVLINE_T.dl_x + 2]
 
@@ -808,17 +820,16 @@ call  FixedMul2432_MapLocal_
 
 mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
-mov   bx, word ptr ds:[si + DIVLINE_T.dl_dx + 0]
-mov   cx, word ptr ds:[si + DIVLINE_T.dl_dx + 2]
+xor   bx, bx
+mov   cx, word ptr ds:[si + NODE_T.n_dx]
 mov   ax, word ptr ds:[di + DIVLINE_T.dl_y + 0]
 mov   dx, word ptr ds:[di + DIVLINE_T.dl_y + 2]
-sub   ax, word ptr ds:[si + DIVLINE_T.dl_y + 0]
-sbb   dx, word ptr ds:[si + DIVLINE_T.dl_y + 2]
+sub   dx, word ptr ds:[si + NODE_T.n_y]
 
 call  FixedMul2432_MapLocal_
 
-mov   bx, word ptr [bp - 01Eh]
-mov   cx, word ptr [bp - 01Ch]
+les   bx, dword ptr [bp - 01Eh]
+mov   cx, es
 add   ax, word ptr [bp - 022h]
 adc   dx, word ptr [bp - 020h]
 
