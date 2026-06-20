@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/20 16:23:45
+Created on:       26/06/20 16:40:43
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -606,8 +606,8 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd3:1533*     ENSUREALIGN_105
 1dd3:0695*     three_page_sprite
 1dd3:0418*     ENSUREALIGN_135
-1dd3:1521*     ENSUREALIGN_104
 1dd3:0512*     ENSUREALIGN_132_sprite
+1dd3:1521*     ENSUREALIGN_104
 1dd3:0440*     ENSUREALIGN_134
 1dd3:1301*     ENSUREALIGN_124
 1dd3:051a*     ENSUREALIGN_131_sprite
@@ -670,14 +670,14 @@ Module: r_maskfl.obj(r_maskfl.ASM)
 22b3:1898      R_WriteBackMaskedFrameConstantsFL_
 22b3:180b      R_WriteBackViewConstantsMaskedFL_
 Module: p_sight.obj(p_sight.ASM)
-2443:0578*     P_CrossBSPNode_
-2443:0339*     ENSUREALIGN_908
+2443:0310*     P_CrossBSPNode_
+2443:03a4*     ENSUREALIGN_908
 2443:0100      P_CheckSight_
 2443:01fc*     P_DivlineSide_
 2443:0000      P_SIGHT_STARTMARKER_
 2443:0262*     P_DivlineSide16_
 2443:05e8*     P_SIGHT_ENDMARKER_
-2443:030c*     P_CrossSubsector_
+2443:0375*     P_CrossSubsector_
 Module: p_map.obj(p_map.ASM)
 2443:05f2      _tmfloorz
 2443:0b8a      R_PointInSubsector_
@@ -812,8 +812,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2443:4507*     P_NewChaseDir_
 2443:519a*     A_StartFire_
 2443:4d81*     A_Tracer_
-2443:5456*     A_SkullAttack_
 2443:4b44*     A_CPosRefire_
+2443:5456*     A_SkullAttack_
 2443:4140*     P_ENEMY_STARTMARKER_
 2443:4c00*     A_TroopAttack_
 2443:5603*     A_PainAttack_
@@ -1659,4 +1659,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e500 (255232.)
 Entry point address: 2fcf:806e
-Link time: 00:00.59
+Link time: 00:00.04

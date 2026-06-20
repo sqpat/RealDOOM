@@ -477,10 +477,105 @@ ENDP
 
 
 
-; return in carry
+
+
+
+; what the heck?
+; openwatcom turned this from a recursive to iterative function??? hello?? 
+
+
+; todo update to new bsp traversal method?
+
+;return carry
 ALIGN_MACRO
-PROC    P_CrossSubsector_ NEAR
-PUBLIC  P_CrossSubsector_
+cross_bsp_node_return_true:
+    STC
+cross_bsp_node_return_false:
+    POP SI
+    RET
+ALIGN_MACRO
+PROC    P_CrossBSPNode_ NEAR
+PUBLIC  P_CrossBSPNode_
+    ; Register state
+    ; DS = NODES_SEGMENT
+    ; SS = FIXED_DS_SEGMENT
+    ; AX = bspnum
+    SHL  AX, 1
+    JC   is_subsector
+    PUSH SI
+iterate_bsp_recursion:
+    SHL  AX, 1
+    SHL  AX, 1
+    XCHG AX, SI
+    LES  DX, DWORD PTR SS:[_strace]
+    MOV  AX, ES
+    LES  BP, DWORD PTR SS:[_strace + 4]
+    ; Register state
+    ; DS = NODES_SEGMENT
+    ; SS = FIXED_DS_SEGMENT
+    ; AX:DS = _strace.x
+    ; ES:BP = _strace.y
+    ; SI = bspnum * 8
+    CALL P_DivlineSide_
+    AND  AX, 1
+    PUSH AX ; Store side for later
+    XCHG AX, BX
+    SHL  BX, 1
+    SHR  SI, 1
+    MOV  AX, NODE_CHILDREN_SEGMENT
+    MOV  ES, AX
+    MOV  AX, WORD PTR ES:[BX + SI]
+    ; Register state
+    ; DS = NODES_SEGMENT
+    ; SS = FIXED_DS_SEGMENT
+    ; AX = bsp->children[side]
+    ; BX = side * 2
+    ; SI = bspnum * 4
+    CALL P_CrossBSPNode_
+    POP  BX ; Retrieve side
+    JNC  cross_bsp_node_return_false
+    SHL  SI, 1
+SELFMODIFY_psight_t2x_lo_1:
+    MOV  DX, 01000h
+SELFMODIFY_psight_t2x_hi_1:
+    MOV  AX, 01000h
+SELFMODIFY_psight_t2y_hi_1:
+    MOV  BP, 01000h
+    MOV  ES, BP
+SELFMODIFY_psight_t2y_lo_1:
+    MOV  BP, 01000h
+    ; Register state
+    ; DS = NODES_SEGMENT
+    ; SS = FIXED_DS_SEGMENT
+    ; AX:DX = t2.x
+    ; BX = side
+    ; ES:BP = t2.y
+    ; SI = bspnum * 8
+    CALL P_DivlineSide_
+    CMP  BL, AL
+    JE   cross_bsp_node_return_true
+    MOV  AX, NODE_CHILDREN_SEGMENT
+    MOV  ES, AX
+    XOR  BL, 1
+    SHL  BL, 1
+    SHR  SI, 1
+    MOV  AX, WORD PTR ES:[BX + SI]
+    SHL  AX, 1
+    JNC  iterate_bsp_recursion
+    POP  SI
+is_subsector:
+    XOR  AX, -2 ; 0xFFFE
+    JZ   is_subsector_neg_one
+    XOR  AX, -2
+    SHR  AX, 1
+is_subsector_neg_one:
+    
+
+
+P_CrossSubsector_:
+PUBLIC P_CrossSubsector_
+; INLINED  P_CrossSubsector_ 
+; return in carry
 
 ; bp - 2	lineflags
 ; bp - 4    2x segnum
@@ -502,10 +597,6 @@ PUBLIC  P_CrossSubsector_
 
 
 
-PUSHA_NO_AX_OR_BP_MACRO
-push  bp
-mov   bp, sp
-sub   sp, 022h
 mov   bx, ax		; todo swap this argument order
 mov   ax, SUBSECTOR_LINES_SEGMENT
 mov   es, ax
@@ -514,10 +605,18 @@ mov   al, byte ptr es:[bx]			; count todo selfmodify this
 SHIFT_MACRO_SMALL shl bx 2
 xor   ah, ah
 mov   es, dx
+test  ax, ax
+je    cross_subsector_return_1 ; no stack frame, ds modification necessary
+
+push  ss
+pop   ds
+push  si
+push  bp
+mov   bp, sp
+sub   sp, 022h
+
 mov   word ptr [bp - 0Ah], ax
 mov   dx, word ptr es:[bx + SUBSECTOR_T.ss_firstline]		; get segnum/firstline   ; todo move after test?
-test  ax, ax
-je    cross_subsector_return_1
 mov   ax, dx ; toggle xchg for ENSUREALIGN_908
 sal   ax, 1
 mov   word ptr [bp - 4], ax		; store segnum x2?
@@ -540,10 +639,14 @@ cross_subsector_mainloop_increment:
 add   word ptr [bp - 4], 2
 dec   word ptr [bp - 0Ah]
 jne   cross_subsector_mainloop	
-cross_subsector_return_1:
-stc
+
+mov   dx, NODES_SEGMENT
+mov   ds, dx
+
 LEAVE_MACRO 
-POPA_NO_AX_OR_BP_MACRO
+pop   si
+cross_subsector_return_1:  ; ds/bp not modified
+stc
 ret   
 ALIGN_MACRO
 do_full_loop_iteration:
@@ -833,9 +936,11 @@ ja    jump_to_cross_subsector_mainloop_increment_2
 cross_bsp_node_return_0:
 clc
 LEAVE_MACRO
-POPA_NO_AX_OR_BP_MACRO
-ret   
-ALIGN_MACRO
+
+pop   si
+mov   dx, NODES_SEGMENT
+mov   ds, dx
+ret
 jump_to_cross_subsector_mainloop_increment_2:
 jmp   cross_subsector_mainloop_increment
 
@@ -844,103 +949,6 @@ ENDP
 
 
 
-
-; what the heck?
-; openwatcom turned this from a recursive to iterative function??? hello?? 
-
-
-; todo update to new bsp traversal method?
-
-;return carry
-ALIGN_MACRO
-cross_bsp_node_return_true:
-    STC
-cross_bsp_node_return_false:
-    POP SI
-    RET
-ALIGN_MACRO
-PROC    P_CrossBSPNode_ NEAR
-PUBLIC  P_CrossBSPNode_
-    ; Register state
-    ; DS = NODES_SEGMENT
-    ; SS = FIXED_DS_SEGMENT
-    ; AX = bspnum
-    SHL  AX, 1
-    JC   is_subsector
-    PUSH SI
-iterate_bsp_recursion:
-    SHL  AX, 1
-    SHL  AX, 1
-    XCHG AX, SI
-    LES  DX, DWORD PTR SS:[_strace]
-    MOV  AX, ES
-    LES  BP, DWORD PTR SS:[_strace + 4]
-    ; Register state
-    ; DS = NODES_SEGMENT
-    ; SS = FIXED_DS_SEGMENT
-    ; AX:DS = _strace.x
-    ; ES:BP = _strace.y
-    ; SI = bspnum * 8
-    CALL P_DivlineSide_
-    AND  AX, 1
-    PUSH AX ; Store side for later
-    XCHG AX, BX
-    SHL  BX, 1
-    SHR  SI, 1
-    MOV  AX, NODE_CHILDREN_SEGMENT
-    MOV  ES, AX
-    MOV  AX, WORD PTR ES:[BX + SI]
-    ; Register state
-    ; DS = NODES_SEGMENT
-    ; SS = FIXED_DS_SEGMENT
-    ; AX = bsp->children[side]
-    ; BX = side * 2
-    ; SI = bspnum * 4
-    CALL P_CrossBSPNode_
-    POP  BX ; Retrieve side
-    JNC  cross_bsp_node_return_false
-    SHL  SI, 1
-SELFMODIFY_psight_t2x_lo_1:
-    MOV  DX, 01000h
-SELFMODIFY_psight_t2x_hi_1:
-    MOV  AX, 01000h
-SELFMODIFY_psight_t2y_hi_1:
-    MOV  BP, 01000h
-    MOV  ES, BP
-SELFMODIFY_psight_t2y_lo_1:
-    MOV  BP, 01000h
-    ; Register state
-    ; DS = NODES_SEGMENT
-    ; SS = FIXED_DS_SEGMENT
-    ; AX:DX = t2.x
-    ; BX = side
-    ; ES:BP = t2.y
-    ; SI = bspnum * 8
-    CALL P_DivlineSide_
-    CMP  BL, AL
-    JE   cross_bsp_node_return_true
-    MOV  AX, NODE_CHILDREN_SEGMENT
-    MOV  ES, AX
-    XOR  BL, 1
-    SHL  BL, 1
-    SHR  SI, 1
-    MOV  AX, WORD PTR ES:[BX + SI]
-    SHL  AX, 1
-    JNC  iterate_bsp_recursion
-    POP  SI
-is_subsector:
-    XOR  AX, -2 ; 0xFFFE
-    JZ   is_subsector_neg_one
-    XOR  AX, -2
-    SHR  AX, 1
-is_subsector_neg_one:
-    push  ss
-	pop   ds
-	call  P_CrossSubsector_
-	mov   dx, NODES_SEGMENT
-	mov   ds, dx
-	ret
-ENDP
 
 
 PROC    P_SIGHT_ENDMARKER_
