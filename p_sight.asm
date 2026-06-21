@@ -306,7 +306,7 @@ sbb   di, ax
 neg   bx
 
 adc   ax, 0
-mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_3+1], ax	
+mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_3+2], ax	
 
 
 
@@ -467,18 +467,30 @@ PUBLIC  P_DivlineSide16_
 
 SELFMODIFY_psight_strace_x_hi_3:
 	sub  ax, 01000h			; dx = (x - node->x);
-SELFMODIFY_psight_strace_dy_hi_2:
-	mov  dx, 01000h
-	IMUL DX			; left =  (node->dy>>FRACBITS) * (dx>>FRACBITS);
-
-    mov  di, dx 
-    xchg ax, si  ; store results. get y
 
 SELFMODIFY_psight_strace_y_hi_3:
-    sub  ax, 01000h				; dy = (y - node->y);
-		
-SELFMODIFY_psight_strace_dx_hi_2:
+    sub  si, 01000h	  		; dy = (y - node->y);
+
+SELFMODIFY_psight_strace_dy_hi_2:
 	mov  dx, 01000h
+
+SELFMODIFY_psight_strace_dx_hi_2:
+	mov  di, 01000h
+    mov  cx, di
+	xor  cx, si  ; ch = right sign
+	mov  cl, ah
+	xor  cl, dh  ; cl = left sign
+	xor  ch, cl
+
+SELFMODIFY_psight_left_right_sign_compare:
+    js   divline_16_return_sign_based_result
+
+	IMUL DX			; left =  (node->dy>>FRACBITS) * (dx>>FRACBITS);
+
+    xchg di, dx 
+    xchg ax, si  ; store results. get y
+
+		
 	IMUL DX			; right = (dy>>FRACBITS) * (node->dx>>FRACBITS);
 	
     SUB  AX, SI
@@ -488,6 +500,14 @@ SELFMODIFY_psight_strace_dx_hi_2:
     JZ   return_2
     MOV  AL, 1
     RET
+	ALIGN_MACRO
+divline_16_return_sign_based_result:
+  ; return right > left, so
+  ; return 1 if left was negative, 0 if its positive...
+    mov  al, cl
+	rol  al, 1
+	and  al, 1
+    ret
 ENDP
 
 ALIGN_MACRO
