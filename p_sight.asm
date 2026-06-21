@@ -139,8 +139,8 @@ ENDIF
 
 inc   word ptr ds:[_validcount_global]
 mov   ax, word ptr ds:[_validcount_global]
-mov   word ptr cs:[SELFMODIFY_psight_cmp_validcount+4], ax
-mov   word ptr cs:[SELFMODIFY_psight_set_validcount+4], ax
+mov   word ptr cs:[SELFMODIFY_psight_cmp_validcount+3], ax
+mov   word ptr cs:[SELFMODIFY_psight_set_validcount+3], ax
 
 
 
@@ -723,17 +723,18 @@ xchg  ax, cx   ; cx gets iterator count
 mov   si, word ptr es:[bx + SUBSECTOR_T.ss_firstline]		; get segnum/firstline   ; todo move after test?
 sal   si, 1 ; segnum (word ptr)
 
+mov   di, SEG_LINEDEFS_SEGMENT
+mov   es, di
 mov   di, LINES_PHYSICS_SEGMENT
-mov   dx, SEG_LINEDEFS_SEGMENT
+mov   ds, di
 cross_subsector_mainloop:
 ENSUREALIGN_908:
-mov   es, dx ; SEG_LINEDEFS_SEGMENT
 lods  word ptr es:[si]
 mov   bx, ax
 SHIFT_MACRO_SMALL shl bx 4
-mov   es, di  ; LINES_PHYSICS_SEGMENT
+
 SELFMODIFY_psight_cmp_validcount:
-cmp   word ptr es:[bx + LINE_PHYSICS_T.lp_validcount], 01000h
+cmp   word ptr ds:[bx + LINE_PHYSICS_T.lp_validcount], 01000h
 jne   do_full_loop_iteration
 cross_subsector_mainloop_increment:
 
@@ -757,25 +758,27 @@ mov   dx, LINEFLAGSLIST_SEGMENT
 mov   es, dx
 xchg  ax, si  ; linenum
 lods  byte ptr es:[si]
-mov   byte ptr [bp - 2], al				; todo selfmodify ahead
-mov   es, di  ; LINES_PHYSICS_SEGMENT
+mov   byte ptr [bp - 2], al	
+
+; ds still LINES_PHYSICS_SEGMENT
 SELFMODIFY_psight_set_validcount:
-mov   word ptr es:[bx + LINE_PHYSICS_T.lp_validcount], 01000h
-les   di, dword ptr es:[bx]		; linev1Offset
+mov   word ptr ds:[bx + LINE_PHYSICS_T.lp_validcount], 01000h
+les   di, dword ptr ds:[bx]		; linev1Offset
 mov   bx, es					; linev2Offset
 SHIFT_MACRO_SMALL shl   di 2
 and   bh, (VERTEX_OFFSET_MASK SHR 8)
 SHIFT_MACRO_SMALL shl   bx 2
-mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
-mov   ax, word ptr es:[di + VERTEX_T.v_x]		; v1.x
-mov   si, word ptr es:[di + VERTEX_T.v_y]       ; v1.y into si
-les   bx, dword ptr es:[bx]		; v2.x
+mov   ax, VERTEXES_SEGMENT
+mov   ds, ax
+les   ax, dword ptr ds:[di + VERTEX_T.v_x]		; v1.x
+mov   si, es  							       ; v1.y into si
+les   bx, dword ptr ds:[bx]		; v2.x
 
 mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_x], ax  ;   v1.x
 mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y], si	;   v1.y
 
 
-mov   di, bx					
+mov   di, bx
 sub   di, ax
 mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx], di   ;	divl.dx.h.intbits = v2.x - v1.x;
 mov   di, es					; v2.y
@@ -792,6 +795,8 @@ mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy], di  ;	divl.dy.h.intb
 
 ; callng convention: ax = x, si = y
 
+; cx is free, could pass something into both calls?
+
 SELFMODIFY_psight_divlinesize16_call_1:
 call  P_DivlineSide16_
 SELFMODIFY_psight_divlinesize16_call_1_AFTER:
@@ -804,6 +809,9 @@ call  P_DivlineSide16_
 SELFMODIFY_psight_divlinesize16_call_2_AFTER:
 cmp   al, bl
 je    jump_to_cross_subsector_mainloop_increment
+
+push  ss
+pop   ds
 
 push  bp
 
@@ -844,14 +852,14 @@ je    jump_to_cross_bsp_node_return_0_2	; todo optim out fallthru
 two_sided:
 
 mov   ax, SEG_LINEDEFS_SEGMENT
-mov   es, ax
+mov   ds, ax
 pop   bx   ; segnum (kinda gross... improve)
 push  bx
-mov   si, word ptr es:[bx - 2] ; lodsw overshot earlier
+mov   si, word ptr ds:[bx - 2] ; lodsw overshot earlier
 SHIFT_MACRO_SMALL shl si 4
-mov   ax, LINES_PHYSICS_SEGMENT
-mov   es, ax
-les   di, dword ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum]
+mov   di, LINES_PHYSICS_SEGMENT
+mov   ds, di
+les   di, dword ptr ds:[si + LINE_PHYSICS_T.lp_frontsecnum]
 mov   si, es
 
 SHIFT_MACRO_SMALL shl di 4
@@ -861,65 +869,66 @@ SHIFT_MACRO_SMALL shl si 4
 ; di/si not preshfited
 
 mov   ax, SECTORS_SEGMENT
-mov   es, ax
+mov   ds, ax
 
 
-mov   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
+mov   ax, word ptr ds:[di + SECTOR_T.sec_floorheight]
 
-cmp   ax, word ptr es:[si + SECTOR_T.sec_floorheight]
-mov   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]
+cmp   ax, word ptr ds:[si + SECTOR_T.sec_floorheight]
+mov   ax, word ptr ds:[di + SECTOR_T.sec_ceilingheight]
 jne   floor_ceiling_heights_dont_match
-cmp   ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
+cmp   ax, word ptr ds:[si + SECTOR_T.sec_ceilingheight]
 je    jump_to_cross_subsector_mainloop_increment
 floor_ceiling_heights_dont_match:
-cmp   ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
+cmp   ax, word ptr ds:[si + SECTOR_T.sec_ceilingheight]
 jl    set_opentop_to_frontsector
-mov   ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
+mov   ax, word ptr ds:[si + SECTOR_T.sec_ceilingheight]
 jmp   opentop_set
 ALIGN_MACRO
 side_crossed:
 jump_to_cross_subsector_mainloop_increment:
+mov   di, SEG_LINEDEFS_SEGMENT
+mov   es, di
 mov   di, LINES_PHYSICS_SEGMENT
-mov   dx, SEG_LINEDEFS_SEGMENT
+mov   ds, di
 pop   si  ; segnum
 pop   cx  ; iterator
 jmp   cross_subsector_mainloop_increment
 ALIGN_MACRO
 
 set_opentop_to_frontsector:
-mov   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]
+mov   ax, word ptr ds:[di + SECTOR_T.sec_ceilingheight]
 
 opentop_set:
 mov   cx, ax	; store opentop
 mov   word ptr cs:[SELFMODIFY_PSIGHT_setopentop + 1 - P_SIGHT_STARTMARKER_], ax
-mov   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
-cmp   ax, word ptr es:[si + SECTOR_T.sec_floorheight]
+mov   ax, word ptr ds:[di + SECTOR_T.sec_floorheight]
+cmp   ax, word ptr ds:[si + SECTOR_T.sec_floorheight]
 jg    set_openbottom_to_frontsector
-mov   bx, word ptr es:[si + SECTOR_T.sec_floorheight]
+mov   bx, word ptr ds:[si + SECTOR_T.sec_floorheight]
 jmp   openbottom_set
 ALIGN_MACRO
 jump_to_cross_bsp_node_return_0_2:
 jmp   cross_bsp_node_return_0	; todo optim out fallthru
 ALIGN_MACRO
 set_openbottom_to_frontsector:
-mov   bx, word ptr es:[di + SECTOR_T.sec_floorheight]
+mov   bx, word ptr ds:[di + SECTOR_T.sec_floorheight]
 openbottom_set:
 cmp   bx, cx
 jge   jump_to_cross_bsp_node_return_0_2
-push  di
+
 push  bx
-push  si
+
 
 
 ; inlined P_InterceptVector2_
 
-lea   si, [bp - STACK_DIVLINE_POSITION]  ; divl NODE_T
 SELFMODIFY_psight_strace_dx_lo_1:
 mov   bx, 01000h
 SELFMODIFY_psight_strace_dx_hi_1:
 mov   cx, 01000h
 xor   ax, ax
-mov   dx, word ptr ds:[si + NODE_T.n_dy]
+mov   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
 
 call  FixedMul2432_MapLocal_
 
@@ -930,7 +939,7 @@ mov   bx, 01000h
 SELFMODIFY_psight_strace_dy_hi_1:
 mov   cx, 01000h
 xor   ax, ax
-mov   dx, word ptr ds:[si + NODE_T.n_dx]
+mov   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx]
 
 call  FixedMul2432_MapLocal_
 
@@ -941,12 +950,12 @@ sbb   ax, dx
 mov   word ptr [bp - 01Eh], bx
 mov   word ptr [bp - 01Ch], ax
 or    ax, bx
+cwd   ; if ax or bx is zero then dx is zero too
 je    denominator_0
 xor   bx, bx
-mov   cx, word ptr ds:[si + NODE_T.n_dy]
-mov   dx, word ptr ds:[si + NODE_T.n_x]
+mov   cx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
+mov   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_x]
 
-; todo bake in neg, sbb
 
 SELFMODIFY_psight_strace_x_lo_1:
 mov   ax, 01000h
@@ -959,13 +968,13 @@ call  FixedMul2432_MapLocal_
 mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
 xor   bx, bx
-mov   cx, word ptr ds:[si + NODE_T.n_dx]
+mov   cx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx]
 
 SELFMODIFY_psight_strace_y_lo_1:
 mov   ax, 01000h
 SELFMODIFY_psight_strace_y_hi_1:
 mov   dx, 01000h
-sub   dx, word ptr ds:[si + NODE_T.n_y]
+sub   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y]
 
 call  FixedMul2432_MapLocal_
 
@@ -977,24 +986,22 @@ adc   dx, word ptr [bp - 020h]
 call  FixedDiv_MapLocal_
 
 
-jmp done_with_intercept_vector
-ALIGN_MACRO
 
-denominator_0:
-xor   dx, dx
+denominator_0: ; dx was set as zero.
 
 done_with_intercept_vector:
 
-pop   si
 pop   bx
-pop   di
+
 
 mov   word ptr [bp - 8], ax	; store frac
 mov   word ptr [bp - 6], dx
-mov   cx, SECTORS_SEGMENT
-mov   es, cx
-mov   cx, word ptr es:[di + SECTOR_T.sec_floorheight]
-cmp   cx, word ptr es:[si + SECTOR_T.sec_floorheight]
+
+; ds still SECTORS_SEGMENT
+mov   cx, word ptr ds:[di + SECTOR_T.sec_floorheight]
+cmp   cx, word ptr ds:[si + SECTOR_T.sec_floorheight]
+push  ss
+pop   ds
 je    done_setting_bottomslope
 
 ; fixed height from shortheight
@@ -1079,8 +1086,10 @@ mov   dx, NODES_SEGMENT
 mov   ds, dx
 ret
 jump_to_cross_subsector_mainloop_increment_2:
+mov   di, SEG_LINEDEFS_SEGMENT
+mov   es, di
 mov   di, LINES_PHYSICS_SEGMENT
-mov   dx, SEG_LINEDEFS_SEGMENT
+mov   ds, di
 pop   si  ; segnum
 pop   cx  ; iterator
 jmp   cross_subsector_mainloop_increment
