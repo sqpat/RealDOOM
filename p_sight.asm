@@ -400,8 +400,6 @@ ret
 
 ENDP
 
-STACK_DIVLINE_POSITION = 012h
-
 
 ;int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) {
 
@@ -675,6 +673,7 @@ is_subsector:
 is_subsector_neg_one:
     
 
+STACK_DIVLINE_POSITION = 0Eh
 
 P_CrossSubsector_:
 PUBLIC P_CrossSubsector_
@@ -682,22 +681,13 @@ PUBLIC P_CrossSubsector_
 ; return in carry
 
 ; bp - 2	lineflags
-; bp - 4    unused
-; bp - 6	frac hibits
-; bp - 8    frac lonits
-; bp - 0A   unused
-; bp - 0C   (divl end)
-; bp - 0E   (divl)
-; bp - 010  (divl)
-; bp - 012  divl start (NODE_T struct)
-; bp - 014 	 unused
-; bp - 016   unused
-; bp - 018   unused
-; bp - 01A	 unused
-; bp - 01Ch   [used by inlined P_InterceptVector2_ ]
-; bp - 01Eh   [used by inlined P_InterceptVector2_ ]
-; bp - 020h	  [used by inlined P_InterceptVector2_ ]
-; bp - 022h   [used by inlined P_InterceptVector2_ ]
+; bp - 4    frac hibits
+; bp - 6	frac lobits
+; bp - 8    (divl end)
+; bp - 0A   (divl)
+; bp - 0C   (divl)
+; bp - 0E   divl start (NODE_T struct)
+
 
 
 
@@ -717,7 +707,7 @@ pop   ds
 push  si
 push  bp
 mov   bp, sp
-sub   sp, 022h
+sub   sp, 0Eh
 
 xchg  ax, cx   ; cx gets iterator count
 mov   si, word ptr es:[bx + SUBSECTOR_T.ss_firstline]		; get segnum/firstline   ; todo move after test?
@@ -930,10 +920,10 @@ mov   cx, 01000h
 xor   ax, ax
 mov   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
 
-call  FixedMul2432_MapLocal_
+call  FixedMul2432_MapLocal_  ; todo optim params and call normal fixedmul
 
-mov   word ptr [bp - 022h], ax
-mov   word ptr [bp - 020h], dx
+push  dx ; hi
+push  ax ; lo
 SELFMODIFY_psight_strace_dy_lo_1:
 mov   bx, 01000h
 SELFMODIFY_psight_strace_dy_hi_1:
@@ -941,17 +931,18 @@ mov   cx, 01000h
 xor   ax, ax
 mov   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx]
 
-call  FixedMul2432_MapLocal_
+call  FixedMul2432_MapLocal_  ; todo optim params and call normal fixedmul
 
-mov   bx, word ptr [bp - 022h]
+pop   bx  ; lo
 sub   bx, ax
-mov   ax, word ptr [bp - 020h]
+pop   ax  ; hi
 sbb   ax, dx
-mov   word ptr [bp - 01Eh], bx
-mov   word ptr [bp - 01Ch], ax
+mov   cx, ax
 or    ax, bx
 cwd   ; if ax or bx is zero then dx is zero too
 je    denominator_0
+push  bx ; lo
+push  cx ; hi
 xor   bx, bx
 mov   cx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
 mov   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_x]
@@ -965,23 +956,26 @@ sub   dx, 01000h
 
 call  FixedMul2432_MapLocal_
 
-mov   word ptr [bp - 022h], ax
-mov   word ptr [bp - 020h], dx
-xor   bx, bx
-mov   cx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+push  ax ; lo
+push  dx ; hi
+les   bx, dword ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y]
+mov   cx, es
 
 SELFMODIFY_psight_strace_y_lo_1:
 mov   ax, 01000h
 SELFMODIFY_psight_strace_y_hi_1:
 mov   dx, 01000h
-sub   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y]
+sub   dx, bx
+xor   bx. bx 
 
 call  FixedMul2432_MapLocal_
 
-les   bx, dword ptr [bp - 01Eh]
-mov   cx, es
-add   ax, word ptr [bp - 022h]
-adc   dx, word ptr [bp - 020h]
+pop   cx ; hi
+pop   bx ; lo
+add   ax, bx
+adc   dx, cx
+pop   cx ; hi
+pop   bx ; lo
 
 call  FixedDiv_MapLocal_
 
@@ -989,13 +983,14 @@ call  FixedDiv_MapLocal_
 
 denominator_0: ; dx was set as zero.
 
+
 done_with_intercept_vector:
 
 pop   bx
 
 
-mov   word ptr [bp - 8], ax	; store frac
-mov   word ptr [bp - 6], dx
+mov   word ptr [bp - 6], ax	; store frac
+mov   word ptr [bp - 4], dx
 
 ; ds still SECTORS_SEGMENT
 mov   cx, word ptr ds:[di + SECTOR_T.sec_floorheight]
@@ -1012,7 +1007,6 @@ SHIFT32_MACRO_RIGHT bx cx 3
 ; BX:CX has what should become dx:ax
 ; dx:ax has what should become cx:bx...
 
-; todo selfmodify
 xchg ax, cx
 SELFMODIFY_psight_sightzstart_lo_1:
 sub   ax, 01000h
@@ -1054,7 +1048,7 @@ sub   ax, 01000h
 SELFMODIFY_psight_sightzstart_hi_2:
 sbb   dx, 01000h
 
-les   bx, dword ptr [bp - 8]	; load frac into cx:bx
+les   bx, dword ptr [bp - 6]	; load frac into cx:bx
 mov   cx, es
 
 call  FixedDiv_MapLocal_
