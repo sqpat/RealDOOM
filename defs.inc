@@ -550,7 +550,7 @@ _topslope =				         	 _NULL_OFFSET + 00528h ; THESE HAVE TO BE ADJACENT
 _bottomslope =					     _NULL_OFFSET + 0052Ch ; THESE HAVE TO BE ADJACENT
 ;_cachedt2x =				         _NULL_OFFSET + 00530h ; no longer used
 ;_cachedt2y =					     _NULL_OFFSET + 00534h ; no longer used
-_strace =					         _NULL_OFFSET + 00538h ; THESE HAVE TO BE ADJACENT
+_strace =					         _NULL_OFFSET + 00538h ; no longer used
 
 _gametime = 				         _NULL_OFFSET + 00548h
 _maketic = 				             _NULL_OFFSET + 0054Ch

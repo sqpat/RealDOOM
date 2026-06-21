@@ -34,6 +34,13 @@ PROC    P_SIGHT_STARTMARKER_
 PUBLIC  P_SIGHT_STARTMARKER_
 ENDP
 
+JMP_SHORT_REL8_OPCODE = 0EBh
+TWO_BYTE_NOP = 0C089h
+MOV_AL_IMM8_OPCODE = 0B0h
+JE_IMM8_OPCODE = 074h
+RET_OPCODE = 0C3h
+
+
 ALIGN_MACRO
 _rndtable_9000:
 
@@ -56,6 +63,18 @@ _rndtable_9000:
  db 17,  46,  52, 231, 232,  76,  31, 221,  84,  37, 216, 165, 212, 106 
  db 197, 242,  98,  43,  39, 175, 254, 145, 190,  84, 118, 222, 187, 136
  db 120, 163, 236, 249
+
+ALIGN_MACRO
+_divline_side_lookups:
+dw  OFFSET P_DivlineSide16_ - OFFSET SELFMODIFY_psight_divlinesize16_call_1_AFTER
+dw  OFFSET P_DivlineSide16_ - OFFSET SELFMODIFY_psight_divlinesize16_call_2_AFTER
+
+dw  OFFSET P_DivlineSide16_DXZero_ - OFFSET SELFMODIFY_psight_divlinesize16_call_1_AFTER
+dw  OFFSET P_DivlineSide16_DXZero_ - OFFSET SELFMODIFY_psight_divlinesize16_call_2_AFTER
+
+dw  OFFSET P_DivlineSide16_DYZero_ - OFFSET SELFMODIFY_psight_divlinesize16_call_1_AFTER
+dw  OFFSET P_DivlineSide16_DYZero_ - OFFSET SELFMODIFY_psight_divlinesize16_call_2_AFTER
+
 
 
 ; boolean __far P_CheckSight (  mobj_t __near* t1, mobj_t __near* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos ) {
@@ -213,7 +232,7 @@ lodsw
 mov   word ptr cs:[SELFMODIFY_psight_t2x_hi_1+1], ax
 mov   word ptr cs:[SELFMODIFY_psight_t2x_hi_2+1], ax
 
-xchg  ax, cx	; cx:dx has si, si
+xchg  ax, cx	; cx:dx has t2x
 
 
 ;di = _cachedt2y
@@ -225,33 +244,121 @@ lodsw
 mov   word ptr cs:[SELFMODIFY_psight_t2y_hi_1+1], ax
 mov   word ptr cs:[SELFMODIFY_psight_t2y_hi_2+1], ax
 
-add   di, 8     ; skipped the above two
+
 
 mov   si, bx    ; bx now free.
 
 
-;di = _strace
+;di = _strace dx/y
+xchg  ax, di  ; store t2y hi in di.   di:bp
 
-movsw ; x lo
-movsw ; x hi
-movsw ; y lo
-movsw ; y hi
+lodsw
+mov   word ptr cs:[SELFMODIFY_psight_strace_x_lo_4+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_strace_x_lo_5+1], ax
 
-; di =  _strace + 8 (dx, dy fields)
+mov   bl, JE_IMM8_OPCODE
+test  ax, ax
+je    strace_dx_lo_zero
+mov   bl, RET_OPCODE
+strace_dx_lo_zero:
+mov   byte ptr cs:[SELFMODIFY_do_equals_2_check_dx_16], bl
 
-xchg   ax, dx
-sub    ax, word ptr ds:[si - 8] ; MOBJ_POS_T.mp_x + 0
-sbb    cx, word ptr ds:[si - 6] ; MOBJ_POS_T.mp_x + 2
-stosw
-xchg   ax, cx
-stosw
+xchg  ax, bx
 
-xchg   ax, bp
-sub    ax, word ptr ds:[si - 4] ; MOBJ_POS_T.mp_y + 0
-sbb    dx, word ptr ds:[si - 2] ; MOBJ_POS_T.mp_y + 2
-stosw
-xchg   ax, dx
-stosw
+lodsw
+sub   dx, bx
+sbb   cx, ax
+neg   bx
+mov   word ptr cs:[SELFMODIFY_psight_strace_x_lo_1+1], bx
+mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_2+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_4+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_5+1], ax
+
+adc   ax, 0
+
+mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_1+2], ax
+mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_3+1], ax
+
+
+
+lodsw
+mov   word ptr cs:[SELFMODIFY_psight_strace_y_lo_1+1], ax
+
+mov   word ptr cs:[SELFMODIFY_psight_strace_y_lo_4+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_strace_y_lo_5+1], ax
+mov   bl, JMP_SHORT_REL8_OPCODE
+test  ax, ax
+je    strace_dy_lo_zero
+mov   bl, MOV_AL_IMM8_OPCODE
+strace_dy_lo_zero:
+mov   byte ptr cs:[SELFMODIFY_do_equals_2_check_dy_16], bl
+
+xchg  ax, bx
+lodsw
+mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_2+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_4+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_5+1], ax
+
+sub   bp, bx
+sbb   di, ax
+
+neg   bx
+
+adc   ax, 0
+mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_3+1], ax	
+
+
+
+; _strace dx/dy
+
+
+mov    word ptr cs:[SELFMODIFY_psight_strace_dx_lo_1+1], dx
+mov    ax, cx 
+mov    word ptr cs:[SELFMODIFY_psight_strace_dx_hi_1+1], ax
+mov    word ptr cs:[SELFMODIFY_psight_strace_dx_hi_2+1], ax
+
+rol    ax, 1
+and    al, 1
+mov    ah, al
+xor    al, 1
+; if negative, 0100
+; if positive, 0001
+mov    word ptr cs:[SELFMODIFY_psight_dx_greater_than_zero+1], ax
+
+
+
+xchg   ax, di  ; get t2dy back
+mov    word ptr cs:[SELFMODIFY_psight_strace_dy_lo_1+1], bp
+mov    word ptr cs:[SELFMODIFY_psight_strace_dy_hi_1+1], ax
+mov    word ptr cs:[SELFMODIFY_psight_strace_dy_hi_2+1], ax
+
+mov    bx, ax  ; sign backup
+rol    ax, 1
+and    al, 1
+mov    ah, al
+xor    al, 1
+; if negative, 0100
+; if positive, 0001
+mov    word ptr cs:[SELFMODIFY_psight_dy_greater_than_zero+1], ax
+
+
+
+; todo make this a little better
+mov    ax, 4
+or     dx, cx
+jz     use_dx_zero_jmp
+mov    al, 8
+or     bx, bp
+jz     use_dy_zero_jmp	
+mov    al, 0
+use_dx_zero_jmp:
+use_dy_zero_jmp:
+xchg   ax, bx
+les    ax, dword ptr cs:[bx+_divline_side_lookups]
+mov   word ptr cs:[SELFMODIFY_psight_divlinesize16_call_1+1], ax
+mov   word ptr cs:[SELFMODIFY_psight_divlinesize16_call_2+1], es
+
 
 
 MOV   AX, WORD PTR SS:[_numnodes]
@@ -304,15 +411,6 @@ PUBLIC  P_DivlineSide_
     MOV  AL, 1
     RET
 
-ALIGN_MACRO
-return_2:
-    MOV  AL, 2
-    RET
-
-ALIGN_MACRO
-return_0:
-    XOR  AX, AX
-    RET
 
 ALIGN_MACRO
 node_dy_zero:
@@ -352,126 +450,84 @@ node_dx_zero:
     RET
 
 
+ALIGN_MACRO
+return_0:
+    XOR  AX, AX
+    RET
+ALIGN_MACRO
+return_2:
+    MOV  AL, 2
+    RET
+
 
 ; bx is always equal to strace
 ALIGN_MACRO
 PROC    P_DivlineSide16_ NEAR
 PUBLIC  P_DivlineSide16_
 
-	push cx
-	xchg ax, cx
-	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dx + 2]  ; todo offsets
-	or   ax, word ptr ds:[bx + DIVLINE_T.dl_dx + 0]
-	jne  node_dx_nonzero_16
-	cmp  cx, word ptr ds:[bx + DIVLINE_T.dl_x + 2]
-	je   return_2_16
-	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dy + 2]
-	jg   test_x_highbits_16
-	test ax, ax
-	jg   return_1_16
-	jne  return_0_divlineside_16
-	cmp  word ptr ds:[bx + DIVLINE_T.dl_dy + 0], 0
-	jbe  return_0_divlineside_16
-	return_1_16:
-	mov  ax, 1
-	pop  cx
-	ret  
-ALIGN_MACRO
-	return_2_16:
-	mov  ax, 2
-	pop  cx
-	ret  
-ALIGN_MACRO
-	return_0_divlineside_16:
-	xor  ax, ax
-	pop  cx
-	ret  
-ALIGN_MACRO
-	test_x_highbits_16:
-	test ax, ax
-	jl   return_1_16
-	xor  ax, ax
-	pop  cx
-	ret  
-ALIGN_MACRO
-	node_dx_nonzero_16:
-	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dy + 2]
-	or   ax, word ptr ds:[bx + DIVLINE_T.dl_dy + 0]
-	jne  node_dy_nonzero_16
-	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_y + 2]
-	cmp  cx, ax
-	je   return_2_16
-	cmp  dx, ax
-	jg   test_y_highbits_16
-	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dx + 2]
-	test ax, ax
-	jl   return_1_16
-	xor  ax, ax
-	pop  cx
-	ret
-ALIGN_MACRO
+SELFMODIFY_psight_strace_x_hi_3:
+	sub  ax, 01000h			; dx = (x - node->x);
+SELFMODIFY_psight_strace_dy_hi_2:
+	mov  dx, 01000h
+	IMUL DX			; left =  (node->dy>>FRACBITS) * (dx>>FRACBITS);
 
-	test_y_highbits_16:
-	mov  ax, word ptr ds:[bx + DIVLINE_T.dl_dx + 2]
-	test ax, ax
-	jg   return_1_16
-	jne  return_0_divlineside_16_2
-	cmp  word ptr ds:[bx + DIVLINE_T.dl_dx + 0], 0
-	ja   return_1_16
-	return_0_divlineside_16_2:
-	xor  ax, ax
-	pop  cx
-	ret  
-ALIGN_MACRO
-	node_dy_nonzero_16:
+    mov  di, dx 
+    xchg ax, si  ; store results. get y
+
+SELFMODIFY_psight_strace_y_hi_3:
+    sub  ax, 01000h				; dy = (y - node->y);
+		
+SELFMODIFY_psight_strace_dx_hi_2:
+	mov  dx, 01000h
+	IMUL DX			; right = (dy>>FRACBITS) * (node->dx>>FRACBITS);
 	
-	push di	; need this extra register
-	; todo just mov and neg?	
-	xor  ax, ax
-	sub  ax, word ptr ds:[bx + DIVLINE_T.dl_x + 0]
-	sbb  cx, word ptr ds:[bx + DIVLINE_T.dl_x + 2]
+    SUB  AX, SI
+    SBB  DX, DI		; return right > left
+    JS   return_0
+    OR   AX, DX
+    JZ   return_2
+    MOV  AL, 1
+    RET
+ENDP
 
-	mov  di, dx
-
-	xor  ax, ax
-	sub  ax, word ptr ds:[bx + DIVLINE_T.dl_y + 0]
-	sbb  di, word ptr ds:[bx + DIVLINE_T.dl_y + 2]
-
-	xchg ax, cx		
-	imul word ptr ds:[bx + DIVLINE_T.dl_dy + 2]			; lots of cycles spent here!
-	xchg ax, di		; cx:di gets result
-	mov  cx, dx
-	
-	imul word ptr ds:[bx + DIVLINE_T.dl_dx + 2]
-	cmp  dx, cx
-	jl   return_0_divlineside_16_3
-	jne  test_right_left_16
-	cmp  ax, di
-	jb   return_0_divlineside_16_3
-	test_right_left_16:
-	cmp  cx, dx
-	je   test_right_left_highbits_16
-	return_1_2_16:
-	mov  ax, 1
-	pop  di
-	pop  cx
-	ret  
 ALIGN_MACRO
+PROC P_DivlineSide16_DYZero_ NEAR
 
-	return_0_divlineside_16_3:
-	xor  ax, ax
-	pop  di
-	pop  cx
-	ret  
+SELFMODIFY_psight_strace_y_hi_2:
+    mov  dx, 01000h
+    
+SELFMODIFY_do_equals_2_check_dy_16:
+	jmp  do_equals_2_check_dy_16  ; mov al, imm8 if lo != 0
+continue_dy_check:
+SELFMODIFY_psight_dx_greater_than_zero:
+    mov  ax, 01000h ; return values. 0100 or 00001
+	cmp  si, dx  ; compare hi y vs y
+	jl   return_dx_less_than_zero
+return_dx_greater_than_zero:
+    RET
+do_equals_2_check_dy_16:
+	cmp  ax, dx  ; compare x == y. maintaining bug compatibility!
+    jne  continue_dy_check
+	mov  al, 2
+	ret   
+return_dx_less_than_zero:
+    mov  al, ah	
+    ret
+ENDP
+
+
 ALIGN_MACRO
-
-	test_right_left_highbits_16:
-	cmp  di, ax
-	jne  return_1_2_16
-	mov  ax, 2
-	pop  di
-	pop  cx
-	ret  
+PROC P_DivlineSide16_DXZero_ NEAR
+SELFMODIFY_psight_strace_x_hi_2:
+    cmp  ax, 01000h  ; compare hi 
+SELFMODIFY_psight_dy_greater_than_zero:
+    mov  ax, 01000h ; return values. 0100 or 00001
+    jg   return_dy_greater_than_zero
+    mov  al, ah	   ;  dy_less_than_zero 
+SELFMODIFY_do_equals_2_check_dx_16:
+    je   return_2   ; je becomes RET unless strace dx lo = 0
+return_dy_greater_than_zero: ; result already in al
+    RET
 
 ENDP
 
@@ -507,9 +563,15 @@ iterate_bsp_recursion:
     SHL  AX, 1
     SHL  AX, 1
     XCHG AX, SI
-    LES  DX, DWORD PTR SS:[_strace]
-    MOV  AX, ES
-    LES  BP, DWORD PTR SS:[_strace + 4]
+SELFMODIFY_psight_strace_x_lo_4:
+    MOV  DX, 01000h
+SELFMODIFY_psight_strace_x_hi_4:
+    MOV  AX, 01000h
+SELFMODIFY_psight_strace_y_hi_4:
+    MOV  BP, 01000h
+    MOV  ES, BP
+SELFMODIFY_psight_strace_y_lo_4:
+    MOV  BP, 01000h
     ; Register state
     ; DS = NODES_SEGMENT
     ; SS = FIXED_DS_SEGMENT
@@ -566,7 +628,7 @@ SELFMODIFY_psight_t2y_lo_1:
 is_subsector:
     XOR  AX, -2 ; 0xFFFE
     JZ   is_subsector_neg_one
-    XOR  AX, -2
+	NOT  AX
     SHR  AX, 1
 is_subsector_neg_one:
     
@@ -664,40 +726,57 @@ SHIFT_MACRO_SMALL shl   di 2
 and   bh, (VERTEX_OFFSET_MASK SHR 8)
 SHIFT_MACRO_SMALL shl   bx 2
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
-mov   si, word ptr es:[di + VERTEX_T.v_x]		; v1.x
-mov   dx, word ptr es:[di + VERTEX_T.v_y]  ; v1.y into dx
-les   ax, dword ptr es:[bx]		; v2.x
-mov   cx, ax					; back up v2.x (es backs up v2.y)
+mov   ax, word ptr es:[di + VERTEX_T.v_x]		; v1.x
+mov   si, word ptr es:[di + VERTEX_T.v_y]       ; v1.y into si
+les   bx, dword ptr es:[bx]		; v2.x
 
-sub   ax, si
-mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx], ax   ;	divl.dx.h.intbits = v2.x - v1.x;
-mov   ax, es					; v2.y
-sub   ax, dx
-
-mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy], ax  ;	divl.dy.h.intbits = v2.y - v1.y;
-mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y], dx	;   v1.y
-
-xchg  ax, si					; ax gets v1.x
 mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_x], ax  ;   v1.x
+mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y], si	;   v1.y
 
-mov   bx, OFFSET _strace
 
+mov   di, bx					
+sub   di, ax
+mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx], di   ;	divl.dx.h.intbits = v2.x - v1.x;
+mov   di, es					; v2.y
+sub   di, si
+mov   word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy], di  ;	divl.dy.h.intbits = v2.y - v1.y;
+
+
+; si = v1.y
+; ax = v1.x
+
+; es/bx in use.
+; di free
+; dx free	
+
+; callng convention: ax = x, si = y
+
+SELFMODIFY_psight_divlinesize16_call_1:
 call  P_DivlineSide16_
-; bx still _strace
-xchg  di, ax	; store s1 result
-mov   dx, es				; backed up v2.y
-mov   ax, cx				; backed up v2.x
+SELFMODIFY_psight_divlinesize16_call_1_AFTER:
+
+xchg  bx, ax	; store s1 result, get v2.x
+mov   si, es    ; backed up v2.y
+
+SELFMODIFY_psight_divlinesize16_call_2:
 call  P_DivlineSide16_
-cmp   ax, di
+SELFMODIFY_psight_divlinesize16_call_2_AFTER:
+cmp   al, bl
 je    cross_subsector_mainloop_increment
 
 push  bp
 
 LEA   SI, [BP - STACK_DIVLINE_POSITION]
 
-LES   DX, DWORD PTR ds:[_strace]
-MOV   AX, ES
-LES   BP, DWORD PTR ds:[_strace+4]
+SELFMODIFY_psight_strace_x_lo_5:
+    MOV  DX, 01000h
+SELFMODIFY_psight_strace_x_hi_5:
+    MOV  AX, 01000h
+SELFMODIFY_psight_strace_y_hi_5:
+    MOV  BP, 01000h
+    MOV  ES, BP
+SELFMODIFY_psight_strace_y_lo_5:
+    MOV  BP, 01000h
 CALL  P_DivlineSide_
 XCHG  AX, BX ; store result
 
@@ -784,13 +863,15 @@ jge   jump_to_cross_bsp_node_return_0_2
 push  di
 push  bx
 push  si
-mov   di, OFFSET _strace
+
 
 ; inlined P_InterceptVector2_
 
 lea   si, [bp - STACK_DIVLINE_POSITION]  ; divl NODE_T
-mov   bx, word ptr ds:[di + DIVLINE_T.dl_dx + 0]
-mov   cx, word ptr ds:[di + DIVLINE_T.dl_dx + 2]
+SELFMODIFY_psight_strace_dx_lo_1:
+mov   bx, 01000h
+SELFMODIFY_psight_strace_dx_hi_1:
+mov   cx, 01000h
 xor   ax, ax
 mov   dx, word ptr ds:[si + NODE_T.n_dy]
 
@@ -798,8 +879,10 @@ call  FixedMul2432_MapLocal_
 
 mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
-mov   bx, word ptr ds:[di + DIVLINE_T.dl_dy + 0]
-mov   cx, word ptr ds:[di + DIVLINE_T.dl_dy + 2]
+SELFMODIFY_psight_strace_dy_lo_1:
+mov   bx, 01000h
+SELFMODIFY_psight_strace_dy_hi_1:
+mov   cx, 01000h
 xor   ax, ax
 mov   dx, word ptr ds:[si + NODE_T.n_dx]
 
@@ -815,10 +898,15 @@ or    ax, bx
 je    denominator_0
 xor   bx, bx
 mov   cx, word ptr ds:[si + NODE_T.n_dy]
-xor   ax, ax
 mov   dx, word ptr ds:[si + NODE_T.n_x]
-sub   ax, word ptr ds:[di + DIVLINE_T.dl_x + 0]
-sbb   dx, word ptr ds:[di + DIVLINE_T.dl_x + 2]
+
+; todo bake in neg, sbb
+
+SELFMODIFY_psight_strace_x_lo_1:
+mov   ax, 01000h
+SELFMODIFY_psight_strace_x_hi_1:
+sub   dx, 01000h
+
 
 call  FixedMul2432_MapLocal_
 
@@ -826,8 +914,11 @@ mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
 xor   bx, bx
 mov   cx, word ptr ds:[si + NODE_T.n_dx]
-mov   ax, word ptr ds:[di + DIVLINE_T.dl_y + 0]
-mov   dx, word ptr ds:[di + DIVLINE_T.dl_y + 2]
+
+SELFMODIFY_psight_strace_y_lo_1:
+mov   ax, 01000h
+SELFMODIFY_psight_strace_y_hi_1:
+mov   dx, 01000h
 sub   dx, word ptr ds:[si + NODE_T.n_y]
 
 call  FixedMul2432_MapLocal_
