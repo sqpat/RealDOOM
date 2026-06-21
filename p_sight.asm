@@ -34,11 +34,13 @@ PROC    P_SIGHT_STARTMARKER_
 PUBLIC  P_SIGHT_STARTMARKER_
 ENDP
 
-JMP_SHORT_REL8_OPCODE = 0EBh
-TWO_BYTE_NOP = 0C089h
-MOV_AL_IMM8_OPCODE = 0B0h
-JE_IMM8_OPCODE = 074h
-RET_OPCODE = 0C3h
+JMP_SHORT_REL8_OPCODE  = 0EBh
+TWO_BYTE_NOP		   = 0C089h
+MOV_AL_IMM8_OPCODE 	   = 0B0h
+JE_IMM8_OPCODE 		   = 074h
+RET_OPCODE 			   = 0C3h
+JS_IMM8_OPCODE 		   = 078h
+JNS_IMM8_OPCODE        = 079h
 
 
 ALIGN_MACRO
@@ -342,7 +344,16 @@ xor    al, 1
 ; if positive, 0001
 mov    word ptr cs:[SELFMODIFY_psight_dy_greater_than_zero+1], ax
 
-
+mov    ax, cx
+xor    ax, bx  ; xor signs
+mov    al, JS_IMM8_OPCODE 
+mov    ah, ch
+jns    dy_dx_signs_equal
+inc    ax  ;  mov    al,JNS_IMM8_OPCODE
+mov    ah, 	bh
+dy_dx_signs_equal:
+mov    byte ptr cs:[SELFMODIFY_psight_left_right_sign_compare], al
+mov    byte ptr cs:[SELFMODIFY_psight_left_right_xor+2], ah
 
 ; todo make this a little better
 mov    ax, 4
@@ -465,31 +476,29 @@ ALIGN_MACRO
 PROC    P_DivlineSide16_ NEAR
 PUBLIC  P_DivlineSide16_
 
-SELFMODIFY_psight_strace_x_hi_3:
-	sub  ax, 01000h			; dx = (x - node->x);
-
 SELFMODIFY_psight_strace_y_hi_3:
     sub  si, 01000h	  		; dy = (y - node->y);
 
-SELFMODIFY_psight_strace_dy_hi_2:
-	mov  dx, 01000h
+SELFMODIFY_psight_strace_x_hi_3:
+	sub  ax, 01000h			; dx = (x - node->x);
 
-SELFMODIFY_psight_strace_dx_hi_2:
-	mov  di, 01000h
-    mov  cx, di
-	xor  cx, si  ; ch = right sign
-	mov  cl, ah
-	xor  cl, dh  ; cl = left sign
-	xor  ch, cl
+
+    mov  dx, si
+	xor  dx, ax  ; 
 
 SELFMODIFY_psight_left_right_sign_compare:
-    js   divline_16_return_sign_based_result
-
+    js   divline_16_return_sign_based_result   ; todo branch test?
+SELFMODIFY_psight_left_right_sign_compare_AFTER:
+SELFMODIFY_psight_strace_dy_hi_2:
+	mov  dx, 01000h
 	IMUL DX			; left =  (node->dy>>FRACBITS) * (dx>>FRACBITS);
 
-    xchg di, dx 
+    mov  di, dx
     xchg ax, si  ; store results. get y
 
+
+SELFMODIFY_psight_strace_dx_hi_2:
+	mov  dx, 01000h
 		
 	IMUL DX			; right = (dy>>FRACBITS) * (node->dx>>FRACBITS);
 	
@@ -504,10 +513,12 @@ SELFMODIFY_psight_left_right_sign_compare:
 divline_16_return_sign_based_result:
   ; return right > left, so
   ; return 1 if left was negative, 0 if its positive...
-    mov  al, cl
-	rol  al, 1
+SELFMODIFY_psight_left_right_xor:
+    xor  ah, 010h  ; xor x by dy if js, by dx if jns
+    rol  ax, 1
 	and  al, 1
     ret
+
 ENDP
 
 ALIGN_MACRO
