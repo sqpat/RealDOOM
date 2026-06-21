@@ -220,31 +220,37 @@ sbb   dx, bp
 ; write bottomslope
 stosw
 xchg  ax, dx
-stosw
+stosw	
 
 
 ;di = _cachedt2x
 lodsw
 
-mov   word ptr cs:[SELFMODIFY_psight_t2x_lo_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_t2x_lo_2+1], ax
+mov   dx, ds
+mov   es, dx
+mov   dx, cs
+mov   ds, dx
+
+
+mov   word ptr ds:[SELFMODIFY_psight_t2x_lo_1+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_t2x_lo_2+1], ax
 
 xchg  ax, dx
-lodsw
-mov   word ptr cs:[SELFMODIFY_psight_t2x_hi_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_t2x_hi_2+1], ax
+lods  word ptr es:[si]
+mov   word ptr ds:[SELFMODIFY_psight_t2x_hi_1+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_t2x_hi_2+1], ax
 
 xchg  ax, cx	; cx:dx has t2x
 
 
 ;di = _cachedt2y
-lodsw
-mov   word ptr cs:[SELFMODIFY_psight_t2y_lo_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_t2y_lo_2+1], ax
+lods  word ptr es:[si]
+mov   word ptr ds:[SELFMODIFY_psight_t2y_lo_1+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_t2y_lo_2+1], ax
 xchg  ax, bp
-lodsw
-mov   word ptr cs:[SELFMODIFY_psight_t2y_hi_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_t2y_hi_2+1], ax
+lods  word ptr es:[si]
+mov   word ptr ds:[SELFMODIFY_psight_t2y_hi_1+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_t2y_hi_2+1], ax
 
 
 
@@ -254,53 +260,53 @@ mov   si, bx    ; bx now free.
 ;di = _strace dx/y
 xchg  ax, di  ; store t2y hi in di.   di:bp
 
-lodsw
-mov   word ptr cs:[SELFMODIFY_psight_strace_x_lo_4+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_strace_x_lo_5+1], ax
+lods  word ptr es:[si]
+mov   word ptr ds:[SELFMODIFY_psight_strace_x_lo_4+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_x_lo_5+1], ax
 
 mov   bl, JE_IMM8_OPCODE
 test  ax, ax
 je    strace_dx_lo_zero
 mov   bl, RET_OPCODE
 strace_dx_lo_zero:
-mov   byte ptr cs:[SELFMODIFY_do_equals_2_check_dx_16], bl
+mov   byte ptr ds:[SELFMODIFY_do_equals_2_check_dx_16], bl
 
 xchg  ax, bx
 
-lodsw
+lods  word ptr es:[si]
 sub   dx, bx
 sbb   cx, ax
 neg   bx
-mov   word ptr cs:[SELFMODIFY_psight_strace_x_lo_1+1], bx
-mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_2+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_4+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_5+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_x_lo_1+1], bx
+mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_2+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_4+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_5+1], ax
 
 adc   ax, 0
 
-mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_1+2], ax
-mov   word ptr cs:[SELFMODIFY_psight_strace_x_hi_3+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_1+2], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_3+1], ax
 
 
 
-lodsw
-mov   word ptr cs:[SELFMODIFY_psight_strace_y_lo_1+1], ax
+lods  word ptr es:[si]
+mov   word ptr ds:[SELFMODIFY_psight_strace_y_lo_1+1], ax
 
-mov   word ptr cs:[SELFMODIFY_psight_strace_y_lo_4+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_strace_y_lo_5+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_y_lo_4+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_y_lo_5+1], ax
 mov   bl, JMP_SHORT_REL8_OPCODE
 test  ax, ax
 je    strace_dy_lo_zero
 mov   bl, MOV_AL_IMM8_OPCODE
 strace_dy_lo_zero:
-mov   byte ptr cs:[SELFMODIFY_do_equals_2_check_dy_16], bl
+mov   byte ptr ds:[SELFMODIFY_do_equals_2_check_dy_16], bl
 
 xchg  ax, bx
-lodsw
-mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_2+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_4+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_5+1], ax
+lods  word ptr es:[si]
+mov   word ptr ds:[SELFMODIFY_psight_strace_y_hi_1+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_y_hi_2+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_y_hi_4+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_y_hi_5+1], ax
 
 sub   bp, bx
 sbb   di, ax
@@ -308,17 +314,17 @@ sbb   di, ax
 neg   bx
 
 adc   ax, 0
-mov   word ptr cs:[SELFMODIFY_psight_strace_y_hi_3+2], ax	
+mov   word ptr ds:[SELFMODIFY_psight_strace_y_hi_3+2], ax	
 
 
 
 ; _strace dx/dy
 
 
-mov    word ptr cs:[SELFMODIFY_psight_strace_dx_lo_1+1], dx
+mov    word ptr ds:[SELFMODIFY_psight_strace_dx_lo_1+1], dx
 mov    ax, cx 
-mov    word ptr cs:[SELFMODIFY_psight_strace_dx_hi_1+1], ax
-mov    word ptr cs:[SELFMODIFY_psight_strace_dx_hi_2+1], ax
+mov    word ptr ds:[SELFMODIFY_psight_strace_dx_hi_1+1], ax
+mov    word ptr ds:[SELFMODIFY_psight_strace_dx_hi_2+1], ax
 
 rol    ax, 1
 and    al, 1
@@ -326,14 +332,14 @@ mov    ah, al
 xor    al, 1
 ; if negative, 0100
 ; if positive, 0001
-mov    word ptr cs:[SELFMODIFY_psight_dx_greater_than_zero+1], ax
+mov    word ptr ds:[SELFMODIFY_psight_dx_greater_than_zero+1], ax
 
 
 
 xchg   ax, di  ; get t2dy back
-mov    word ptr cs:[SELFMODIFY_psight_strace_dy_lo_1+1], bp
-mov    word ptr cs:[SELFMODIFY_psight_strace_dy_hi_1+1], ax
-mov    word ptr cs:[SELFMODIFY_psight_strace_dy_hi_2+1], ax
+mov    word ptr ds:[SELFMODIFY_psight_strace_dy_lo_1+1], bp
+mov    word ptr ds:[SELFMODIFY_psight_strace_dy_hi_1+1], ax
+mov    word ptr ds:[SELFMODIFY_psight_strace_dy_hi_2+1], ax
 
 mov    bx, ax  ; sign backup
 rol    ax, 1
@@ -342,7 +348,7 @@ mov    ah, al
 xor    al, 1
 ; if negative, 0100
 ; if positive, 0001
-mov    word ptr cs:[SELFMODIFY_psight_dy_greater_than_zero+1], ax
+mov    word ptr ds:[SELFMODIFY_psight_dy_greater_than_zero+1], ax
 
 mov    ax, cx
 xor    ax, bx  ; xor signs
@@ -352,8 +358,8 @@ jns    dy_dx_signs_equal
 inc    ax  ;  mov    al,JNS_IMM8_OPCODE
 mov    ah, 	bh
 dy_dx_signs_equal:
-mov    byte ptr cs:[SELFMODIFY_psight_left_right_sign_compare], al
-mov    byte ptr cs:[SELFMODIFY_psight_left_right_xor+2], ah
+mov    byte ptr ds:[SELFMODIFY_psight_left_right_sign_compare], al
+mov    byte ptr ds:[SELFMODIFY_psight_left_right_xor+2], ah
 
 ; todo make this a little better
 mov    ax, 4
@@ -366,9 +372,9 @@ mov    al, 0
 use_dx_zero_jmp:
 use_dy_zero_jmp:
 xchg   ax, bx
-les    ax, dword ptr cs:[bx+_divline_side_lookups]
-mov   word ptr cs:[SELFMODIFY_psight_divlinesize16_call_1+1], ax
-mov   word ptr cs:[SELFMODIFY_psight_divlinesize16_call_2+1], es
+les    ax, dword ptr ds:[bx+_divline_side_lookups]
+mov   word ptr ds:[SELFMODIFY_psight_divlinesize16_call_1+1], ax
+mov   word ptr ds:[SELFMODIFY_psight_divlinesize16_call_2+1], es
 
 
 
