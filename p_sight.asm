@@ -138,6 +138,11 @@ ENDIF
 ; cx/bx properly have t1/t2
 
 inc   word ptr ds:[_validcount_global]
+mov   ax, word ptr ds:[_validcount_global]
+mov   word ptr cs:[SELFMODIFY_psight_cmp_validcount+4], ax
+mov   word ptr cs:[SELFMODIFY_psight_set_validcount+4], ax
+
+
 
 
 mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR] ; todo go straight to ds with this once everything moves to stack
@@ -677,10 +682,10 @@ PUBLIC P_CrossSubsector_
 ; return in carry
 
 ; bp - 2	lineflags
-; bp - 4    2x segnum
+; bp - 4    unused
 ; bp - 6	frac hibits
 ; bp - 8    frac lonits
-; bp - 0A   count
+; bp - 0A   unused
 ; bp - 0C   (divl end)
 ; bp - 0E   (divl)
 ; bp - 010  (divl)
@@ -714,30 +719,25 @@ push  bp
 mov   bp, sp
 sub   sp, 022h
 
-mov   word ptr [bp - 0Ah], ax
-mov   dx, word ptr es:[bx + SUBSECTOR_T.ss_firstline]		; get segnum/firstline   ; todo move after test?
-mov   ax, dx ; toggle xchg for ENSUREALIGN_908
-sal   ax, 1
-mov   word ptr [bp - 4], ax		; store segnum x2?
+xchg  ax, cx   ; cx gets iterator count
+mov   si, word ptr es:[bx + SUBSECTOR_T.ss_firstline]		; get segnum/firstline   ; todo move after test?
+sal   si, 1 ; segnum (word ptr)
 
-
+mov   di, LINES_PHYSICS_SEGMENT
+mov   dx, SEG_LINEDEFS_SEGMENT
 cross_subsector_mainloop:
 ENSUREALIGN_908:
-mov   ax, SEG_LINEDEFS_SEGMENT
-mov   es, ax
-mov   bx, word ptr [bp - 4]
-mov   ax, word ptr es:[bx]
-mov   si, ax
-SHIFT_MACRO_SMALL shl si 4
-mov   cx, LINES_PHYSICS_SEGMENT
-mov   es, cx
-mov   dx, word ptr es:[si + LINE_PHYSICS_T.lp_validcount]
-cmp   dx, word ptr ds:[_validcount_global]
+mov   es, dx ; SEG_LINEDEFS_SEGMENT
+lods  word ptr es:[si]
+mov   bx, ax
+SHIFT_MACRO_SMALL shl bx 4
+mov   es, di  ; LINES_PHYSICS_SEGMENT
+SELFMODIFY_psight_cmp_validcount:
+cmp   word ptr es:[bx + LINE_PHYSICS_T.lp_validcount], 01000h
 jne   do_full_loop_iteration
 cross_subsector_mainloop_increment:
-add   word ptr [bp - 4], 2
-dec   word ptr [bp - 0Ah]
-jne   cross_subsector_mainloop	
+
+loop  cross_subsector_mainloop	
 
 mov   dx, NODES_SEGMENT
 mov   ds, dx
@@ -749,15 +749,19 @@ stc
 ret   
 ALIGN_MACRO
 do_full_loop_iteration:
+
+push  cx ; loop iterator popped on reentry to iterator
+push  si ; segnum popped on reentry to iterator
+
 mov   dx, LINEFLAGSLIST_SEGMENT
 mov   es, dx
-mov   bx, ax
-mov   al, byte ptr es:[bx]
+xchg  ax, si  ; linenum
+lods  byte ptr es:[si]
 mov   byte ptr [bp - 2], al				; todo selfmodify ahead
-mov   ax, word ptr ds:[_validcount_global]
-mov   es, cx
-mov   word ptr es:[si + LINE_PHYSICS_T.lp_validcount], ax
-les   di, dword ptr es:[si]		; linev1Offset
+mov   es, di  ; LINES_PHYSICS_SEGMENT
+SELFMODIFY_psight_set_validcount:
+mov   word ptr es:[bx + LINE_PHYSICS_T.lp_validcount], 01000h
+les   di, dword ptr es:[bx]		; linev1Offset
 mov   bx, es					; linev2Offset
 SHIFT_MACRO_SMALL shl   di 2
 and   bh, (VERTEX_OFFSET_MASK SHR 8)
@@ -799,7 +803,7 @@ SELFMODIFY_psight_divlinesize16_call_2:
 call  P_DivlineSide16_
 SELFMODIFY_psight_divlinesize16_call_2_AFTER:
 cmp   al, bl
-je    cross_subsector_mainloop_increment
+je    jump_to_cross_subsector_mainloop_increment
 
 push  bp
 
@@ -841,8 +845,9 @@ two_sided:
 
 mov   ax, SEG_LINEDEFS_SEGMENT
 mov   es, ax
-mov   bx, word ptr [bp - 4]
-mov   si, word ptr es:[bx]
+pop   bx   ; segnum (kinda gross... improve)
+push  bx
+mov   si, word ptr es:[bx - 2] ; lodsw overshot earlier
 SHIFT_MACRO_SMALL shl si 4
 mov   ax, LINES_PHYSICS_SEGMENT
 mov   es, ax
@@ -874,6 +879,10 @@ jmp   opentop_set
 ALIGN_MACRO
 side_crossed:
 jump_to_cross_subsector_mainloop_increment:
+mov   di, LINES_PHYSICS_SEGMENT
+mov   dx, SEG_LINEDEFS_SEGMENT
+pop   si  ; segnum
+pop   cx  ; iterator
 jmp   cross_subsector_mainloop_increment
 ALIGN_MACRO
 
@@ -1021,8 +1030,8 @@ mov   word ptr ds:[bx + 2], dx
 done_setting_bottomslope:
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
-mov   ax, word ptr es:[di + 2]
-cmp   ax, word ptr es:[si + 2]
+mov   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]
+cmp   ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
 je    done_setting_topslope
 
 ; fixed height from shortheight
@@ -1070,6 +1079,10 @@ mov   dx, NODES_SEGMENT
 mov   ds, dx
 ret
 jump_to_cross_subsector_mainloop_increment_2:
+mov   di, LINES_PHYSICS_SEGMENT
+mov   dx, SEG_LINEDEFS_SEGMENT
+pop   si  ; segnum
+pop   cx  ; iterator
 jmp   cross_subsector_mainloop_increment
 
 
