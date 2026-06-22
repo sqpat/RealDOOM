@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapRender_:NEAR
 EXTRN Z_QuickMapWADPageFrame_:NEAR
+EXTRN Z_QuickMapPhysics_FunctionAreaOnly_:NEAR
 EXTRN copystr8_:NEAR
 EXTRN CopyString13_:NEAR
 EXTRN locallib_fread_nearsegment_:NEAR
@@ -46,6 +47,10 @@ EXTRN  _doomdata_bin_string:NEAR
 PROC    P_INIT_STARTMARKER_ NEAR
 PUBLIC  P_INIT_STARTMARKER_
 ENDP
+
+SWITCHLIST_SEGMENT = 09000h + (01C0h SHR 4) ; _switchlist = 01C0h
+ANIMS_SEGMENT = 09000h + (0100h SHR 4) ; _anims = 0100h
+
 
 
 NUMSWITCHDEFS = 41
@@ -152,10 +157,10 @@ ENDP
 
 
 episode_undefined:
-mov   ds:[di], BAD_TEXTURE
-sub   di, OFFSET _switchlist
-SHIFT_MACRO shr       di 2
-mov   word ptr ds:[_numswitches], di
+mov   es, dx
+mov   es:[di], BAD_TEXTURE
+
+mov   word ptr ds:[_numswitches], di ; shifted 2
 jmp   done_with_switches
 
 
@@ -169,7 +174,7 @@ mov    bp, TEMP_DATA_START
 
 
 call   Z_QuickMapRender_  
-
+call   Z_QuickMapPhysics_FunctionAreaOnly_
 
 ; fall thru
 
@@ -239,10 +244,10 @@ got_ep:
 ;		}
 ;	}
 
-mov   di, OFFSET _switchlist
+xor   di, di ; dx:di is switchlist segment:0000
 mov   si, SEGMENT_4000_OFFSET
 
-mov   dx, ss
+mov   dx, SWITCHLIST_SEGMENT
 
 mov   cx, NUMSWITCHDEFS
 
@@ -302,7 +307,7 @@ call  locallib_fread_nearsegment_
 xchg  ax, di
 call  locallib_fclose_
 
-mov   di, OFFSET _anims
+mov   di, 0100h ; OFFSET _anims
 mov   si, SEGMENT_4000_OFFSET
 mov   cx, NUMANIMDEFS
 
@@ -351,8 +356,8 @@ done_with_anim_picnames:
 ;	 lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
 
 
-push  ds
-pop   es
+mov   dx, 09000h  ; physics code segment 
+mov   es, dx
 movsb ; 
 push  ax  ; store for math...
 sub   ax, bx
@@ -378,6 +383,7 @@ mov   word ptr ds:[_lastanim], di
 
 
 ; fall thru
+call   Z_QuickMapRender_  
 
 
 ;FAR_memset(negonearray, -1, SCREENWIDTH);

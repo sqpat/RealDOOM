@@ -25,6 +25,7 @@ INSTRUCTION_SET_MACRO_NO_MEDIUM
 ;.CODE PARA
 EXTRN FixedDiv_MapLocal_:NEAR
 EXTRN FixedMul_8_8_:NEAR
+EXTRN FixedMul_16_0_:NEAR
 
 
 SEGMENT P_SIGHT_TEXT USE16 PARA PUBLIC 'CODE'
@@ -65,6 +66,21 @@ _rndtable_9000:
  db 17,  46,  52, 231, 232,  76,  31, 221,  84,  37, 216, 165, 212, 106 
  db 197, 242,  98,  43,  39, 175, 254, 145, 190,  84, 118, 222, 187, 136
  db 120, 163, 236, 249
+
+; 9000:0100 or 9010
+_anims:
+PUBLIC _anims
+REPT 192
+ db 0
+ENDM
+
+; 9000:01C0 or 901C
+_switchlist:
+PUBLIC _switchlist
+REPT 200
+ db 0
+ENDM
+
 
 ALIGN_MACRO
 _divline_side_lookups:
@@ -963,7 +979,15 @@ mov   bx, 01000h
 SELFMODIFY_psight_strace_x_hi_1:
 sub   cx, 01000h
 
-call  FixedMul_8_8_
+mov   bl, bh
+mov   bh, cl
+mov   cl, ch
+rcl   ch, 1
+sbb   ch, ch ; sign extend
+
+
+
+call  FixedMul_16_0_
 
 push ax
 
@@ -979,7 +1003,15 @@ SELFMODIFY_psight_strace_y_hi_1:
 mov   cx, 01000h
 sub   cx, dx
 
-call  FixedMul_8_8_
+
+mov   bl, bh
+mov   bh, cl
+mov   cl, ch
+rcl   ch, 1
+sbb   ch, ch ; sign extend
+
+
+call  FixedMul_16_0_
 
 
 pop   cx

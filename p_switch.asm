@@ -31,7 +31,7 @@ EXTRN EV_VerticalDoor_:NEAR
 EXTRN EV_BuildStairs_:NEAR
 EXTRN EV_DoCeiling_:NEAR
 EXTRN EV_LightChange_:NEAR
-
+EXTRN _switchlist:NEAR
 
 
 
@@ -116,8 +116,7 @@ dont_mark_unusable:
 mov   word ptr cs:[SELFMODIFY_changeswitchtexture_useagain], ax
 
 xor   bx, bx
-mov   ax, word ptr ds:[_numswitches]
-SHIFT_MACRO_SMALL shl ax 2  ; word compare num switches * 2
+mov   ax, word ptr ds:[_numswitches] ; dword compare num switches * 2
 
 ALIGN_MACRO
 check_next_switch:
@@ -125,7 +124,7 @@ check_next_switch:
 cmp   bx, ax
 jge   exit_p_changeswitchtexture
 
-mov   cx, word ptr ds:[bx + _switchlist]  ; current texture...
+mov   cx, word ptr cs:[bx + _switchlist]  ; current texture...
 
 cmp   cx, di
 je    is_top_texture
@@ -163,7 +162,7 @@ mov   es, word ptr ds:[_SIDES_SEGMENT_PTR]
 
 ;			sides[lineside0].[di]texture = switchlist[i^1];
 xor   bl, 2  ; ^1 word ptr
-mov   ax, word ptr ds:[bx + _switchlist] ; ax is switchlist[i^1];
+mov   ax, word ptr cs:[bx + _switchlist] ; ax is switchlist[i^1];
 add   di, word ptr [bp - 4]  
 stosw   ;mov   word ptr es:[di], ax
 

@@ -45,7 +45,7 @@ EXTRN P_SpawnLightFlash_:NEAR
 EXTRN P_SpawnGlowingLight_:NEAR
 EXTRN P_SpawnDoorCloseIn30_:NEAR
 EXTRN P_SpawnDoorRaiseIn5Mins_:NEAR
-
+EXTRN _anims:NEAR
 
 .DATA
 
@@ -1238,14 +1238,16 @@ mov   byte ptr ds:[_gameaction], GA_COMPLETED
 
 jmp       level_timer_check_ok
 
+ANIMS_SEGMENT = 09000h + (0100h SHR 4) ; _anims = 0100h
+
 level_timer_check_ok:
 mov       di, OFFSET _anims
 cmp       di, word ptr ds:[_lastanim] ; this can probably be a startup selfmodified constant one day?
 jae       done_with_anims_loop
 loop_next_anim_outer:
-mov       cx, word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_basepic] ; cx is i
+mov       cx, word ptr cs:[di + P_SPEC_ANIM_T.pspecanim_basepic] ; cx is i
 mov       si, cx
-mov       dl, byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_numpics]
+mov       dl, byte ptr cs:[di + P_SPEC_ANIM_T.pspecanim_numpics]
 xor       dh, dh
 mov       bp, dx
 add       si, dx  ; end condition in si.
@@ -1264,8 +1266,8 @@ xor       dx, dx
 add       ax, cx
 div       bp
 xchg      ax, dx
-add       ax, word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_basepic]
-cmp       byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_istexture], 0
+add       ax, word ptr cs:[di + P_SPEC_ANIM_T.pspecanim_basepic]
+cmp       byte ptr cs:[di + P_SPEC_ANIM_T.pspecanim_istexture], 0
 je        do_flat_translation_lookup
 
 mov       bx, TEXTURETRANSLATION_SEGMENT

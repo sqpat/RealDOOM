@@ -550,7 +550,7 @@ _topslope =				         	 _NULL_OFFSET + 00528h ; THESE HAVE TO BE ADJACENT
 _bottomslope =					     _NULL_OFFSET + 0052Ch ; THESE HAVE TO BE ADJACENT
 ;_cachedt2x =				         _NULL_OFFSET + 00530h ; no longer used
 ;_cachedt2y =					     _NULL_OFFSET + 00534h ; no longer used
-_strace =					         _NULL_OFFSET + 00538h ; no longer used
+;_strace =					         _NULL_OFFSET + 00538h ; no longer used
 
 _gametime = 				         _NULL_OFFSET + 00548h
 _maketic = 				             _NULL_OFFSET + 0054Ch
@@ -581,8 +581,8 @@ _player = 						 	 _NULL_OFFSET + 00690h
 ;6F3 free todo
 
 
-_anims =				     		 _NULL_OFFSET + 006F4h  ; todo good candidate to move to physics c0 in size
-_switchlist =				         _NULL_OFFSET + 007B4h  ; todo good candidate to move to physics c8 in size
+;_anims =				     		 _NULL_OFFSET + 006F4h  ; todo good candidate to move to physics c0 in size
+;_switchlist =				         _NULL_OFFSET + 007B4h  ; todo good candidate to move to physics c8 in size
 ; 87C
 _hu_font =	 	      			     _NULL_OFFSET + 0087Ch ; 7E in size
 

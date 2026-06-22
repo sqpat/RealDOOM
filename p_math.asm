@@ -2712,11 +2712,13 @@ ret       8
 
 ENDP
 
+ALIGN_MACRO
+
 IF COMPISA LE COMPILE_286
 
-ALIGN_MACRO
 PROC   FixedMul_8_8_ NEAR
 PUBLIC FixedMul_8_8_ 
+
 
 	  CWD
     XCHG AX, BX
@@ -2739,9 +2741,11 @@ PUBLIC FixedMul_8_8_
 ENDP
 
 
+ALIGN_MACRO
 PROC   FixedMul_16_0_ NEAR
 PUBLIC FixedMul_16_0_
     ; DX.AX = AX.0 * CX.BX
+
     XCHG AX, CX
     MUL CX
     XCHG AX, CX
@@ -2769,9 +2773,14 @@ PUBLIC FixedMul_8_8_
     RET
 ENDP
 
+ALIGN_MACRO
 PROC   FixedMul_16_0_ NEAR
 PUBLIC FixedMul_16_0_
     ; DX.AX = AX.0 * CX.BX
+    ; preshift inputs. consider different entry point?
+;    shrd  cx, bx, 8
+;    shr   cx, 8
+
     SHL EAX, 16
     SHL ECX, 16
     MOV CX, BX
