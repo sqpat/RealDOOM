@@ -2712,6 +2712,8 @@ ret       8
 
 ENDP
 
+IF COMPISA LE COMPILE_286
+
 ALIGN_MACRO
 PROC   FixedMul_8_8_ NEAR
 PUBLIC FixedMul_8_8_ 
@@ -2733,6 +2735,24 @@ PUBLIC FixedMul_8_8_
     MOV  AH, AL
     MOV  AL, BH
     RET
+
+ENDP
+
+ELSE
+
+PROC   FixedMul_8_8_ NEAR
+PUBLIC FixedMul_8_8_
+    ; DX.AX = AH.AL * CX.BX
+    CWDE
+    SHL ECX, 16
+    MOV CX, BX
+    IMUL ECX
+    SHLD EDX, EAX, 8
+    SHR EAX, 8
+    RET
+ENDP
+
+ENDIF
 
 PROC   P_MATH_ENDMARKER_ 
 PUBLIC P_MATH_ENDMARKER_
