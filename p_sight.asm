@@ -17,14 +17,14 @@
 ;
 
 
-; todo: move fixedmul2432 into this file? along with map stuff.
+
 
 INCLUDE CONSTANT.INC
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO_NO_MEDIUM
 ;.CODE PARA
 EXTRN FixedDiv_MapLocal_:NEAR
-EXTRN FixedMul2432_MapLocal_:NEAR
+EXTRN FixedMul_8_8_:NEAR
 
 
 SEGMENT P_SIGHT_TEXT USE16 PARA PUBLIC 'CODE'
@@ -908,6 +908,7 @@ cmp   bx, cx
 jge   jump_to_cross_bsp_node_return_0_2
 
 push  bx
+push  si
 
 
 
@@ -917,10 +918,13 @@ SELFMODIFY_psight_strace_dx_lo_1:
 mov   bx, 01000h
 SELFMODIFY_psight_strace_dx_hi_1:
 mov   cx, 01000h
-xor   ax, ax
-mov   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
 
-call  FixedMul2432_MapLocal_  ; todo optim params and call normal fixedmul
+
+mov   ax, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
+
+
+call  FixedMul_8_8_
+
 
 push  dx ; hi
 push  ax ; lo
@@ -928,14 +932,18 @@ SELFMODIFY_psight_strace_dy_lo_1:
 mov   bx, 01000h
 SELFMODIFY_psight_strace_dy_hi_1:
 mov   cx, 01000h
-xor   ax, ax
-mov   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+mov   ax, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx]
 
-call  FixedMul2432_MapLocal_  ; todo optim params and call normal fixedmul
+call  FixedMul_8_8_
+
+
+
 
 pop   bx  ; lo
 sub   bx, ax
 pop   ax  ; hi
+
+
 sbb   ax, dx
 mov   cx, ax
 or    ax, bx
@@ -943,32 +951,32 @@ cwd   ; if ax or bx is zero then dx is zero too
 je    denominator_0
 push  bx ; lo
 push  cx ; hi
-xor   bx, bx
-mov   cx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
-mov   dx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_x]
+
+mov   ax, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
+mov   cx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_x]
 
 
 SELFMODIFY_psight_strace_x_lo_1:
-mov   ax, 01000h
+mov   bx, 01000h
 SELFMODIFY_psight_strace_x_hi_1:
-sub   dx, 01000h
+sub   cx, 01000h
 
 
-call  FixedMul2432_MapLocal_
+call  FixedMul_8_8_
 
 push  ax ; lo
 push  dx ; hi
-les   bx, dword ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y]
-mov   cx, es
+les   dx, dword ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y]
+mov   ax, es
 
 SELFMODIFY_psight_strace_y_lo_1:
-mov   ax, 01000h
+mov   bx, 01000h
 SELFMODIFY_psight_strace_y_hi_1:
-mov   dx, 01000h
-sub   dx, bx
-xor   bx. bx 
+mov   cx, 01000h
+sub   cx, dx
 
-call  FixedMul2432_MapLocal_
+call  FixedMul_8_8_
+
 
 pop   cx ; hi
 pop   bx ; lo
@@ -984,8 +992,7 @@ call  FixedDiv_MapLocal_
 denominator_0: ; dx was set as zero.
 
 
-done_with_intercept_vector:
-
+pop   si
 pop   bx
 
 
@@ -1041,7 +1048,6 @@ SELFMODIFY_PSIGHT_setopentop:
 mov   dx, 01000h		; opentop
 SHIFT32_MACRO_RIGHT dx ax 3
 
-; todo selfmodify
 
 SELFMODIFY_psight_sightzstart_lo_2:
 sub   ax, 01000h

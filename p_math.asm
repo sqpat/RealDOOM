@@ -2712,6 +2712,28 @@ ret       8
 
 ENDP
 
+ALIGN_MACRO
+PROC   FixedMul_8_8_ NEAR
+PUBLIC FixedMul_8_8_ 
+
+	  CWD
+    XCHG AX, BX
+    AND  DX, AX
+    MOV  SI, DX
+    MUL  BX
+    SUB  DX, SI
+    SBB  AL, AL
+    MOV  SI, DX
+    XCHG AX, BX
+    IMUL CX
+    ADD  AX, SI
+    ADC  DL, BL
+    MOV  DH, DL
+    MOV  DL, AH
+    MOV  AH, AL
+    MOV  AL, BH
+    RET
+
 PROC   P_MATH_ENDMARKER_ 
 PUBLIC P_MATH_ENDMARKER_
 ENDP
