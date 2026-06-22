@@ -909,6 +909,8 @@ jge   jump_to_cross_bsp_node_return_0_2
 
 push  bx
 push  si
+push  di
+
 
 
 
@@ -926,8 +928,9 @@ mov   ax, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
 call  FixedMul_8_8_
 
 
-push  dx ; hi
-push  ax ; lo
+xchg ax, di
+mov  es, dx     ; es:di stores this
+
 SELFMODIFY_psight_strace_dy_lo_1:
 mov   bx, 01000h
 SELFMODIFY_psight_strace_dy_hi_1:
@@ -937,20 +940,19 @@ mov   ax, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx]
 call  FixedMul_8_8_
 
 
-
-
-pop   bx  ; lo
-sub   bx, ax
-pop   ax  ; hi
-
-
+sub   di, ax ; sub lo
+mov   ax, es ; sub hi
 sbb   ax, dx
-mov   cx, ax
-or    ax, bx
+
+
+mov   es, ax  ; backup again
+or    ax, di
 cwd   ; if ax or bx is zero then dx is zero too
 je    denominator_0
-push  bx ; lo
-push  cx ; hi
+
+; es:di continues to hold intermediate
+
+push  es
 
 mov   ax, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
 mov   cx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_x]
@@ -961,13 +963,15 @@ mov   bx, 01000h
 SELFMODIFY_psight_strace_x_hi_1:
 sub   cx, 01000h
 
-
 call  FixedMul_8_8_
 
-push  ax ; lo
-push  dx ; hi
-les   dx, dword ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y]
+push ax
+
+les   bx, dword ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y]
 mov   ax, es
+mov   es, dx ; ds:es backs up this result
+
+mov   dx, bx ; swap register
 
 SELFMODIFY_psight_strace_y_lo_1:
 mov   bx, 01000h
@@ -978,12 +982,15 @@ sub   cx, dx
 call  FixedMul_8_8_
 
 
-pop   cx ; hi
-pop   bx ; lo
-add   ax, bx
+pop   cx
+
+add   ax, cx
+mov   cx, es
 adc   dx, cx
-pop   cx ; hi
-pop   bx ; lo
+
+pop   cx
+
+mov   bx, di
 
 call  FixedDiv_MapLocal_
 
@@ -991,7 +998,10 @@ call  FixedDiv_MapLocal_
 
 denominator_0: ; dx was set as zero.
 
+; end of vector calculation
 
+
+pop   di
 pop   si
 pop   bx
 

@@ -2738,7 +2738,24 @@ PUBLIC FixedMul_8_8_
 
 ENDP
 
+
+PROC   FixedMul_16_0_ NEAR
+PUBLIC FixedMul_16_0_
+    ; DX.AX = AX.0 * CX.BX
+    XCHG AX, CX
+    MUL CX
+    XCHG AX, CX
+    CWD
+    XCHG DX, BX
+    AND BX, DX
+    MUL DX
+    ADD DX, CX
+    SUB DX, BX
+    RET
+ENDP
+
 ELSE
+; 386 version
 
 PROC   FixedMul_8_8_ NEAR
 PUBLIC FixedMul_8_8_
@@ -2752,7 +2769,22 @@ PUBLIC FixedMul_8_8_
     RET
 ENDP
 
+PROC   FixedMul_16_0_ NEAR
+PUBLIC FixedMul_16_0_
+    ; DX.AX = AX.0 * CX.BX
+    SHL EAX, 16
+    SHL ECX, 16
+    MOV CX, BX
+    IMUL ECX
+    SHR EAX, 16
+    RET
+ENDP
+
+
 ENDIF
+
+
+
 
 PROC   P_MATH_ENDMARKER_ 
 PUBLIC P_MATH_ENDMARKER_
