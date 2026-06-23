@@ -292,11 +292,11 @@ PUBLIC _CURRENT_LINE_TEXTURE_HEIGHT
 dw 128  ; only use first byte
 
 _visplane_offset:
-dw 	0, 646 ,1292, 1938, 2584
-dw	3230,  3876, 4522, 5168, 5814 
-dw	6460,  7106, 7752, 8398, 9044
-dw	9690,  10336, 10982, 11628, 12274 
-dw	12920,  13566, 14212, 14858, 15504
+VISPLANE_OFFSET_COUNTER = VISPLANE_T.vp_top
+REPT 25
+dw VISPLANE_OFFSET_COUNTER
+VISPLANE_OFFSET_COUNTER = VISPLANE_OFFSET_COUNTER + SIZE VISPLANE_T
+ENDM
 
 
 PUSHA_NO_AX_OR_BP_OR_DX_MACRO MACRO
@@ -2497,17 +2497,18 @@ je    is_floor_2
 
 mov   byte ptr cs:[_ceilphyspage], bl
 sal   bx, 1
-mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
+mov   es, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 
 mov   bl, ch
 sal   bx, 1
 
-mov   ax, word ptr cs:[bx + _visplane_offset] ; todo consider cs
-add   ax, OFFSET VISPLANE_T.vp_top
+mov   ax, word ptr cs:[bx + _visplane_offset]
+; add   ax, OFFSET VISPLANE_T.vp_top ; pre baked into lookup
+
 
 mov   word ptr cs:[_ceiltop], ax
 sub   ax, OFFSET VISPLANE_T.vp_top
-mov   word ptr cs:[_ceiltop+2], dx
+mov   word ptr cs:[_ceiltop+2], es
 
 
 ;pop   cx
@@ -2517,17 +2518,17 @@ ALIGN_MACRO
 is_floor_2:
 mov   byte ptr cs:[_floorphyspage], bl   
 sal   bx, 1
-mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
+mov   es, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 
 mov   bl, ch
 sal   bx, 1
 
-mov   ax, word ptr cs:[bx + _visplane_offset] ; todo consider cs
-add   ax, OFFSET VISPLANE_T.vp_top
+mov   ax, word ptr cs:[bx + _visplane_offset]
+; add   ax, OFFSET VISPLANE_T.vp_top ; pre baked into lookup
 
 mov   word ptr cs:[_floortop], ax
 sub   ax, OFFSET VISPLANE_T.vp_top
-mov   word ptr cs:[_floortop+2], dx
+mov   word ptr cs:[_floortop+2], es
 
 ;pop   cx
 pop   bx
@@ -2880,8 +2881,9 @@ mov       si, ax     ; store i
 call      R_HandleEMSVisplanePagination_
 
 ;; ff out pl top
-mov       di, ax
-mov       es, dx
+xchg      ax, di
+; es already has return
+
 
 
 mov       cx, (SCREENWIDTH / 2) + 1    ; one extra word for pad
@@ -3044,8 +3046,8 @@ mov       si, ax
 cbw      
 
 call      R_HandleEMSVisplanePagination_
-mov       di, ax
-mov       es, dx
+xchg      ax, di
+; es already has return
 ; jumped here?
 mov       ax, 0FFFFh
 
