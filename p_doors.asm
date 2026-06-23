@@ -724,7 +724,7 @@ mov   bx, ax
 
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_secnum], si
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], dx ; 0
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_type], dx ; DOOR_NORMAL
+mov   byte ptr ds:[bx + VLDOOR_T.vldoor_type], dl ; DOOR_NORMAL
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_speed], VDOORSPEED
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_topcountdown],  30 * 35
 
@@ -772,7 +772,7 @@ sub   ax, (4 SHL SHORTFLOORBITS)
 
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_secnum], si
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], 2
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_type], DOOR_RAISEIN5MINS
+mov   byte ptr ds:[bx + VLDOOR_T.vldoor_type], DOOR_RAISEIN5MINS
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_speed], VDOORSPEED
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_topwait], VDOORWAIT
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_topcountdown],  5 * 60 * 35;

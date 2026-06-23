@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/23 08:16:13
+Created on:       26/06/23 09:20:35
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -59,18 +59,18 @@ P_MOBJ_TEXT            CODE           AUTO           2445:2b98       00000f24
 P_PSPR_TEXT            CODE           AUTO           2445:3abc       00000842
 P_ENEMY_TEXT           CODE           AUTO           2445:42fe       00001a7f
 P_CEILNG_TEXT          CODE           AUTO           2445:5d7e       00000284
-P_DOORS_TEXT           CODE           AUTO           2445:6002       000003c3
-P_FLOOR_TEXT           CODE           AUTO           2445:63c6       0000048f
-P_INTER_TEXT           CODE           AUTO           2445:6856       0000088f
-P_LIGHTS_TEXT          CODE           AUTO           2445:70e6       00000294
-P_PLATS_TEXT           CODE           AUTO           2445:737a       0000027e
-P_SPEC_TEXT            CODE           AUTO           2445:75f8       00000994
-P_SWITCH_TEXT          CODE           AUTO           2445:7f8c       0000039e
-P_TELEPT_TEXT          CODE           AUTO           2445:832a       00000181
-P_TICK_TEXT            CODE           AUTO           2445:84ac       000001ba
-P_USER_TEXT            CODE           AUTO           2445:8666       00000422
-P_INFO_TEXT            CODE           AUTO           2445:8a88       00000326
-AM_MAP_TEXT            CODE           AUTO           2445:8dae       00000b60
+P_DOORS_TEXT           CODE           AUTO           2445:6002       000003c2
+P_FLOOR_TEXT           CODE           AUTO           2445:63c4       0000048f
+P_INTER_TEXT           CODE           AUTO           2445:6854       0000088f
+P_LIGHTS_TEXT          CODE           AUTO           2445:70e4       00000294
+P_PLATS_TEXT           CODE           AUTO           2445:7378       0000027e
+P_SPEC_TEXT            CODE           AUTO           2445:75f6       00000994
+P_SWITCH_TEXT          CODE           AUTO           2445:7f8a       0000039e
+P_TELEPT_TEXT          CODE           AUTO           2445:8328       00000181
+P_TICK_TEXT            CODE           AUTO           2445:84aa       000001ba
+P_USER_TEXT            CODE           AUTO           2445:8664       00000422
+P_INFO_TEXT            CODE           AUTO           2445:8a86       00000326
+AM_MAP_TEXT            CODE           AUTO           2445:8dac       00000b60
 P_MATH_TEXT            CODE           AUTO           2445:9910       000007ea
 HU_SETUP_TEXT          CODE           AUTO           2445:a0fa       00000248
 HU_LIB_TEXT            CODE           AUTO           2445:a342       0000014d
@@ -361,9 +361,9 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0818:004f*     _seglooptexrepeat
 0818:1506*     ENSUREALIGN_051
 0818:1502*     ENSUREALIGN_050
-0818:25db*     SELFMODIFY_mark_planes_dirty_TWOSIDED
 0818:3d40      bsp_local_dc_yl_lookup_table_
 0818:212a*     pre_increment_values_TWOSIDED
+0818:25db*     SELFMODIFY_mark_planes_dirty_TWOSIDED
 0818:20fb*     R_RenderSegLoop_TWOSIDED_
 0818:1467*     SELFMODIFY_BSP_set_skyflatnum_4
 0818:1001*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
@@ -461,9 +461,9 @@ Module: r_col24.obj(r_col24.ASM)
 163c:19fa      MARKER_SM_COLFUNC_set_destview_segment24_normalstretch_
 163c:083c      MARKER_SM_COLFUNC_set_destview_segment24_noloopandstretch_
 163c:0000      R_COLUMN24_STARTMARKER_
-163c:0844*     ENSUREALIGN_202
 163c:1079*     ENSUREALIGN_203
 163c:0040*     ENSUREALIGN_201
+163c:0844*     ENSUREALIGN_202
 163c:1a05      MARKER_SM_COLFUNC_jump_offset24_normalstretch_
 163c:1a09*     ENSUREALIGN_204
 163c:238a      R_SetupColfuncsForMasked_
@@ -573,32 +573,32 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 Module: r_mask24.obj(r_mask24.ASM)
 1dd5:016a*     draw_shadow_sprite
 1dd5:0580*     ENSUREALIGN_107_sprite
+1dd5:0596*     ENSUREALIGN_106_sprite
 1dd5:059c*     ENSUREALIGN_105_sprite
 1dd5:058a*     ENSUREALIGN_104_sprite
 1dd5:0b7c*     ENSUREALIGN_109
 1dd5:0153*     ENSUREALIGN_102
 1dd5:152d*     ENSUREALIGN_106
-1dd5:05a4*     ENSUREALIGN_101_sprite
-1dd5:0596*     ENSUREALIGN_106_sprite
+1dd5:153b*     ENSUREALIGN_101
 1dd5:0f7a*     FastDiv3232FFFF_
 1dd5:0b1e*     ENSUREALIGN_111
-1dd5:0b83*     ENSUREALIGN_110
-1dd5:153b*     ENSUREALIGN_101
+1dd5:05a4*     ENSUREALIGN_101_sprite
 1dd5:0a60*     ENSUREALIGN_113
 1dd5:093c*     ENSUREALIGN_120
+1dd5:0b83*     ENSUREALIGN_110
 1dd5:12a3*     ENSUREALIGN_122
 1dd5:097a*     ENSUREALIGN_117
-1dd5:112a*     ENSUREALIGN_121
 1dd5:0921*     ENSUREALIGN_119
-1dd5:1517*     ENSUREALIGN_107
+1dd5:112a*     ENSUREALIGN_121
 1dd5:033f*     ENSUREALIGN_129
 1dd5:05d2*     ENSUREALIGN_130
 1dd5:044c*     ENSUREALIGN_132
 1dd5:0408*     ENSUREALIGN_133
 1dd5:098a*     ENSUREALIGN_118
 1dd5:098d*     ENSUREALIGN_116
-1dd5:0bcb*     ENSUREALIGN_115
 1dd5:14b1*     ENSUREALIGN_131
+1dd5:0bcb*     ENSUREALIGN_115
+1dd5:1517*     ENSUREALIGN_107
 1dd5:1237*     ENSUREALIGN_126
 1dd5:14c3*     ENSUREALIGN_127
 1dd5:14e9*     ENSUREALIGN_108
@@ -833,7 +833,7 @@ Module: p_ceilng.obj(p_ceilng.ASM)
 2445:5d7e      T_MoveCeiling_
 Module: p_doors.obj(p_doors.ASM)
 2445:6110      EV_DoLockedDoor_
-2445:63c5*     P_DOORS_ENDMARKER_
+2445:63c4*     P_DOORS_ENDMARKER_
 2445:6379      P_SpawnDoorRaiseIn5Mins_
 2445:6002*     P_DOORS_STARTMARKER_
 2445:6342      P_SpawnDoorCloseIn30_
@@ -841,133 +841,133 @@ Module: p_doors.obj(p_doors.ASM)
 2445:6151      EV_DoDoor_
 2445:6218      EV_VerticalDoor_
 Module: p_floor.obj(p_floor.ASM)
-2445:672c      EV_BuildStairs_
-2445:6523      EV_DoFloor_
-2445:6855*     P_FLOOR_ENDMARKER_
-2445:63fa      T_MovePlaneFloorDown_
-2445:63c6*     P_FLOOR_STARTMARKER_
-2445:6466      T_MovePlaneFloorUp_
-2445:6499      T_MoveFloor_
-2445:63c6      T_MovePlaneCeilingDown_
-2445:63df      T_MovePlaneCeilingUp_
+2445:672a      EV_BuildStairs_
+2445:6521      EV_DoFloor_
+2445:6853*     P_FLOOR_ENDMARKER_
+2445:63f8      T_MovePlaneFloorDown_
+2445:63c4*     P_FLOOR_STARTMARKER_
+2445:6464      T_MovePlaneFloorUp_
+2445:6497      T_MoveFloor_
+2445:63c4      T_MovePlaneCeilingDown_
+2445:63dd      T_MovePlaneCeilingUp_
 Module: p_inter.obj(p_inter.ASM)
-2445:6a56      P_TouchSpecialThing_
-2445:691a*     P_GiveWeapon_
-2445:6998*     P_GiveCard_
-2445:6e58      P_DamageMobj_
-2445:6958*     P_GiveBody_
-2445:697a*     P_GiveArmor_
-2445:6856*     P_INTER_STARTMARKER_
-2445:6c7e*     P_KillMobj_
-2445:6866*     P_GiveAmmo_
-2445:69aa      P_GivePower_
-2445:6dda*     getMassThrust_
-2445:70e5*     P_INTER_ENDMARKER_
+2445:6a54      P_TouchSpecialThing_
+2445:6918*     P_GiveWeapon_
+2445:6996*     P_GiveCard_
+2445:6e56      P_DamageMobj_
+2445:6956*     P_GiveBody_
+2445:6978*     P_GiveArmor_
+2445:6854*     P_INTER_STARTMARKER_
+2445:6c7c*     P_KillMobj_
+2445:6864*     P_GiveAmmo_
+2445:69a8      P_GivePower_
+2445:6dd8*     getMassThrust_
+2445:70e3*     P_INTER_ENDMARKER_
 Module: p_lights.obj(p_lights.ASM)
-2445:734c      P_SpawnGlowingLight_
-2445:7240      EV_StartLightStrobing_
-2445:7151      T_LightFlash_
-2445:726b      EV_LightChange_
-2445:7311      T_Glow_
-2445:737a*     P_LIGHTS_ENDMARKER_
-2445:71f8      P_SpawnStrobeFlash_
-2445:7121      P_SpawnFireFlicker_
-2445:718d      P_SpawnLightFlash_
-2445:70e6*     P_LIGHTS_STARTMARKER_
-2445:71c4      T_StrobeFlash_
-2445:70e6      T_FireFlicker_
+2445:734a      P_SpawnGlowingLight_
+2445:723e      EV_StartLightStrobing_
+2445:714f      T_LightFlash_
+2445:7269      EV_LightChange_
+2445:730f      T_Glow_
+2445:7378*     P_LIGHTS_ENDMARKER_
+2445:71f6      P_SpawnStrobeFlash_
+2445:711f      P_SpawnFireFlicker_
+2445:718b      P_SpawnLightFlash_
+2445:70e4*     P_LIGHTS_STARTMARKER_
+2445:71c2      T_StrobeFlash_
+2445:70e4      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2445:742c      EV_DoPlat_
-2445:737a      T_PlatRaise_
-2445:75b0      P_AddActivePlat_
-2445:75f8*     P_PLATS_ENDMARKER_
-2445:75c8*     P_RemoveActivePlat_
-2445:7566      EV_PlatFunc_
-2445:737a*     P_PLATS_STARTMARKER_
+2445:742a      EV_DoPlat_
+2445:7378      T_PlatRaise_
+2445:75ae      P_AddActivePlat_
+2445:75f6*     P_PLATS_ENDMARKER_
+2445:75c6*     P_RemoveActivePlat_
+2445:7564      EV_PlatFunc_
+2445:7378*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-2445:7c6e      P_UpdateSpecials_
-2445:76b2      P_FindNextHighestFloor_
-2445:7ba6      P_PlayerInSpecialSector_
-2445:7f8c*     P_SPEC_ENDMARKER_
-2445:764e      P_FindHighestOrLowestFloorSurrounding_
-2445:75f8*     P_SPEC_STARTMARKER_
-2445:7d9a      EV_DoDonut_
-2445:770e      P_FindLowestOrHighestCeilingSurrounding_
-2445:77aa      P_FindMinSurroundingLight_
-2445:75fa*     getNextSectorList_
-2445:7772      P_FindSectorsFromLineTag_
-2445:7b1a      P_ShootSpecialLine_
-2445:7924      P_CrossSpecialLine_
-2445:7efe      P_SpawnSpecials_
+2445:7c6c      P_UpdateSpecials_
+2445:76b0      P_FindNextHighestFloor_
+2445:7ba4      P_PlayerInSpecialSector_
+2445:7f8a*     P_SPEC_ENDMARKER_
+2445:764c      P_FindHighestOrLowestFloorSurrounding_
+2445:75f6*     P_SPEC_STARTMARKER_
+2445:7d98      EV_DoDonut_
+2445:770c      P_FindLowestOrHighestCeilingSurrounding_
+2445:77a8      P_FindMinSurroundingLight_
+2445:75f8*     getNextSectorList_
+2445:7770      P_FindSectorsFromLineTag_
+2445:7b18      P_ShootSpecialLine_
+2445:7922      P_CrossSpecialLine_
+2445:7efc      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-2445:832a*     P_SWITCH_ENDMARKER_
-2445:7f8c*     P_SWITCH_STARTMARKER_
-2445:81ef*     special_line_type_44
-2445:7f8c      P_ChangeSwitchTexture_
-2445:816c      P_UseSpecialLine_
+2445:8328*     P_SWITCH_ENDMARKER_
+2445:7f8a*     P_SWITCH_STARTMARKER_
+2445:81ed*     special_line_type_44
+2445:7f8a      P_ChangeSwitchTexture_
+2445:816a      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-2445:84ab*     P_TELEPT_ENDMARKER_
-2445:832a*     P_TELEPT_STARTMARKER_
-2445:832a      EV_Teleport_
+2445:84a9*     P_TELEPT_ENDMARKER_
+2445:8328*     P_TELEPT_STARTMARKER_
+2445:8328      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-2445:8544      P_UpdateThinkerFunc_
-2445:85b4*     ENSUREALIGN_902
-2445:8656      P_Random_
-2445:84ac*     P_TICK_STARTMARKER_
-2445:84be      P_CreateThinkerFar_
-2445:8666*     P_TICK_ENDMARKER_
-2445:855c      P_RemoveThinker_
-2445:8586      P_Ticker_
-2445:84c2      P_CreateThinker_
+2445:8542      P_UpdateThinkerFunc_
+2445:85b2*     ENSUREALIGN_902
+2445:8654      P_Random_
+2445:84aa*     P_TICK_STARTMARKER_
+2445:84bc      P_CreateThinkerFar_
+2445:8664*     P_TICK_ENDMARKER_
+2445:855a      P_RemoveThinker_
+2445:8584      P_Ticker_
+2445:84c0      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-2445:8a88*     P_USER_ENDMARKER_
-2445:8667*     P_Thrust_
-2445:869f*     P_CalcHeight_
-2445:8844*     P_DeathThink_
-2445:8667*     P_USER_STARTMARKER_
-2445:87c3*     P_MovePlayer_
-2445:893c      P_PlayerThink_
+2445:8a86*     P_USER_ENDMARKER_
+2445:8665*     P_Thrust_
+2445:869d*     P_CalcHeight_
+2445:8842*     P_DeathThink_
+2445:8665*     P_USER_STARTMARKER_
+2445:87c1*     P_MovePlayer_
+2445:893a      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-2445:8cb2      GetPainChance_
-2445:8d44      GetAttackSound_
-2445:8d30      GetDeathState_
-2445:8d10      GetSeeState_
-2445:8c72      GetXDeathState_
-2445:8cf4      GetActiveSound_
-2445:8d06      GetPainSound_
-2445:8cc4      GetRaiseState_
-2445:8d3a      GetPainState_
-2445:8d26      GetMissileState_
-2445:8c94      GetMeleeState_
-2445:8d72      GetDamage_
-2445:8dae*     P_INFO_ENDMARKER_
-2445:8cd0      GetMobjMass_
-2445:8a88*     P_INFO_STARTMARKER_
-2445:8d9e      GetSpawnHealth_
+2445:8cb0      GetPainChance_
+2445:8d42      GetAttackSound_
+2445:8d2e      GetDeathState_
+2445:8d0e      GetSeeState_
+2445:8c70      GetXDeathState_
+2445:8cf2      GetActiveSound_
+2445:8d04      GetPainSound_
+2445:8cc2      GetRaiseState_
+2445:8d38      GetPainState_
+2445:8d24      GetMissileState_
+2445:8c92      GetMeleeState_
+2445:8d70      GetDamage_
+2445:8dac*     P_INFO_ENDMARKER_
+2445:8cce      GetMobjMass_
+2445:8a86*     P_INFO_STARTMARKER_
+2445:8d9c      GetSpawnHealth_
 Module: am_map.obj(am_map.ASM)
-2445:8ee5*     FastMulTrig16Sine_
-2445:9154*     AM_clearMarks_
-2445:902d*     AM_findMinMaxBoundaries_
-2445:8eb6*     FastMulTrig16Cosine_
-2445:90ad*     AM_changeWindowLoc_
-2445:916b*     AM_Start_
-2445:8dae*     AM_MAP_STARTMARKER_
-2445:9249*     AM_minOutWindowScale_
-2445:8f39*     AM_activateNewScale_
-2445:93c6      AM_Ticker_
-2445:973d*     AM_drawLineCharacter_
-2445:94c5*     AM_drawMline_
-2445:9705*     AM_rotate_
-2445:8f8e*     AM_restoreScaleAndLoc_
-2445:8f24*     CYMTOF16_
-2445:8f14*     CXMTOF16_
-2445:9805      AM_Drawer_
-2445:8ff8*     AM_addMark_
-2445:990e*     AM_MAP_ENDMARKER_
-2445:9792*     AM_drawPlayers_
-2445:926c      AM_Responder_
-2445:9623*     AM_drawWalls_
-2445:94a3*     DOOUTCODE_
+2445:8ee3*     FastMulTrig16Sine_
+2445:9152*     AM_clearMarks_
+2445:902b*     AM_findMinMaxBoundaries_
+2445:8eb4*     FastMulTrig16Cosine_
+2445:90ab*     AM_changeWindowLoc_
+2445:9169*     AM_Start_
+2445:8dac*     AM_MAP_STARTMARKER_
+2445:9247*     AM_minOutWindowScale_
+2445:8f37*     AM_activateNewScale_
+2445:93c4      AM_Ticker_
+2445:973b*     AM_drawLineCharacter_
+2445:94c3*     AM_drawMline_
+2445:9703*     AM_rotate_
+2445:8f8c*     AM_restoreScaleAndLoc_
+2445:8f22*     CYMTOF16_
+2445:8f12*     CXMTOF16_
+2445:9803      AM_Drawer_
+2445:8ff6*     AM_addMark_
+2445:990c*     AM_MAP_ENDMARKER_
+2445:9790*     AM_drawPlayers_
+2445:926a      AM_Responder_
+2445:9621*     AM_drawWalls_
+2445:94a1*     DOOUTCODE_
 Module: p_math.obj(p_math.ASM)
 2445:99b4      FixedMulTrigNoShiftCosine_MapLocal_
 2445:9962*     ENSUREALIGN_903
@@ -1663,4 +1663,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e730 (255792.)
 Entry point address: 2ff1:807e
-Link time: 00:00.59
+Link time: 00:00.05
