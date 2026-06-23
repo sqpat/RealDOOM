@@ -40,7 +40,7 @@ EXTRN P_SetMobjState_:NEAR
 EXTRN FastMul16u32u_MapLocal_:NEAR
 EXTRN FixedMulTrigNoShiftSine_MapLocal_:NEAR
 EXTRN FixedMulTrigNoShiftCosine_MapLocal_:NEAR
-EXTRN FastDiv32u16u_MapLocal_:NEAR
+
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 EXTRN _weaponinfo:WORD
 
@@ -1103,20 +1103,47 @@ cmp    dl, (MT_BOSSBRAIN - MT_VILE)  ; highest
 ja     mass_thrust_default
 xor    dh, dh
 mov    bx, dx
-add    bx, dx
+shl    bx, 1
 jmp    word ptr cs:[bx + OFFSET mass_thrust_switch_block]
 mass_thrust_type_1:
 mov    bx, 08000h
 mov    cx, 0Ch
-call  FastMul16u32u_MapLocal_
+call   FastMul16u32u_MapLocal_
 
 mov    bx, 500
 do_mass_thrust_div:
-call   FastDiv32u16u_MapLocal_
-
+;call   FastDiv32u16u_MapLocal_
+; inlined only usage
 pop    cx
-pop    bx
-ret    
+
+;DX:AX / BX (?)
+
+cmp dx, bx
+jae two_part_divide
+one_part_divide:
+div bx
+xor dx, dx
+pop bx
+ret
+
+two_part_divide:
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+mov bx, ss
+mov ds, bx  ; restored ds
+pop bx
+ret
+
+
+
 mass_thrust_type_5:
 mov    bx, 08000h
 mov    cx, 0Ch
@@ -1134,7 +1161,7 @@ jmp    do_mass_thrust_div
 mass_thrust_type_3:
 mov    bx, 80
 cwd    
-idiv   bx
+div    bx
 cwd    
 pop    cx
 pop    bx
