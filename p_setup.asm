@@ -1936,6 +1936,33 @@ call  P_LoadVertexes_
 lea   ax, [si + ML_SECTORS]
 call  P_LoadSectors_ 
 
+; hack to fix map 31 bad textures/maps without fiddling with renderer for bug checking
+; todo: add pwad check 
+cmp   byte ptr ds:[_gamemap], 31
+jne   skip_sector_hack
+push  si
+; fix sectors.
+mov   cx, word ptr ds:[_numsectors]
+mov   ds, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov   si, SECTOR_T.sec_floorheight
+mov   ax, 16 SHL 3
+
+check_next_sector_floor:
+cmp   word ptr ds:[si], ax
+jne   dont_modify_sector
+mov   word ptr ds:[si], 0
+dont_modify_sector:
+add   si, SIZE SECTOR_T
+loop  check_next_sector_floor
+
+pop   si
+push  ss
+pop   ds
+
+skip_sector_hack:
+
+
+
 lea   ax, [si + ML_SIDEDEFS]
 call  P_LoadSideDefs_ 
 
