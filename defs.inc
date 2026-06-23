@@ -225,17 +225,15 @@ _inhelpscreensstate =				 _NULL_OFFSET + 000FFh
 
 
 
-_fastparm =	                        _NULL_OFFSET + 00100h
-_gameskill =	                    _NULL_OFFSET + 00101h
-_TaskServiceCount =	                _NULL_OFFSET + 00102h
-_viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
+_fastparm =	                         _NULL_OFFSET + 00100h
+_gameskill =	                     _NULL_OFFSET + 00101h
+_TaskServiceCount =	                 _NULL_OFFSET + 00102h
+_viewangle_shiftright3 = 	 		 _NULL_OFFSET + 00104h
 ; 106h is a segment used for LES
 _levelTimeCount =				     _NULL_OFFSET + 00108h
 _numswitches =						 _NULL_OFFSET + 0010Ch
 
-_BSP_MUL_80_LOOKUP_SEGMENT = 		_NULL_OFFSET + 0010Eh
-
-;040h in size
+_BSP_MUL_80_LOOKUP_SEGMENT = 		 _NULL_OFFSET + 0010Eh
 _R_DrawPlanesCall = 	    	 	 _NULL_OFFSET + 00110h
 _R_DrawPlanesCallOffset = 	    	 _NULL_OFFSET + 00110h
 _R_DrawMaskedCall = 			 	 _NULL_OFFSET + 00114h
@@ -343,7 +341,8 @@ _maskedcachedbasecol =               _NULL_OFFSET + 0028Eh
 _maskedcachedsegment =               _NULL_OFFSET + 00290h
 _maskedheightvalcache =              _NULL_OFFSET + 00292h
 _currentoverlay = 		         	 _NULL_OFFSET + 00293h
-; TODO 294-29c unused
+_topslope =				         	 _NULL_OFFSET + 00294h ; THESE HAVE TO BE ADJACENT
+_bottomslope =					     _NULL_OFFSET + 00298h ; THESE HAVE TO BE ADJACENT
 _ds_p =               				 _NULL_OFFSET + 0029Ch
 
 _olddb =							 _NULL_OFFSET + 002A0h
@@ -527,7 +526,7 @@ _snd_Mport =                         _NULL_OFFSET + 004CAh
 _I_Quit_addr = 			             _NULL_OFFSET + 004CCh
 
 ; 52 bytes
-_player_message_string =  			 _NULL_OFFSET + 004D0h
+_player_message_string =  			 _NULL_OFFSET + 004D0h ; todo physics move candidate
 
 _screen_botleft_x =				     _NULL_OFFSET + 00504h
 _screen_botleft_y =				     _NULL_OFFSET + 00506h
@@ -545,74 +544,67 @@ _loops_enabled =    			     _NULL_OFFSET + 0051Eh
 _inhelpscreens =    			     _NULL_OFFSET + 0051Fh
 
 
-;_sightzstart =				         _NULL_OFFSET + 00524h ; no longer used
-_topslope =				         	 _NULL_OFFSET + 00528h ; THESE HAVE TO BE ADJACENT
-_bottomslope =					     _NULL_OFFSET + 0052Ch ; THESE HAVE TO BE ADJACENT
-;_cachedt2x =				         _NULL_OFFSET + 00530h ; no longer used
-;_cachedt2y =					     _NULL_OFFSET + 00534h ; no longer used
-;_strace =					         _NULL_OFFSET + 00538h ; no longer used
 
-_gametime = 				         _NULL_OFFSET + 00548h
-_maketic = 				             _NULL_OFFSET + 0054Ch
-_starttime = 				         _NULL_OFFSET + 0054Eh
+_gametime = 				         _NULL_OFFSET + 00520h
+_maketic = 				             _NULL_OFFSET + 00524h
+_starttime = 				         _NULL_OFFSET + 00526h
+
+;528-530 unused...
 
 
 ; ceilings plats buttonlist
 ; todo move this high when possible
 ;3c or 60 bytes
-_activeceilings =                    _NULL_OFFSET + 00550h  ; THESE HAVE TO BE ADJACENT
+_activeceilings =                    _NULL_OFFSET + 00530h  ; THESE HAVE TO BE ADJACENT
 ;24 or 36 bytes
-_buttonlist =                        _NULL_OFFSET + 0058Ch  ; THESE HAVE TO BE ADJACENT
+_buttonlist =                        _NULL_OFFSET + 0056Ch  ; THESE HAVE TO BE ADJACENT
 ;3c or 60 bytes
-_activeplats =                       _NULL_OFFSET + 005B0h  ; THESE HAVE TO BE ADJACENT
+_activeplats =                       _NULL_OFFSET + 00590h  ; THESE HAVE TO BE ADJACENT
 
-; 5FC
+; 5CC
 
-_mtof_zoommul =        			     _NULL_OFFSET + 005ECh
-_ftom_zoommul =        			     _NULL_OFFSET + 005EFh
-
-
-_solidsegs = 			         	 _NULL_OFFSET + 005F0h
-_player = 						 	 _NULL_OFFSET + 00690h
+_mtof_zoommul =        			     _NULL_OFFSET + 005CCh
+_ftom_zoommul =        			     _NULL_OFFSET + 005CFh
 
 
+_solidsegs = 			         	 _NULL_OFFSET + 005D0h
+_player = 						 	 _NULL_OFFSET + 00670h
 
 
-;6F3 free todo
 
 
-;_anims =				     		 _NULL_OFFSET + 006F4h  ; todo good candidate to move to physics c0 in size
-;_switchlist =				         _NULL_OFFSET + 007B4h  ; todo good candidate to move to physics c8 in size
-; 87C
-_hu_font =	 	      			     _NULL_OFFSET + 0087Ch ; 7E in size
-
-; 8FA
+;6D3 free todo
 
 
-_sfxcache_head =                    _NULL_OFFSET + 008FAh
-_sfxcache_tail =                    _NULL_OFFSET + 008FBh
-; todo 8Fc-8F0 free
-_activespritepages =                 _NULL_OFFSET + 00900h
-_activespritenumpages =              _NULL_OFFSET + 00904h
-_spriteL1LRU =                 		 _NULL_OFFSET + 00908h
-_spritecache_l2_head =               _NULL_OFFSET + 0090Ch
-_spritecache_l2_tail =               _NULL_OFFSET + 0090Dh
-_texturecache_l2_head =              _NULL_OFFSET + 0090Eh
-_texturecache_l2_tail =              _NULL_OFFSET + 0090Fh
-_activetexturepages =                _NULL_OFFSET + 00910h
-_activenumpages =                 	 _NULL_OFFSET + 0091Ah
-_textureL1LRU =                 	 _NULL_OFFSET + 00924h ; 8 or 10 in size.. 
-_flatcache_l2_head =                 _NULL_OFFSET + 0092Eh
-_flatcache_l2_tail =                 _NULL_OFFSET + 0092Fh
+; 6D4
+_hu_font =	 	      			     _NULL_OFFSET + 006D4h ; 7E in size
+
+; 752
+
+_sfxcache_head =                    _NULL_OFFSET + 00752h
+_sfxcache_tail =                    _NULL_OFFSET + 00753h
 
 
-; 930
+_activespritepages =                 _NULL_OFFSET + 00754h
+_activespritenumpages =              _NULL_OFFSET + 00758h
+_spriteL1LRU =                 		 _NULL_OFFSET + 0075Ch
+_spritecache_l2_head =               _NULL_OFFSET + 00760h
+_spritecache_l2_tail =               _NULL_OFFSET + 00761h
+_texturecache_l2_head =              _NULL_OFFSET + 00762h
+_texturecache_l2_tail =              _NULL_OFFSET + 00763h
+_flatcache_l2_head =                 _NULL_OFFSET + 00764h
+_flatcache_l2_tail =                 _NULL_OFFSET + 00765h
+_activetexturepages =                _NULL_OFFSET + 00766h
+_activenumpages =                 	 _NULL_OFFSET + 00770h
+_textureL1LRU =                 	 _NULL_OFFSET + 0077Ah ; 8 or 10 in size.. 
+
+
+; 708
 ; max args = 20 including program name i guess. should be enough? maybe too much.
-_myargv = 	   	  					 _NULL_OFFSET + 00930h ; 3c currently... including 010 gap?
+_myargv = 	   	  					 _NULL_OFFSET + 00784h ; 3c currently... including 010 gap?
 
-; 96c-970 free todo
 
-_flatcache_nodes =				     _NULL_OFFSET + 00970h
+_flatcache_nodes =				     _NULL_OFFSET + 007C0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

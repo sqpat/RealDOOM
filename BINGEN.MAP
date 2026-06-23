@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/22 17:49:14
+Created on:       26/06/22 18:13:21
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -347,11 +347,11 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0816:0d95*     tx_already_positive
 0816:2721*     R_AddLine_
 0816:09be*     FixedMulTrigNoShiftSine_BSPLocal_
-0816:3414      R_GetPatchTexture_Far24_
 0816:1080*     handle_closed_door_top
 0816:3ed0      R_BSP24_ENDMARKER_
 0816:26f2*     skip_this_sprite
 0816:24b6*     mark_floor_di
+0816:3414      R_GetPatchTexture_Far24_
 0816:2104*     exit_rendersegloop_TWOSIDED
 0816:1da1*     continue_backsector_not_null
 0816:2414*     R_DrawColumnPrepTop
@@ -519,13 +519,13 @@ Module: r_span24.obj(r_span24.ASM)
 19f3:0d46*     ENSUREALIGN_404
 19f3:0996*     ENSUREALIGN_407
 19f3:09b4*     ENSUREALIGN_400
-19f3:09a4*     ENSUREALIGN_401
 19f3:012d*     ENSUREALIGN_406
 19f3:0144*     ENSUREALIGN_408
 19f3:022d*     ENSUREALIGN_409
 19f3:09a7*     ENSUREALIGN_402
 19f3:0d88*     ENSUREALIGN_403
 19f3:0988*     ENSUREALIGN_410
+19f3:09a4*     ENSUREALIGN_401
 19f3:0c7b*     SELFMODIFY_SPAN_viewz_13_3_1
 19f3:023b*     SELFMODIFY_SELECT_port_routine
 19f3:0e97*     SELFMODIFY_SPAN_lookuppicnum
@@ -579,10 +579,11 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd3:0153*     ENSUREALIGN_102
 1dd3:152d*     ENSUREALIGN_106
 1dd3:05a4*     ENSUREALIGN_101_sprite
+1dd3:0596*     ENSUREALIGN_106_sprite
 1dd3:0f7a*     FastDiv3232FFFF_
 1dd3:0b1e*     ENSUREALIGN_111
 1dd3:0b83*     ENSUREALIGN_110
-1dd3:0596*     ENSUREALIGN_106_sprite
+1dd3:153b*     ENSUREALIGN_101
 1dd3:0a60*     ENSUREALIGN_113
 1dd3:093c*     ENSUREALIGN_120
 1dd3:12a3*     ENSUREALIGN_122
@@ -613,7 +614,6 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd3:0986*     ENSUREALIGN_114
 1dd3:0a93*     ENSUREALIGN_128
 1dd3:12ac*     ENSUREALIGN_125
-1dd3:153b*     ENSUREALIGN_101
 1dd3:052c*     ENSUREALIGN_127_sprite
 1dd3:1930*     R_WriteBackMaskedLevelConstants24_
 1dd3:1248*     continue_checking_if_drawseg_obscures_sprite
@@ -763,8 +763,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2443:4422      P_NoiseAlert_
 2443:5836*     A_Fall_
 2443:5b62*     A_SpawnFly_
-2443:49f0*     A_Chase_
 2443:4bc0*     A_PosAttack_
+2443:49f0*     A_Chase_
 2443:4da0*     A_BspiAttack_
 2443:4499*     P_CheckMissileRange_
 2443:59c2*     A_BrainPain_
@@ -776,8 +776,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2443:4369      _floatok
 2443:53f6*     A_VileTarget_
 2443:4845*     P_LookForPlayers_
-2443:5abc*     A_BrainSpit_
 2443:5a4a*     A_BrainExplode_
+2443:5abc*     A_BrainSpit_
 2443:4564*     P_Move_
 2443:5352*     A_VileStart_
 2443:535f*     A_FireCrackle_
@@ -814,8 +814,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2443:46c5*     P_NewChaseDir_
 2443:5358*     A_StartFire_
 2443:4f3f*     A_Tracer_
-2443:4d02*     A_CPosRefire_
 2443:5614*     A_SkullAttack_
+2443:4d02*     A_CPosRefire_
 2443:42fe*     P_ENEMY_STARTMARKER_
 2443:4dbe*     A_TroopAttack_
 2443:57c1*     A_PainAttack_
@@ -936,18 +936,18 @@ Module: p_info.obj(p_info.ASM)
 2443:8cda      GetActiveSound_
 2443:8cec      GetPainSound_
 2443:8caa      GetRaiseState_
+2443:8d20      GetPainState_
 2443:8d0c      GetMissileState_
 2443:8c7a      GetMeleeState_
-2443:8d20      GetPainState_
 2443:8d58      GetDamage_
 2443:8d94*     P_INFO_ENDMARKER_
 2443:8cb6      GetMobjMass_
-2443:8d84      GetSpawnHealth_
 2443:8a6e*     P_INFO_STARTMARKER_
+2443:8d84      GetSpawnHealth_
 Module: am_map.obj(am_map.ASM)
 2443:8ecb*     FastMulTrig16Sine_
-2443:9013*     AM_findMinMaxBoundaries_
 2443:913a*     AM_clearMarks_
+2443:9013*     AM_findMinMaxBoundaries_
 2443:8e9c*     FastMulTrig16Cosine_
 2443:9093*     AM_changeWindowLoc_
 2443:9151*     AM_Start_
@@ -969,8 +969,8 @@ Module: am_map.obj(am_map.ASM)
 2443:9609*     AM_drawWalls_
 2443:9489*     DOOUTCODE_
 Module: p_math.obj(p_math.ASM)
-2443:9952*     ENSUREALIGN_903
 2443:99a4      FixedMulTrigNoShiftCosine_MapLocal_
+2443:9952*     ENSUREALIGN_903
 2443:9ae4*     ENSUREALIGN_904
 2443:9bce*     ENSUREALIGN_905
 2443:9ba0      FixedDiv_MapLocal_
@@ -1270,8 +1270,8 @@ Module: main.obj(main.ASM)
 2fee:5d06      locallib_dos_getvect_
 2fee:5bd6*     locallib_printdecimal_
 2fee:5b1d      copystr8_
-2fee:607f      getStringByIndex_
 2fee:5856*     M_SaveDefaults_
+2fee:607f      getStringByIndex_
 2fee:4ff9      _singletics
 2fee:5b36*     locallib_createhexnibble_
 2fee:5c61*     locallib_printf_
@@ -1663,4 +1663,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e700 (255744.)
 Entry point address: 2fee:807e
-Link time: 00:00.59
+Link time: 00:00.04

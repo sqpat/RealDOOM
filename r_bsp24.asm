@@ -2496,7 +2496,7 @@ mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 mov   bl, ch
 sal   bx, 1
 
-mov   ax, word ptr ds:[bx + _visplane_offset]
+mov   ax, word ptr ds:[bx + _visplane_offset] ; todo consider cs
 add   ax, OFFSET VISPLANE_T.vp_top
 
 mov   word ptr cs:[_ceiltop], ax
@@ -2516,7 +2516,7 @@ mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 mov   bl, ch
 sal   bx, 1
 
-mov   ax, word ptr ds:[bx + _visplane_offset]
+mov   ax, word ptr ds:[bx + _visplane_offset] ; todo consider cs
 add   ax, OFFSET VISPLANE_T.vp_top
 
 mov   word ptr cs:[_floortop], ax
