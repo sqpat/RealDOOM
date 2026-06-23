@@ -2746,7 +2746,10 @@ PROC   FixedMul_16_0_ NEAR
 PUBLIC FixedMul_16_0_
     ; DX.AX = AX.0 * CX.BX
 
-    XCHG AX, CX
+    MOV BL, BH
+    MOV BH, AL
+    MOV AL, AH
+    CBW
     MUL CX
     XCHG AX, CX
     CWD

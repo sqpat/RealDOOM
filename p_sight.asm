@@ -305,7 +305,7 @@ mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_5+1], ax
 
 adc   ax, 0
 
-mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_1+2], ax
+mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_1+1], ax
 mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_3+1], ax
 
 
@@ -923,120 +923,72 @@ openbottom_set:
 cmp   bx, cx
 jge   jump_to_cross_bsp_node_return_0_2
 
-push  bx
-push  si
-push  di
-
-
-
-
-; inlined P_InterceptVector2_
-
-SELFMODIFY_psight_strace_dx_lo_1:
-mov   bx, 01000h
-SELFMODIFY_psight_strace_dx_hi_1:
-mov   cx, 01000h
-
-
-mov   ax, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
-
-
-call  FixedMul_8_8_
-
-
-xchg ax, di
-mov  es, dx     ; es:di stores this
+PUSH BX
+PUSH SI
+PUSH DI
 
 SELFMODIFY_psight_strace_dy_lo_1:
-mov   bx, 01000h
+MOV  BX, 01000h
 SELFMODIFY_psight_strace_dy_hi_1:
-mov   cx, 01000h
-mov   ax, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+MOV  CX, 01000h
+LES  AX, DWORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+CALL FixedMul_8_8_ ; DX.AX = AH.AL * CX.BX
+XCHG AX, DI
+MOV  AX, ES ; NODE_T.n_dy
+MOV  ES, DX
+SELFMODIFY_psight_strace_dx_lo_1:
+MOV  BX, 01000h
+SELFMODIFY_psight_strace_dx_hi_1:
+MOV  CX, 01000h
+CALL FixedMul_8_8_ ; DX.AX = AH.AL * CX.BX
+SUB  AX, DI
+MOV  DI, ES
+SBB  DX, DI
 
-call  FixedMul_8_8_
+MOV  SI, AX
+OR   AX, DX
+JZ   denominator_0
 
+PUSH DX ; save high den
 
-sub   di, ax ; sub lo
-mov   ax, es ; sub hi
-sbb   ax, dx
-
-
-mov   es, ax  ; backup again
-or    ax, di
-cwd   ; if ax or bx is zero then dx is zero too
-je    denominator_0
-
-; es:di continues to hold intermediate
-
-push  es
-
-mov   ax, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_dy]
-mov   cx, word ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_x]
-
-
-SELFMODIFY_psight_strace_x_lo_1:
-mov   bx, 01000h
-SELFMODIFY_psight_strace_x_hi_1:
-sub   cx, 01000h
-
-mov   bl, bh
-mov   bh, cl
-mov   cl, ch
-rcl   ch, 1
-sbb   ch, ch ; sign extend
-
-
-
-call  FixedMul_16_0_
-
-push ax
-
-les   bx, dword ptr [bp - STACK_DIVLINE_POSITION + NODE_T.n_y]
-mov   ax, es
-mov   es, dx ; ds:es backs up this result
-
-mov   dx, bx ; swap register
+LES  DI, DWORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_x]  ; di has x dx has y
+MOV  DX, ES ; NODE_T.n_y
 
 SELFMODIFY_psight_strace_y_lo_1:
-mov   bx, 01000h
+MOV  BX, 01000h ; shrink to MOV BH?
 SELFMODIFY_psight_strace_y_hi_1:
-mov   cx, 01000h
-sub   cx, dx
+MOV  AX, 01000h
+SUB  AX, DX
 
+LES  CX, DWORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
 
-mov   bl, bh
-mov   bh, cl
-mov   cl, ch
-rcl   ch, 1
-sbb   ch, ch ; sign extend
+CALL FixedMul_16_0_ ; DX.AX = CX.0 * AX.BX
 
+XCHG AX, DI ; NODE_T.n_x
+MOV  CX, ES
+MOV  ES, DX
 
-call  FixedMul_16_0_
+SELFMODIFY_psight_strace_x_lo_1:
+MOV  BX, 01000h
+SELFMODIFY_psight_strace_x_hi_1:
+SUB  AX, 01000h
 
+CALL FixedMul_16_0_ ; DX.AX = CX.0 * AX.BX
 
-pop   cx
+MOV  BX, SI
+POP  CX ; high den
 
-add   ax, cx
-mov   cx, es
-adc   dx, cx
+MOV  SI, ES
 
-pop   cx
+ADD  AX, DI
+ADC  DX, SI
 
-mov   bx, di
+CALL FixedDiv_MapLocal_
 
-call  FixedDiv_MapLocal_
-
-
-
-denominator_0: ; dx was set as zero.
-
-; end of vector calculation
-
-
-pop   di
-pop   si
-pop   bx
-
+denominator_0:
+POP  DI
+POP  SI
+POP  BX
 
 mov   word ptr [bp - 6], ax	; store frac
 mov   word ptr [bp - 4], dx
