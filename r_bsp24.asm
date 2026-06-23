@@ -291,6 +291,12 @@ _CURRENT_LINE_TEXTURE_HEIGHT:
 PUBLIC _CURRENT_LINE_TEXTURE_HEIGHT
 dw 128  ; only use first byte
 
+_visplane_offset:
+dw 	0, 646 ,1292, 1938, 2584
+dw	3230,  3876, 4522, 5168, 5814 
+dw	6460,  7106, 7752, 8398, 9044
+dw	9690,  10336, 10982, 11628, 12274 
+dw	12920,  13566, 14212, 14858, 15504
 
 
 PUSHA_NO_AX_OR_BP_OR_DX_MACRO MACRO
@@ -2496,7 +2502,7 @@ mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 mov   bl, ch
 sal   bx, 1
 
-mov   ax, word ptr ds:[bx + _visplane_offset] ; todo consider cs
+mov   ax, word ptr cs:[bx + _visplane_offset] ; todo consider cs
 add   ax, OFFSET VISPLANE_T.vp_top
 
 mov   word ptr cs:[_ceiltop], ax
@@ -2516,7 +2522,7 @@ mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 mov   bl, ch
 sal   bx, 1
 
-mov   ax, word ptr ds:[bx + _visplane_offset] ; todo consider cs
+mov   ax, word ptr cs:[bx + _visplane_offset] ; todo consider cs
 add   ax, OFFSET VISPLANE_T.vp_top
 
 mov   word ptr cs:[_floortop], ax

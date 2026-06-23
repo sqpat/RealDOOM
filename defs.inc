@@ -88,7 +88,8 @@ _clipangle =				         _NULL_OFFSET + 0001Ch
 _fieldofview =				         _NULL_OFFSET + 0001Eh
 
 _myargc =				 	 	     _NULL_OFFSET + 00020h
-; todo 22-23 unused
+_snd_DesiredSfxDevice =              _NULL_OFFSET + 00022h ; THESE MUST BE ADJACENT
+_snd_DesiredMusicDevice =            _NULL_OFFSET + 00023h ; THESE MUST BE ADJACENT
 
 _mousearray = 						 _NULL_OFFSET + 00024h
 _mousebuttons = 					 _NULL_OFFSET + 00025h
@@ -301,7 +302,34 @@ _tmthing_pos =                      _NULL_OFFSET + 001A8h
 _playingtime =		                _NULL_OFFSET + 001ACh
 _active_visplanes =             	_NULL_OFFSET + 001B0h
 _wipegamestate =                    _NULL_OFFSET + 001B5h
-_visplane_offset =              	_NULL_OFFSET + 001B6h
+
+
+_screen_botleft_x =				    _NULL_OFFSET + 001B6h
+_screen_botleft_y =				    _NULL_OFFSET + 001B8h
+_screen_topright_x =				_NULL_OFFSET + 001BAh
+_screen_topright_y =			    _NULL_OFFSET + 001BCh
+_caststate =                        _NULL_OFFSET + 001BEh
+
+_pspriteiscale =                    _NULL_OFFSET + 001C0h
+_STATES_SEGMENT_PTR =               _NULL_OFFSET + 001C4h
+_currentsong_start_offset =         _NULL_OFFSET + 001C6h
+_playingdriver =                    _NULL_OFFSET + 001C8h
+_currentsong_playing_offset =       _NULL_OFFSET + 001CCh
+_currentsong_ticks_to_process =     _NULL_OFFSET + 001CEh
+_loops_enabled =    			    _NULL_OFFSET + 001D0h
+_inhelpscreens =    			    _NULL_OFFSET + 001D1h
+
+_gametime = 				        _NULL_OFFSET + 001D2h
+_maketic = 				            _NULL_OFFSET + 001D6h
+_starttime = 				        _NULL_OFFSET + 001D8h
+
+_snd_SBport =                        _NULL_OFFSET + 001DAh
+_shootz =				 			 _NULL_OFFSET + 001DCh
+_snd_Mport =                         _NULL_OFFSET + 001E0h
+_snd_SBirq =              			 _NULL_OFFSET + 001E2h ; THESE MUST BE ADJACENT
+_snd_SBdma =              			 _NULL_OFFSET + 001E3h ; THESE MUST BE ADJACENT
+_I_Quit_addr = 			             _NULL_OFFSET + 001E4h
+
 _dirtybox =              			_NULL_OFFSET + 001E8h
 _ticcount =			              	_NULL_OFFSET + 001F0h
 _R_FlatNumForName_addr =             _NULL_OFFSET + 001F4h
@@ -510,46 +538,20 @@ _bmaporgy =				             _NULL_OFFSET + 004B2h
 _I_Error_addr =                      _NULL_OFFSET + 004B4h
 _P_InitThinkers_addr =               _NULL_OFFSET + 004B8h
 
-_snd_DesiredSfxDevice =              _NULL_OFFSET + 004BCh
-_snd_DesiredMusicDevice =            _NULL_OFFSET + 004BDh
-_snd_SBirq =              			 _NULL_OFFSET + 004BEh
-_snd_SBdma =              			 _NULL_OFFSET + 004BFh
 
 
-_cached_playerMobj_x_highbits =      _NULL_OFFSET + 004C0h
-_cached_playerMobj_y_highbits =  	 _NULL_OFFSET + 004C2h
+_cached_playerMobj_x_highbits =      _NULL_OFFSET + 004BCh
+_cached_playerMobj_y_highbits =  	 _NULL_OFFSET + 004BEh
 
-_shootz =				 			 _NULL_OFFSET + 004C4h
+;todo 4c0 to 4d0 free
 
-_snd_SBport =                        _NULL_OFFSET + 004C8h
-_snd_Mport =                         _NULL_OFFSET + 004CAh
-_I_Quit_addr = 			             _NULL_OFFSET + 004CCh
+
 
 ; 52 bytes
 _player_message_string =  			 _NULL_OFFSET + 004D0h ; todo physics move candidate
 
-_screen_botleft_x =				     _NULL_OFFSET + 00504h
-_screen_botleft_y =				     _NULL_OFFSET + 00506h
-_screen_topright_x =				 _NULL_OFFSET + 00508h
-_screen_topright_y =			     _NULL_OFFSET + 0050Ah
 
-_pspriteiscale =                     _NULL_OFFSET + 0050Ch
-_caststate =                         _NULL_OFFSET + 00510h
-_STATES_SEGMENT_PTR =                _NULL_OFFSET + 00512h
-_playingdriver =                     _NULL_OFFSET + 00514h
-_currentsong_start_offset =          _NULL_OFFSET + 00518h
-_currentsong_playing_offset =        _NULL_OFFSET + 0051Ah
-_currentsong_ticks_to_process =      _NULL_OFFSET + 0051Ch
-_loops_enabled =    			     _NULL_OFFSET + 0051Eh
-_inhelpscreens =    			     _NULL_OFFSET + 0051Fh
-
-
-
-_gametime = 				         _NULL_OFFSET + 00520h
-_maketic = 				             _NULL_OFFSET + 00524h
-_starttime = 				         _NULL_OFFSET + 00526h
-
-;528-530 unused...
+; todo 504-530 unused...
 
 
 ; ceilings plats buttonlist

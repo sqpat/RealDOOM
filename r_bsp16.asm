@@ -63,6 +63,7 @@ _ceilphyspage =   0
 _visplanedirty =  0
 _lastopening =  0
 _r_cachedplayerMobjsecnum = 0
+_visplane_offset = 0
 
 ; JUMP TABLE OFFSETS
 COLFUNC_JUMP_LOOKUP_OFFSET	     = 0

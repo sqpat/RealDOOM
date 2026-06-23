@@ -84,6 +84,7 @@ _lastopening =  0
 _segloopprevlookup =  0
 _segloopcachedbasecol =  0
 _cachedsegmenttex =  0
+_visplane_offset = 0
 
 
 dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT + 0000h
