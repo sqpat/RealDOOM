@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/23 10:00:17
+Created on:       26/06/23 10:15:34
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          064f:0000            00001160
+DGROUP                          064f:0000            00001130
 
 
 
@@ -51,9 +51,9 @@ W_WAD_TEXT             CODE           AUTO           0000:5e0e       0000031b
 V_VIDEO_TEXT           CODE           AUTO           0000:612a       000000f8
 Z_ZONE_TEXT            CODE           AUTO           0000:6222       000002ce
 _NULL                  BEGDATA        DGROUP         064f:0000       00000010
-_FIXEDDATA             DATA           DGROUP         0650:0000       00000d50
-_DATA                  DATA           DGROUP         0725:0000       00000000
-STACK                  STACK          DGROUP         0725:0000       00000400
+_FIXEDDATA             DATA           DGROUP         0650:0000       00000d14
+_DATA                  DATA           DGROUP         0721:0004       00000000
+STACK                  STACK          DGROUP         0722:0000       00000400
 
 
                         +----------------+
@@ -281,9 +281,9 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 0000:4f57*     S_DecreaseRefCount_
 0000:5972      SB_ResetDSP_
 0000:4cc3*     _SB_IntController1Mask
-0000:4cc6      _SB_OriginalVoiceVolumeRight
 0000:5957      SB_StopPlayback_
 0000:4cc2      _SB_IntController2Mask
+0000:4cc6      _SB_OriginalVoiceVolumeRight
 0000:5474*     S_NormalizeSfxVolume_
 0000:59f9*     S_SBFX_ENDMARKER_
 0000:5933*     SB_DMA_EndTransfer_
@@ -374,6 +374,6 @@ Module: z_zone.obj(z_zone.ASM)
                         +-----------------------+
 
 Stack size:  0400 (1024.)
-Memory size:  7650 (30288.)
+Memory size:  7620 (30240.)
 Entry point address: 0000:0000
 Link time: 00:00.10

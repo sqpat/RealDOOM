@@ -543,70 +543,66 @@ _P_InitThinkers_addr =               _NULL_OFFSET + 004B8h
 _cached_playerMobj_x_highbits =      _NULL_OFFSET + 004BCh
 _cached_playerMobj_y_highbits =  	 _NULL_OFFSET + 004BEh
 
-;todo 4c0 to 4d0 free
 
 
 
 ; 52 bytes
-_player_message_string =  			 _NULL_OFFSET + 004D0h ; todo physics move candidate
+_player_message_string =  			 _NULL_OFFSET + 004C0h ; todo physics move candidate
 
-
-; todo 504-530 unused...
-
-
+; 3c
 ; ceilings plats buttonlist
 ; todo move this high when possible
 ;3c or 60 bytes
-_activeceilings =                    _NULL_OFFSET + 00530h  ; THESE HAVE TO BE ADJACENT
+_activeceilings =                    _NULL_OFFSET + 004F4h  ; THESE HAVE TO BE ADJACENT
 ;24 or 36 bytes
-_buttonlist =                        _NULL_OFFSET + 0056Ch  ; THESE HAVE TO BE ADJACENT
+_buttonlist =                        _NULL_OFFSET + 00530h  ; THESE HAVE TO BE ADJACENT
 ;3c or 60 bytes
-_activeplats =                       _NULL_OFFSET + 00590h  ; THESE HAVE TO BE ADJACENT
-
-; 5CC
-
-_mtof_zoommul =        			     _NULL_OFFSET + 005CCh
-_ftom_zoommul =        			     _NULL_OFFSET + 005CFh
-
-
-_solidsegs = 			         	 _NULL_OFFSET + 005D0h
-_player = 						 	 _NULL_OFFSET + 00670h
+_activeplats =                       _NULL_OFFSET + 00554h  ; THESE HAVE TO BE ADJACENT
 
 
 
-
-;6D3 free todo
-
-
-; 6D4
-_hu_font =	 	      			     _NULL_OFFSET + 006D4h ; 7E in size
-
-; 752
-
-_sfxcache_head =                    _NULL_OFFSET + 00752h
-_sfxcache_tail =                    _NULL_OFFSET + 00753h
+_mtof_zoommul =        			     _NULL_OFFSET + 00590h
+_ftom_zoommul =        			     _NULL_OFFSET + 00592h
 
 
-_activespritepages =                 _NULL_OFFSET + 00754h
-_activespritenumpages =              _NULL_OFFSET + 00758h
-_spriteL1LRU =                 		 _NULL_OFFSET + 0075Ch
-_spritecache_l2_head =               _NULL_OFFSET + 00760h
-_spritecache_l2_tail =               _NULL_OFFSET + 00761h
-_texturecache_l2_head =              _NULL_OFFSET + 00762h
-_texturecache_l2_tail =              _NULL_OFFSET + 00763h
-_flatcache_l2_head =                 _NULL_OFFSET + 00764h
-_flatcache_l2_tail =                 _NULL_OFFSET + 00765h
-_activetexturepages =                _NULL_OFFSET + 00766h
-_activenumpages =                 	 _NULL_OFFSET + 00770h
-_textureL1LRU =                 	 _NULL_OFFSET + 0077Ah ; 8 or 10 in size.. 
+_solidsegs = 			         	 _NULL_OFFSET + 00594h
+_player = 						 	 _NULL_OFFSET + 00634h
 
 
-; 708
+
+
+;697 free todo
+
+
+; 698
+_hu_font =	 	      			     _NULL_OFFSET + 00698h ; 7E in size
+
+; 716
+
+_sfxcache_head =                    _NULL_OFFSET + 00716h
+_sfxcache_tail =                    _NULL_OFFSET + 00717h
+
+
+_activespritepages =                 _NULL_OFFSET + 00718h
+_activespritenumpages =              _NULL_OFFSET + 0071Ch
+_spriteL1LRU =                 		 _NULL_OFFSET + 00720h
+_spritecache_l2_head =               _NULL_OFFSET + 00724h
+_spritecache_l2_tail =               _NULL_OFFSET + 00725h
+_texturecache_l2_head =              _NULL_OFFSET + 00726h
+_texturecache_l2_tail =              _NULL_OFFSET + 00727h
+_flatcache_l2_head =                 _NULL_OFFSET + 00728h
+_flatcache_l2_tail =                 _NULL_OFFSET + 00729h
+_activetexturepages =                _NULL_OFFSET + 0072Ah
+_activenumpages =                 	 _NULL_OFFSET + 00734h
+_textureL1LRU =                 	 _NULL_OFFSET + 0073Eh ; 8 or 10 in size.. 
+
+
+
 ; max args = 20 including program name i guess. should be enough? maybe too much.
-_myargv = 	   	  					 _NULL_OFFSET + 00784h ; 3c currently... including 010 gap?
+_myargv = 	   	  					 _NULL_OFFSET + 00748h ; 3c currently... including 010 gap?
 
 
-_flatcache_nodes =				     _NULL_OFFSET + 007C0h
+_flatcache_nodes =				     _NULL_OFFSET + 00784h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

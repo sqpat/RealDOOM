@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/23 10:00:16
+Created on:       26/06/23 10:15:33
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -207,9 +207,9 @@ Module: m_menu.obj(m_menu.ASM)
 015f:0788*     M_Sound_
 015f:1044      M_Drawer_
 015f:0cd3*     M_WriteText_
-015f:0453*     M_ReadSaveStrings_
 015f:138f*     M_Z_QuickmapStatus_
 015f:0a36*     M_ReadThis_
+015f:0453*     M_ReadSaveStrings_
 015f:08f4*     M_Episode_
 015f:05ff*     M_QuickSave_
 015f:09d5*     M_EndGameResponse_
@@ -518,6 +518,7 @@ Module: r_span24.obj(r_span24.ASM)
 19f9:0cf4*     single_plane_draw_loop
 19f9:0d46*     ENSUREALIGN_404
 19f9:09b4*     ENSUREALIGN_400
+19f9:09a4*     ENSUREALIGN_401
 19f9:012d*     ENSUREALIGN_406
 19f9:0996*     ENSUREALIGN_407
 19f9:022d*     ENSUREALIGN_409
@@ -525,7 +526,6 @@ Module: r_span24.obj(r_span24.ASM)
 19f9:0144*     ENSUREALIGN_408
 19f9:0d88*     ENSUREALIGN_403
 19f9:0988*     ENSUREALIGN_410
-19f9:09a4*     ENSUREALIGN_401
 19f9:0c7b*     SELFMODIFY_SPAN_viewz_13_3_1
 19f9:023b*     SELFMODIFY_SELECT_port_routine
 19f9:0e97*     SELFMODIFY_SPAN_lookuppicnum
@@ -582,32 +582,32 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dd9:153b*     ENSUREALIGN_101
 1dd9:0f7a*     FastDiv3232FFFF_
 1dd9:0b1e*     ENSUREALIGN_111
-1dd9:05a4*     ENSUREALIGN_101_sprite
 1dd9:0a60*     ENSUREALIGN_113
+1dd9:05a4*     ENSUREALIGN_101_sprite
+1dd9:12a3*     ENSUREALIGN_122
 1dd9:093c*     ENSUREALIGN_120
 1dd9:0b83*     ENSUREALIGN_110
-1dd9:12a3*     ENSUREALIGN_122
-1dd9:033f*     ENSUREALIGN_129
-1dd9:097a*     ENSUREALIGN_117
 1dd9:0921*     ENSUREALIGN_119
-1dd9:112a*     ENSUREALIGN_121
-1dd9:098a*     ENSUREALIGN_118
+1dd9:033f*     ENSUREALIGN_129
 1dd9:05d2*     ENSUREALIGN_130
 1dd9:044c*     ENSUREALIGN_132
 1dd9:0408*     ENSUREALIGN_133
-1dd9:0bcb*     ENSUREALIGN_115
+1dd9:098a*     ENSUREALIGN_118
 1dd9:098d*     ENSUREALIGN_116
 1dd9:12f8*     ENSUREALIGN_123
+1dd9:0bcb*     ENSUREALIGN_115
+1dd9:097a*     ENSUREALIGN_117
+1dd9:112a*     ENSUREALIGN_121
 1dd9:1237*     ENSUREALIGN_126
+1dd9:14c3*     ENSUREALIGN_127
 1dd9:14b1*     ENSUREALIGN_131
 1dd9:1517*     ENSUREALIGN_107
-1dd9:14c3*     ENSUREALIGN_127
 1dd9:14e9*     ENSUREALIGN_108
 1dd9:1533*     ENSUREALIGN_105
 1dd9:0695*     three_page_sprite
 1dd9:0418*     ENSUREALIGN_135
-1dd9:1521*     ENSUREALIGN_104
 1dd9:0512*     ENSUREALIGN_132_sprite
+1dd9:1521*     ENSUREALIGN_104
 1dd9:0440*     ENSUREALIGN_134
 1dd9:1301*     ENSUREALIGN_124
 1dd9:051a*     ENSUREALIGN_131_sprite
@@ -788,10 +788,10 @@ Module: p_enemy.obj(p_enemy.ASM)
 2449:436c*     P_RecursiveSound_
 2449:4437*     P_CheckMeleeRange_
 2449:49eb*     A_Hoof_
-2449:55f9*     A_FatAttack2_
 2449:5580*     A_FatAttack3_
-2449:4ef4*     A_SkelMissile_
+2449:55f9*     A_FatAttack2_
 2449:5b5d*     A_SpawnSound_
+2449:4ef4*     A_SkelMissile_
 2449:55de*     A_FatAttack1_
 2449:4947*     A_Look_
 2449:49e4*     A_BabyMetal_
@@ -814,8 +814,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2449:46c5*     P_NewChaseDir_
 2449:5358*     A_StartFire_
 2449:4f3f*     A_Tracer_
-2449:5614*     A_SkullAttack_
 2449:4d02*     A_CPosRefire_
+2449:5614*     A_SkullAttack_
 2449:42fe*     P_ENEMY_STARTMARKER_
 2449:4dbe*     A_TroopAttack_
 2449:57c1*     A_PainAttack_
@@ -896,8 +896,8 @@ Module: p_spec.obj(p_spec.ASM)
 2449:77a8      P_FindMinSurroundingLight_
 2449:75f8*     getNextSectorList_
 2449:7770      P_FindSectorsFromLineTag_
-2449:7b18      P_ShootSpecialLine_
 2449:7922      P_CrossSpecialLine_
+2449:7b18      P_ShootSpecialLine_
 2449:7efc      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
 2449:8328*     P_SWITCH_ENDMARKER_
@@ -1314,9 +1314,9 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 2ff5:6923*     S_DecreaseRefCount_
 2ff5:733e      SB_ResetDSP_
 2ff5:668f*     _SB_IntController1Mask
-2ff5:6692      _SB_OriginalVoiceVolumeRight
 2ff5:7323      SB_StopPlayback_
 2ff5:668e      _SB_IntController2Mask
+2ff5:6692      _SB_OriginalVoiceVolumeRight
 2ff5:6e40*     S_NormalizeSfxVolume_
 2ff5:73c5*     S_SBFX_ENDMARKER_
 2ff5:72ff*     SB_DMA_EndTransfer_
