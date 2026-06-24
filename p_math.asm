@@ -2784,12 +2784,18 @@ PUBLIC FixedMul_16_0_
 ;    shrd  cx, bx, 8
 ;    shr   cx, 8
 
-    SHL EAX, 16
-    SHL ECX, 16
-    MOV CX, BX
-    IMUL ECX
-    SHR EAX, 16
-    RET
+
+    CWDE
+    SHL   EAX, 8
+    MOV   AL, BH
+    MOVSX ECX, CX
+  
+    IMUL  ECX
+  
+    SHLD  EDX, EAX, 8
+    SHR   EAX, 8
+    ret 
+
 ENDP
 
 
