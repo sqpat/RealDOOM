@@ -398,7 +398,7 @@ SHIFT_MACRO shl       bx 4
 
 mov       di, word ptr es:[bx + LUMPINFO_T.lumpinfo_size]  ; di has size
 
-cmp       si, 1
+cmp       si, 1             ; TODO! colormaps is different in other games... selfmodify this?
 je        do_colormaps_size
 got_lump_size:
 
@@ -446,7 +446,7 @@ mov       bx, dx   ; get position low
 ;	startoffset = l->position + start;
 
 SELFMODIFY_set_start_offset_low:
-mov       si, 0h
+mov       si, 0
 add       bx, si
 SELFMODIFY_add_start_offset_high:
 db 081h, 0D1h, 00, 00       ; 81 D1 00 00    ; adc cx, 0

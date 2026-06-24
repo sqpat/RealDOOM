@@ -1339,10 +1339,11 @@ cmp     word ptr es:[si + MAPTHING_T.mapthing_type], 1
 je      set_player_stuff
 
 
+mov     ax, word ptr es:[si + MAPTHING_T.mapthing_type]
+
 test    bl, bl
 jne     just_do_spawn
 
-mov     ax, word ptr es:[si + MAPTHING_T.mapthing_type]
 
 cmp     ax, 68           ; Arachnotron
 je      end_spawns_early
@@ -1369,6 +1370,9 @@ je      end_spawns_early
 done_with_player_setup:
 just_do_spawn:
 
+cmp     ax, 24           ; Pool Of Blood (Buggy!)
+je      skip_this_thing  ; TODO hack.
+
 
 ; todo clean up
 push    word ptr es:[si+8]
@@ -1383,6 +1387,7 @@ dw      P_SPAWNMAPTHINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 inc     di
+skip_this_thing:
 add     si, SIZE MAPTHING_T
 loop    loop_next_thing
 
@@ -1948,9 +1953,9 @@ mov   si, SECTOR_T.sec_floorheight
 mov   ax, 16 SHL 3
 
 check_next_sector_floor:
-cmp   word ptr ds:[si], ax
+cmp   byte ptr ds:[si], al ; 16 << 3 = 128, fits in one byte
 jne   dont_modify_sector
-mov   word ptr ds:[si], 0
+mov   byte ptr ds:[si], ah ; 0
 dont_modify_sector:
 add   si, SIZE SECTOR_T
 loop  check_next_sector_floor
