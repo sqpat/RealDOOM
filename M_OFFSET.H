@@ -87,5 +87,5 @@
 #define SaveLoadCodeSize               0xB93
 #define SMLoadCodeSize                 0x492
 #define SInitCodeSize                  0x553
-#define PSetupCodeSize                 0xA91
+#define PSetupCodeSize                 0xA98
 #define MaximumMusDriverSize           0x100E

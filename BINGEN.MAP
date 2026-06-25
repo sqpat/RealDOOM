@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/25 09:54:19
+Created on:       26/06/25 10:10:34
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -30,7 +30,7 @@ M_MENU_TEXT            CODE           AUTO           015f:0000       00001555
 F_WIPE_TEXT            CODE           AUTO           02b5:0000       000005fa
 F_FINALE_TEXT          CODE           AUTO           0315:0000       00000b97
 P_SAVEG_TEXT           CODE           AUTO           03cf:0000       00000b93
-P_SETUP_TEXT           CODE           AUTO           0489:0000       00000a91
+P_SETUP_TEXT           CODE           AUTO           0489:0000       00000a98
 SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
@@ -292,16 +292,16 @@ Module: p_setup.obj(p_setup.ASM)
 0489:020d*     P_LoadLineDefs_
 0489:048c*     P_GroupLines_
 0489:0361*     P_LoadNodes_
-0489:06ee*     Z_FreeConventionalAllocations_
+0489:06f5*     Z_FreeConventionalAllocations_
 0489:05db*     P_LoadThings_
-0489:0a91      P_SETUP_ENDMARKER_
+0489:0a98      P_SETUP_ENDMARKER_
 0489:001c*     P_LoadSectors_
-0489:069c*     R_LoadPatchColumnsColormap0_
+0489:06a3*     R_LoadPatchColumnsColormap0_
 0489:0000      P_SETUP_STARTMARKER_
 0489:03c3*     P_LoadSegs_
 0489:0000*     P_LoadVertexes_
 0489:0310*     P_LoadSubsectors_
-0489:0834      P_SetupLevel_
+0489:083b      P_SetupLevel_
 0489:01cd*     P_LoadBlockMap_
 0489:010e*     P_LoadSideDefs_
 Module: sm_opl2.obj(sm_opl2.ASM)

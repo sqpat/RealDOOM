@@ -1370,9 +1370,13 @@ je      end_spawns_early
 done_with_player_setup:
 just_do_spawn:
 
+cmp   byte ptr ds:[_gamemap], 31
+jne   skip_blodpool_hack
+
 cmp     ax, 24           ; Pool Of Blood (Buggy!)
 je      skip_this_thing  ; TODO hack. This lump when read for some reason causes DOS file interrupt to go into infinite loop. Only(?) used in map 31?
 
+skip_blodpool_hack:
 
 ; todo clean up
 push    word ptr es:[si+8]
