@@ -3608,9 +3608,9 @@ mov   word ptr ds:[si + VISSPRITE_T.vs_patch], bx
 
 mov   ax, SPRITETOPOFFSETS_SEGMENT
 mov   es, ax
+cwd   ; clear dx, ah high is zero
 mov   al, byte ptr es:[bx]
-xor   dx, dx
-cbw  
+cbw
 
 ; todo maybe vis = &vissprites[vissprite_p - 1];
 
@@ -3620,13 +3620,14 @@ cbw
 ;    }
 
 
-cmp   ax, 0FF80h				; -128
+cmp   al, 080h				; -128
 je   set_intbits_to_129    ; hacky special case.
+
 intbits_ready:
 ;	vis->gzt.w = vis->gz.w + temp.w;
 mov   bx, word ptr ds:[si + VISSPRITE_T.vs_gz + 0]
 add   ax, word ptr ds:[si + VISSPRITE_T.vs_gz + 2]
-;mov   word ptr ds:[si + VISSPRITE_T.vs_gzt + 0], bx  ; todo its just the same as gz.
+;mov   word ptr ds:[si + VISSPRITE_T.vs_gzt + 0], bx  ;  its just the same as gz.
 mov   word ptr ds:[si + VISSPRITE_T.vs_gzt + 2], ax
 
 ;    vis->texturemid = vis->gzt.w - viewz.w;
@@ -3669,7 +3670,6 @@ flip_zero: ; zero case
 mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; 0
 mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax ; 0
 jmp   flip_stuff_done
-ALIGN_MACRO
 
 set_intbits_to_129:
 mov   ax, 129
@@ -3678,15 +3678,17 @@ jmp intbits_ready
 ALIGN_MACRO
 
 flip_not_zero:
-dec   ax
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; -1
 
 SELFMODIFY_set_usedwidth:
 mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], 01000h
 
 neg   cx
 neg   bx
-sbb   cx, 0
+sbb   cx, ax ; zero
+
+dec   ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; -1
+
 
 flip_stuff_done:
 
@@ -7766,6 +7768,7 @@ add       ax, 0FFFFh ; HEIGHTUNIT -1 preshifted 4
 adc       cx, 0
 ; todo should this be here... ? remove from other spot...?
 mov       byte ptr ds:[SELFMODIFY_BSP_bottexture], 0B8h   ; mov   ax, imm16
+; todo need a neg check here?
 mov       word ptr ds:[SELFMODIFY_BSP_bottexture+1], cx   ; this's presence break things! instructions too big??
 mov       word ptr ds:[_cs_pixlow], ax
 
@@ -8014,12 +8017,14 @@ IF COMPISA GE COMPILE_386
    shr  eax, 16
 
 
+   ; TODO! 386 overflow checks.
+
 
 ELSE
 
-   les       bx, dword ptr [bp - 02Eh + SSD]
+   les       bx, dword ptr [bp - 02Eh + SSD] ; rw_scale
    mov       cx, es
-   les       ax, dword ptr [bp - 026h + SSD]
+   les       ax, dword ptr [bp - 026h + SSD] ; worldtop
    jcxz      do_16_bit_rw_scale_mul_worldtophi_bottop
 
    ; si:ax by cx:bx
@@ -8048,7 +8053,7 @@ ELSE
    ADD  AX, CX
    ADC  DX, SI
    TEST DH, 0C0h
-   JPE  done_with_rw_scale_mul_worldtophi_bottop
+   JPE  done_with_rw_scale_mul_worldtophi_top
    
    ; overflow only possible if cx is nonzero 
 
@@ -8061,29 +8066,30 @@ ELSE
 
 
    ;check to see if sign overflowed...
-   overflow_check:
-   public overflow_check
+   overflow_check_top:
+   public overflow_check_top
    ; si reg is free...
    mov   cl, byte ptr [bp - 023h + SSD]
    xor   cl, byte ptr [bp - 02Bh + SSD]
    
-   xor   cl, dh  ; si should have correct sign; compare to result
-   jns   done_with_rw_scale_mul_worldtophi_bottop    ; correct sign, ignore. 
+   xor   cl, dh  ; cl should have correct sign; compare to result
+   jns   done_with_rw_scale_mul_worldtophi_top    ; correct sign, ignore. 
    ; adjust DX...
    
+   ; NOTE: in this path the scale numbers are kind of out of bounds and we assume low frac doesnt matter and we dont selfmodify.
+
    test  dx, dx
-   mov   dx, 07FFFh ; if it was signed then make this MAX_INT
-   js    done_with_rw_scale_mul_worldtophi_bottop ; we made it nonsigned..
-   inc   dx         ; if it was unsigned then make it MIN_INIT
-   jmp   done_with_rw_scale_mul_worldtophi_bottop
+   mov   cx, 08000h ; if it was signed, its supposed to be unsigned, then make this MAX_INT
+   js    done_with_rw_scale_mul_worldtophi_top_skip_frac ; we made it nonsigned..
+   dec   cx         ; if it was unsigned then its supposed to be signed, then make it MIN_INT
+   jmp   done_with_rw_scale_mul_worldtophi_top_skip_frac
    
    ; only need to do this if worldtop is large?
    enable_overflow_checks:
    ; turn on later overflow checks.
-   mov    byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_2], 0E9h  ; jmp 3 byte opcode
-   ; todo not sure this one is necessary
-   ; turn on later overflow checks.   
-   ;mov    byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_1], 0E9h  ; jmp 3 byte opcode
+   mov    byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_top], 0E9h  ; jmp 3 byte opcode
+   ;mov    byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_bot], 0E9h  ; jmp 3 byte opcode
+
    jmp   done_with_overflow_enable
 
 
@@ -8137,12 +8143,33 @@ ELSE
    jmp       done_with_rw_scale_mul_worldbothi_bottop
 
 
+   overflow_check_bot:
+   public overflow_check_bot
+   ; si reg is free...
+   mov   cl, byte ptr [bp - 027h + SSD]
+   xor   cl, byte ptr [bp - 02Bh + SSD]
+   
+   xor   cl, dh  ; cl should have correct sign; compare to result
+   jns   done_with_rw_scale_mul_worldbothi_bottop    ; correct sign, ignore. 
+   ; adjust DX...
+   
+   ; NOTE: in this path the scale numbers are kind of out of bounds and we assume low frac doesnt matter and we dont selfmodify.
+
+   ; todo: would be better to set delta to 0 instead in this case so slope never changes and always stays guaranteed offscreen
+
+   test  dx, dx
+   mov   ax, 07FFFh ; if it was signed, its supposed to be unsigned, then make this MAX_INT
+   js    done_with_rw_scale_mul_worldbothi_bottop_skip_frac ; we made it nonsigned..
+   inc   ax         ; if it was unsigned then its supposed to be signed, then make it MIN_INT
+   jmp   done_with_rw_scale_mul_worldbothi_bottop_skip_frac
+
+
 ENDIF
 
-done_with_rw_scale_mul_worldtophi_bottop:
-
+done_with_rw_scale_mul_worldtophi_top:
+public done_with_rw_scale_mul_worldtophi_top
 ;end inlined FixedMulBSPLocal_
-; not ok
+
 neg       ax
 SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED:
 mov       cx, 01000h ; ah known zero. dh too probably?
@@ -8150,6 +8177,7 @@ sbb       cx, dx
 add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
 mov       word ptr ds:[_cs_topfrac_lo], ax
 adc       cx, 0
+done_with_rw_scale_mul_worldtophi_top_skip_frac:
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
 
 
@@ -8164,14 +8192,15 @@ IF COMPISA GE COMPILE_386
    imul  dword ptr [bp - 02Eh + SSD]  ; todo reuse from last mul
    shr  eax, 16
 
+   ; TODO! 386 overflow checks.
 
 
 ELSE
 ; si not preserved
 
-   les       ax, dword ptr [bp - 02Ah + SSD]
+   les       ax, dword ptr [bp - 02Ah + SSD] ; worldbottom
    mov       si, es
-   les       bx, dword ptr [bp - 02Eh + SSD]
+   les       bx, dword ptr [bp - 02Eh + SSD] ; rw_scale
    mov       cx, es
 
    MOV  ES, AX ; todo synergy
@@ -8194,6 +8223,8 @@ ELSE
    MUL  BX
    ADD  AX, CX
    ADC  DX, SI
+   TEST DH, 0C0h
+   JPO  overflow_check_bot
 
 ENDIF
 
@@ -8204,9 +8235,11 @@ done_with_rw_scale_mul_worldbothi_bottop:
 neg       ax
 mov       word ptr ds:[_cs_botfrac_lo], ax
 
+
 SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
+done_with_rw_scale_mul_worldbothi_bottop_skip_frac:
 
 ; todo dont calculate this if we do no columns to draw below.
 
@@ -8327,11 +8360,12 @@ ENDIF
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+4], dx
 
+
 ; todo not sure this one is necessary
 COMMENT @
-public  SELFMODIFY_BSP_do_overflow_bugfix_detection_1
-SELFMODIFY_BSP_do_overflow_bugfix_detection_1:
-mov       ax, (OFFSET SELFMODIFY_BSP_do_overflow_bugfix_detection_1_TARGET - SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER)
+public  SELFMODIFY_BSP_do_overflow_bugfix_detection_bot
+SELFMODIFY_BSP_do_overflow_bugfix_detection_bot:
+mov       ax, (OFFSET SELFMODIFY_BSP_do_overflow_bugfix_detection_bot_TARGET - SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER)
 SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER:
 @
 
@@ -8398,9 +8432,9 @@ mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], ax
 
 
 
-SELFMODIFY_BSP_do_overflow_bugfix_detection_2:
-mov       ax, (OFFSET SELFMODIFY_BSP_do_overflow_bugfix_detection_2_TARGET - SELFMODIFY_BSP_do_overflow_bugfix_detection_2_AFTER)
-SELFMODIFY_BSP_do_overflow_bugfix_detection_2_AFTER:
+SELFMODIFY_BSP_do_overflow_bugfix_detection_top:
+mov       ax, (OFFSET SELFMODIFY_BSP_do_overflow_bugfix_detection_top_TARGET - SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER)
+SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER:
 
 
 
@@ -8505,7 +8539,7 @@ SELFMODIFY_add_topstep_lo_TWOSIDED:
 sub   word ptr ds:[_cs_topfrac_lo], 01000h
 SELFMODIFY_add_topstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], 01000h
-SELFMODIFY_adjust_topstep_overflow_branch:
+SELFMODIFY_adjust_topstep_overflow_branch_top:
 mov   cl, (OFFSET adjust_topstep - OFFSET continue_subs_after_top)  ; may be selfmodified into branch
 continue_subs_after_top:
 SELFMODIFY_add_botstep_lo_TWOSIDED:
@@ -8513,8 +8547,9 @@ sub   word ptr ds:[_cs_botfrac_lo], 01000h
 SELFMODIFY_add_botstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], 01000h
 COMMENT @
+SELFMODIFY_adjust_botstep_overflow_branch_bot:
 ; todo not sure this one is necessary
-SELFMODIFY_adjust_botstep_overflow_branch:
+
 mov   cl, (OFFSET adjust_botstep - OFFSET continue_subs_after_bot)  ; may be selfmodified into branch
 continue_subs_after_bot:
 @
@@ -8612,11 +8647,13 @@ markceiling_done_TWOSIDED:
 ; yh = bottomfrac>>HEIGHTBITS;
 
 
+
 SELFMODIFY_set_botfrac_hi_bottop:
 mov   ax, 01000h ; already incremented by 1.
 ENSUREALIGN_006:
 ; ah 0 because si < 255
-
+test  ax, ax
+js    do_yh_floorclip_TWOSIDED
 
 
 ; cx is still floor
@@ -8770,7 +8807,7 @@ ELSE
    markceildirty:
    or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 2 ; ceiling bit
    mov   byte ptr ds:[SELFMODIFY_skip_markceildirty], MOV_AL_IMM8_OPCODE  
-   jmp   SHORT markceiling_done_TWOSIDED
+   jmp   markceiling_done_TWOSIDED
    ALIGN_MACRO
    markfloordirty:
    or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; floor bit
@@ -9568,6 +9605,8 @@ jg    mark_floor_di  ; todo branch test
 ;		if (markfloor)
 ;		    floorclip[rw_x] = yh+1;
 
+;dc0d8 to dc0ea wrong?
+
 cmp   di, si  ; todo sub and get this for free?
 mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
 jl    done_marking_floor_TWOSIDED     ; todo branch test
@@ -9779,9 +9818,9 @@ mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], ah
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot+1], (SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER)
 
 mov   ah, 0B1h
-mov   byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch], ah
+mov   byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], ah
 ; todo not sure this one is necessary
-;mov   byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch], ah
+;mov   byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch_bot], ah
 
 
 
@@ -9897,7 +9936,7 @@ mov       si, ss
 mov       ds, si
 
 SELFMODIFY_mark_planes_dirty_TWOSIDED:
-public SELFMODIFY_mark_planes_dirty_TWOSIDED 
+
 mov       ch, 0
 shr       cx, 1
 jnz       mark_planes_dirty_TWOSIDED ; common case is fall thru.
@@ -9908,7 +9947,7 @@ ret
 
 ALIGN_MACRO
 mark_planes_dirty_TWOSIDED:
-public mark_planes_dirty_TWOSIDED
+
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], al ; al still known 0
 mov      bl, JMP_SHORT_REL8_OPCODE
 mov      byte ptr cs:[SELFMODIFY_skip_markceildirty], bl
@@ -9929,31 +9968,43 @@ ret
 
 ENDP
 
-; todo combine.
 ; HACK ALERT: OVERFLOW DETECT BUGFIX WRITEAHEAD 
 
 COMMENT @
+
 ; todo not sure this one is necessary
-SELFMODIFY_BSP_do_overflow_bugfix_detection_1_TARGET:
-mov       ax, 0B870h  ; al = jo, ah = mov ax, imm16
+
+; TODO! for bot, if neg on a neg slope, just change fracs and slope to 0.
+public SELFMODIFY_BSP_do_overflow_bugfix_detection_bot_TARGET
+SELFMODIFY_BSP_do_overflow_bugfix_detection_bot_TARGET:
+; DX has starting value
+; word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+4] has DELTA
+
+
+mov       ax, 0B872h  ; al = jno, ah = mov ax, imm16
+
 test      dx, dx
 jns       use_jo_botstep_branch  ; we are subtracting. if subtracting positive then we are approaching a jo check
-mov       al, 073h  ; ah = jnc
+mov       al, 070h  ; ah = jc
+
+; use jo when sub value is negative and start value is positive
+
 use_jo_botstep_branch:
-mov       byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch], al
-mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_1], ah
+mov       byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch_bot], al
+mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_bot], ah
 jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER
 @
 ; di free
-SELFMODIFY_BSP_do_overflow_bugfix_detection_2_TARGET:
+SELFMODIFY_BSP_do_overflow_bugfix_detection_top_TARGET:
+
 test      ax, ax
 mov       ax, 0B870h  ; al = jo, ah = mov ax, imm16
 jns       use_jo_topstep_branch  ; we are subtracting. if subtracting positive then we are approaching a jo check
 mov       al, 073h  ; ah = jnc
 use_jo_topstep_branch:
-mov       byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch], al
-mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_2], ah
-jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_2_AFTER
+mov       byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], al
+mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_top], ah
+jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER
 
 
 SEG_LINEDEFS_OFFSET_IN_LINEFLAGSLIST =  ((SEG_LINEDEFS_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)
@@ -12915,7 +12966,7 @@ call      R_EvictL2CacheEMSPage_
 mov       dh, al
 
 found_multipage:
-public    found_multipage
+
 ;		foundmultipage:
 ;        usedtexturepagemem[i] = 64;
 ; dh is i, the first page.

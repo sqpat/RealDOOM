@@ -1371,7 +1371,7 @@ done_with_player_setup:
 just_do_spawn:
 
 cmp     ax, 24           ; Pool Of Blood (Buggy!)
-je      skip_this_thing  ; TODO hack.
+je      skip_this_thing  ; TODO hack. This lump when read for some reason causes DOS file interrupt to go into infinite loop. Only(?) used in map 31?
 
 
 ; todo clean up
