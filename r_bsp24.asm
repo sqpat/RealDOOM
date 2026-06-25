@@ -8235,7 +8235,6 @@ done_with_rw_scale_mul_worldbothi_bottop:
 neg       ax
 mov       word ptr ds:[_cs_botfrac_lo], ax
 
-
 SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
@@ -8431,11 +8430,13 @@ done_hacking_topstep:
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], ax
 
 
+IF COMPISA LE COMPILE_286
 
 SELFMODIFY_BSP_do_overflow_bugfix_detection_top:
 mov       ax, (OFFSET SELFMODIFY_BSP_do_overflow_bugfix_detection_top_TARGET - SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER)
 SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER:
 
+ENDIF
 
 
 
@@ -9605,8 +9606,6 @@ jg    mark_floor_di  ; todo branch test
 ;		if (markfloor)
 ;		    floorclip[rw_x] = yh+1;
 
-;dc0d8 to dc0ea wrong?
-
 cmp   di, si  ; todo sub and get this for free?
 mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
 jl    done_marking_floor_TWOSIDED     ; todo branch test
@@ -9817,11 +9816,12 @@ mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_top+1], (SELFMODIFY_BSP_s
 mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], ah
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot+1], (SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER)
 
-mov   ah, 0B1h
-mov   byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], ah
-; todo not sure this one is necessary
-;mov   byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch_bot], ah
-
+IF COMPISA LE COMPILE_286
+   mov   ah, 0B1h
+   mov   byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], ah
+   ; todo not sure this one is necessary
+   ;mov   byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch_bot], ah
+ENDIF
 
 
 ; note: we can jump  intot his exit path from far away!!
@@ -9995,17 +9995,20 @@ mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_bot], ah
 jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER
 @
 ; di free
-SELFMODIFY_BSP_do_overflow_bugfix_detection_top_TARGET:
 
-test      ax, ax
-mov       ax, 0B870h  ; al = jo, ah = mov ax, imm16
-jns       use_jo_topstep_branch  ; we are subtracting. if subtracting positive then we are approaching a jo check
-mov       al, 073h  ; ah = jnc
-use_jo_topstep_branch:
-mov       byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], al
-mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_top], ah
-jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER
+IF COMPISA LE COMPILE_286
 
+   SELFMODIFY_BSP_do_overflow_bugfix_detection_top_TARGET:
+
+   test      ax, ax
+   mov       ax, 0B870h  ; al = jo, ah = mov ax, imm16
+   jns       use_jo_topstep_branch  ; we are subtracting. if subtracting positive then we are approaching a jo check
+   mov       al, 073h  ; ah = jnc
+   use_jo_topstep_branch:
+   mov       byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], al
+   mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_top], ah
+   jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER
+ENDIF
 
 SEG_LINEDEFS_OFFSET_IN_LINEFLAGSLIST =  ((SEG_LINEDEFS_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)
 SEG_SIDES_OFFSET_IN_LINEFLAGSLIST    = ((SEG_SIDES_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)

@@ -297,16 +297,31 @@ xchg  ax, bx
 lods  word ptr es:[si]
 sub   dx, bx
 sbb   cx, ax
-neg   bx
-mov   word ptr ds:[SELFMODIFY_psight_strace_x_lo_1+1], bx
-mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_2+1], ax
-mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_4+1], ax
-mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_5+1], ax
 
-adc   ax, 0
+IF COMPISA GE COMPILE_386
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_lo_1+1], bx
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_1+1], ax
+    neg   bx
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_2+1], ax
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_4+1], ax
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_5+1], ax
+    
+    adc   ax, 0
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_3+1], ax
+ELSE 
 
-mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_1+1], ax
-mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_3+1], ax
+    neg   bx
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_lo_1+1], bx
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_2+1], ax
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_4+1], ax
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_5+1], ax
+
+    adc   ax, 0
+
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_1+1], ax
+    mov   word ptr ds:[SELFMODIFY_psight_strace_x_hi_3+1], ax
+ENDIF
+
 
 
 
@@ -923,72 +938,165 @@ openbottom_set:
 cmp   bx, cx
 jge   jump_to_cross_bsp_node_return_0_2
 
-PUSH BX
-PUSH SI
-PUSH DI
+IF COMPISA LE COMPILE_286
 
-SELFMODIFY_psight_strace_dy_lo_1:
-MOV  BX, 01000h
-SELFMODIFY_psight_strace_dy_hi_1:
-MOV  CX, 01000h
-LES  AX, DWORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
-CALL FixedMul_8_8_ ; DX.AX = AH.AL * CX.BX
-XCHG AX, DI
-MOV  AX, ES ; NODE_T.n_dy
-MOV  ES, DX
-SELFMODIFY_psight_strace_dx_lo_1:
-MOV  BX, 01000h
-SELFMODIFY_psight_strace_dx_hi_1:
-MOV  CX, 01000h
-CALL FixedMul_8_8_ ; DX.AX = AH.AL * CX.BX
-SUB  AX, DI
-MOV  DI, ES
-SBB  DX, DI
+    PUSH BX
+    PUSH SI
+    PUSH DI
 
-MOV  SI, AX
-OR   AX, DX
-JZ   denominator_0
+    SELFMODIFY_psight_strace_dy_lo_1:
+    MOV  BX, 01000h
+    SELFMODIFY_psight_strace_dy_hi_1:
+    MOV  CX, 01000h
+    LES  AX, DWORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+    CALL FixedMul_8_8_ ; DX.AX = AH.AL * CX.BX
+    XCHG AX, DI
+    MOV  AX, ES ; NODE_T.n_dy
+    MOV  ES, DX
+    SELFMODIFY_psight_strace_dx_lo_1:
+    MOV  BX, 01000h
+    SELFMODIFY_psight_strace_dx_hi_1:
+    MOV  CX, 01000h
+    CALL FixedMul_8_8_ ; DX.AX = AH.AL * CX.BX
+    SUB  AX, DI
+    MOV  DI, ES
+    SBB  DX, DI
 
-PUSH DX ; save high den
+    MOV  SI, AX
+    OR   AX, DX
+    JZ   denominator_0
 
-LES  DI, DWORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_x]  ; di has x dx has y
-MOV  DX, ES ; NODE_T.n_y
+    PUSH DX ; save high den
 
-SELFMODIFY_psight_strace_y_lo_1:
-MOV  BX, 01000h ; shrink to MOV BH?
-SELFMODIFY_psight_strace_y_hi_1:
-MOV  AX, 01000h
-SUB  AX, DX
+    LES  DI, DWORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_x]  ; di has x dx has y
+    MOV  DX, ES ; NODE_T.n_y
 
-LES  CX, DWORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+    SELFMODIFY_psight_strace_y_lo_1:
+    MOV  BX, 01000h ; shrink to MOV BH?
+    SELFMODIFY_psight_strace_y_hi_1:
+    MOV  AX, 01000h
+    SUB  AX, DX
 
-CALL FixedMul_16_0_ ; DX.AX = CX.0 * AX.BX
+    LES  CX, DWORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
 
-XCHG AX, DI ; NODE_T.n_x
-MOV  CX, ES
-MOV  ES, DX
+    CALL FixedMul_16_0_ ; DX.AX = CX.0 * AX.BX
 
-SELFMODIFY_psight_strace_x_lo_1:
-MOV  BX, 01000h
-SELFMODIFY_psight_strace_x_hi_1:
-SUB  AX, 01000h
+    XCHG AX, DI ; NODE_T.n_x
+    MOV  CX, ES
+    MOV  ES, DX
 
-CALL FixedMul_16_0_ ; DX.AX = CX.0 * AX.BX
+    SELFMODIFY_psight_strace_x_lo_1:
+    MOV  BX, 01000h
+    SELFMODIFY_psight_strace_x_hi_1:
+    SUB  AX, 01000h
 
-MOV  BX, SI
-POP  CX ; high den
+    CALL FixedMul_16_0_ ; DX.AX = CX.0 * AX.BX
 
-MOV  SI, ES
+    MOV  BX, SI
+    POP  CX ; high den
 
-ADD  AX, DI
-ADC  DX, SI
+    MOV  SI, ES
 
-CALL FixedDiv_MapLocal_
+    ADD  AX, DI
+    ADC  DX, SI
 
-denominator_0:
-POP  DI
-POP  SI
-POP  BX
+    CALL FixedDiv_MapLocal_
+
+    denominator_0:
+    POP  DI
+    POP  SI
+    POP  BX
+
+ELSE
+; 386
+
+
+    PUSH BX
+    PUSH SI
+
+    ; FixedMul(v1->dx >> 8, v2->dy)
+    MOVSX ECX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dx]
+    SELFMODIFY_psight_strace_dy_1:
+    MOV   EAX, 010000000h
+    SELFMODIFY_psight_strace_dy_lo_1 = SELFMODIFY_psight_strace_dy_1+2 - 1
+    SELFMODIFY_psight_strace_dy_hi_1 = SELFMODIFY_psight_strace_dy_1+4 - 1
+    IMUL  ECX ; 16.16 * 24.8 -> 40.24
+    SHRD  EAX, EDX, 8 ; (int32_t)(40.24 >> 8) -> 16.16
+
+    XCHG EAX, ESI
+
+    ; FixedMul(v1->dy >> 8, v2->dx)
+    MOVSX EBX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_dy]
+    SELFMODIFY_psight_strace_dx_1:
+    MOV   EAX, 010000000h
+    SELFMODIFY_psight_strace_dx_lo_1 = SELFMODIFY_psight_strace_dx_1+2 - 1
+    SELFMODIFY_psight_strace_dx_hi_1 = SELFMODIFY_psight_strace_dx_1+4 - 1
+    IMUL  EBX ; 16.16 * 24.8 = 40.24
+    SHRD  EAX, EDX, 8 ; (int32_t)(40.24 >> 8) -> 16.16
+
+    SUB   EAX, ESI
+    JZ finish_frac_calculation_386
+
+    XCHG  EAX, ESI ; den = ESI
+
+    ; FixedMul(v1->x - v2->x >> 8, v1->dy)
+    MOV   AX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_x]
+    SHL   EAX, 16
+    SELFMODIFY_psight_strace_x_1:
+    SUB   EAX, 010000000h
+    SELFMODIFY_psight_strace_x_lo_1 = SELFMODIFY_psight_strace_x_1+2 - 1
+    SELFMODIFY_psight_strace_x_hi_1 = SELFMODIFY_psight_strace_x_1+4 - 1
+
+    SAR   EAX, 8
+    MUL  EBX ; 16.16 * 32.0 -> 48.16
+    ; Only low 16.16 matters, so MUL is fine
+
+    XCHG EAX, EBX
+
+    ; FixedMul(v2->y - v1->y >> 8, v1->dx)
+    MOV   DX, WORD PTR [BP - STACK_DIVLINE_POSITION + NODE_T.n_y]
+    SHL   EDX, 16
+    SELFMODIFY_psight_strace_y_1:
+    MOV   EAX, 010000000h
+    SELFMODIFY_psight_strace_y_lo_1 = SELFMODIFY_psight_strace_y_1+2 - 1
+    SELFMODIFY_psight_strace_y_hi_1 = SELFMODIFY_psight_strace_y_1+4 - 1
+    SUB   EAX, EDX
+    SAR   EAX, 8
+    MUL  ECX ; 16.16 * 32.0 -> 48.16
+    ; Only low 16.16 matters, so MUL is fine
+
+    ADD   EAX, EBX ; num = EAX
+
+    ; FixedDiv(num, den)
+    MOV   ECX, ESI
+    ; abs(b)
+    MOV   EDX, ECX 
+    SAR   EDX, 31
+    XOR   ECX, EDX
+    SUB   ECX, EDX
+    ; abs(a)
+    MOV   EBX, EAX
+    CDQ
+    XOR   EBX, EDX
+    SUB   EBX, EDX
+    ; abs(a) >> 14 >= abs(b)
+    SAR   EBX, 14 
+    CMP   EBX, ECX
+    JGE   fixeddiv_overflow
+    ; No CDQ because EDX:EAX unchanged after abs
+    SHLD  EDX, EAX, 16
+    SHL   EAX, 16
+    IDIV  ESI
+
+    finish_frac_calculation_386:
+    shld  edx, eax, 16
+    POP   SI
+    POP   BX
+
+ 
+
+
+ENDIF
 
 mov   word ptr [bp - 6], ax	; store frac
 mov   word ptr [bp - 4], dx
@@ -1079,6 +1187,17 @@ pop   si
 mov   dx, NODES_SEGMENT
 mov   ds, dx
 ret
+IF COMPISA GE COMPILE_386
+    ; put this anywhere else in CS,
+    ; 386 can use word offset JGE
+    fixeddiv_overflow:
+    XOR EAX, ESI
+    CDQ
+    MOV EAX, EDX
+    XOR EAX, 07FFFFFFFh
+    ;JMP finish_frac_calculation_386
+ENDIF
+
 jump_to_cross_subsector_mainloop_increment_2:
 mov   di, SEG_LINEDEFS_SEGMENT
 mov   es, di

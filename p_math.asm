@@ -2762,43 +2762,52 @@ PUBLIC FixedMul_16_0_
 ENDP
 
 ELSE
-; 386 version
-
-PROC   FixedMul_8_8_ NEAR
-PUBLIC FixedMul_8_8_
-    ; DX.AX = AH.AL * CX.BX
-    CWDE
-    SHL ECX, 16
-    MOV CX, BX
-    IMUL ECX
-    SHLD EDX, EAX, 8
-    SHR EAX, 8
-    RET
-ENDP
-
-ALIGN_MACRO
-PROC   FixedMul_16_0_ NEAR
-PUBLIC FixedMul_16_0_
-    ; DX.AX = AX.0 * CX.BX
-    ; preshift inputs. consider different entry point?
-;    shrd  cx, bx, 8
-;    shr   cx, 8
 
 
-    CWDE
-    SHL   EAX, 8
-    MOV   AL, BH
-    MOVSX ECX, CX
-  
-    IMUL  ECX
-  
-    SHLD  EDX, EAX, 8
-    SHR   EAX, 8
-    ret 
+  PROC   FixedMul_8_8_ NEAR
+  PUBLIC FixedMul_8_8_
+  PROC   FixedMul_16_0_ NEAR
+  PUBLIC FixedMul_16_0_
 
-ENDP
+COMMENT @
+
+  ; 386 version
+
+  PROC   FixedMul_8_8_ NEAR
+  PUBLIC FixedMul_8_8_
+      ; DX.AX = AH.AL * CX.BX
+      CWDE
+      SHL ECX, 16
+      MOV CX, BX
+      IMUL ECX
+      SHLD EDX, EAX, 8
+      SHR EAX, 8
+      RET
+  ENDP
+
+  ALIGN_MACRO
+  PROC   FixedMul_16_0_ NEAR
+  PUBLIC FixedMul_16_0_
+      ; DX.AX = AX.0 * CX.BX
+      ; preshift inputs. consider different entry point?
+  ;    shrd  cx, bx, 8
+  ;    shr   cx, 8
 
 
+      CWDE
+      SHL   EAX, 8
+      MOV   AL, BH
+      MOVSX ECX, CX
+    
+      IMUL  ECX
+    
+      SHLD  EDX, EAX, 8
+      SHR   EAX, 8
+      ret 
+
+  ENDP
+
+@
 ENDIF
 
 
