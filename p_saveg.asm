@@ -862,6 +862,8 @@ call   CreateThinkerLocal_
 
 call   DivAndGetIndexInBX_
 
+push   di ; thinkerref
+
 call   LoadInt8_            ; CEILING_T.ceiling_type
 call   LoadInt16_           ; CEILING_T.ceiling_secnum
 call   LoadShortHeight16_   ; CEILING_T.ceiling_bottomheight
@@ -873,18 +875,18 @@ call   LoadInt8_            ; CEILING_T.ceiling_tag
 call   LoadInt8_            ; CEILING_T.ceiling_olddirection
 
 
-
-mov    ax, word ptr ds:[di - 0Ch]        ; di is 0Dh, we want 1
+mov    ax, word ptr ds:[di -  (SIZE CEILING_T) + CEILING_T.ceiling_secnum]        ; di is 0Dh, we want 1
 
 SHIFT_MACRO_SMALL SHL AX 4
 
 
-xchg   ax, bx
+xchg   ax, bx ; ax gets secnum
 
 mov    cx, ds
 push   ss
 pop    ds
-mov    word ptr ds:[bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
+mov    word ptr ds:[bx + (_sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef)], ax  ; sectors_physics specialdataRef
+pop    ax   ; ax gets thinkerref
 ;call   P_AddActiveCeiling_
 db 09Ah
 dw P_ADDACTIVECEILINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -908,19 +910,17 @@ call   LoadInt16_           ; VLDOOR_T.vldoor_topcountdown
 
 
 
-mov    ax, word ptr ds:[di - 0Ch]  ; di is 0Dh, we want 1
+mov    di, word ptr ds:[di - (SIZE VLDOOR_T) + VLDOOR_T.vldoor_secnum]  ; di is 0Dh, we want 1
 
-SHIFT_MACRO_SMALL     shl    ax 4
-mov    di, ax
-mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
+SHIFT_MACRO_SMALL     shl    di 4
+
+mov    word ptr ss:[di + (_sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef)], bx  ; sectors_physics specialdataRef
 jmp    load_next_special
 
 load_movefloor_special:
 
 mov    ah, (TF_MOVEFLOOR_HIGHBITS SHR 8)
 call   CreateThinkerLocal_
-push   ds
-pop    es
 
 call   DivAndGetIndexInBX_
 
@@ -929,20 +929,18 @@ call   LoadInt8_            ; FLOORMOVE_T.floormove_crush
 call   LoadInt16_           ; FLOORMOVE_T.floormove_secnum          
 call   LoadInt8_            ; FLOORMOVE_T.floormove_direction       
 call   LoadInt8_            ; FLOORMOVE_T.floormove_newspecial      
-call   LoadInt8_            ; FLOORMOVE_T.floormove_texture         
+;call   LoadInt8_            ; FLOORMOVE_T.floormove_texture         
+movsw
 call   LoadShortHeight16_   ; FLOORMOVE_T.floormove_floordestheight 
 call   LoadShortHeight16_   ; FLOORMOVE_T.floormove_speed           
 
 
+mov    di, word ptr ds:[di - (SIZE FLOORMOVE_T) + FLOORMOVE_T.floormove_secnum ]    ; di is + 0Bh, we want 2.. (floormove_secnum)
+
+SHIFT_MACRO_SMALL SHL di 4
 
 
-mov    ax, word ptr ds:[di - 9]    ; di is + 0Bh, we want 2..
-
-SHIFT_MACRO_SMALL SHL AX 4
-
-
-mov    di, ax
-mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
+mov    word ptr ss:[di + (_sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef)], bx  ; sectors_physics specialdataRef
 jmp    load_next_special
 
 load_platraise_special:
