@@ -308,11 +308,11 @@ _screen_botleft_x =				    _NULL_OFFSET + 001B6h
 _screen_botleft_y =				    _NULL_OFFSET + 001B8h
 _screen_topright_x =				_NULL_OFFSET + 001BAh
 _screen_topright_y =			    _NULL_OFFSET + 001BCh
-_caststate =                        _NULL_OFFSET + 001BEh
+_currentsong_start_offset =         _NULL_OFFSET + 001BEh
 
 _pspriteiscale =                    _NULL_OFFSET + 001C0h
-_STATES_SEGMENT_PTR =               _NULL_OFFSET + 001C4h
-_currentsong_start_offset =         _NULL_OFFSET + 001C6h
+_caststate =                        _NULL_OFFSET + 001C4h
+_STATES_SEGMENT_PTR =               _NULL_OFFSET + 001C6h
 _playingdriver =                    _NULL_OFFSET + 001C8h
 _currentsong_playing_offset =       _NULL_OFFSET + 001CCh
 _currentsong_ticks_to_process =     _NULL_OFFSET + 001CEh
