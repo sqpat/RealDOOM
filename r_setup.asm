@@ -598,12 +598,15 @@ mul   dx
 ; viewwindowx >> 2
 SHIFT_MACRO  shr cx 2  
 add   ax, cx
-mov   word ptr ds:[_viewwindowoffset], ax
+push  ax
 
 
 
 call	R_InitTextureMapping_
 ;call	dword ptr ds:[_R_WriteBackViewConstants]
+
+pop   bx ; bx is _viewwindowoffset
+
 db    09Ah
 _SELFMODIFY_R_WRITEBACKVIEWCONSTANTS:
 dw    R_WRITEBACKVIEWCONSTANTS24OFFSET, 0

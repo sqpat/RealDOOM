@@ -148,9 +148,9 @@ call DEBUG_PRINT_NOARG_CS_
 
 
 
-mov     ax, word ptr ds:[_snd_DesiredSfxDevice]  ; ah is music device
-mov     word ptr ds:[_snd_SfxDevice], ax  ; ah is music device
-mov     al, ah
+mov     ax, word ptr ds:[_snd_DesiredMusicDevice]  ; ah is sound device
+mov     word ptr ds:[_snd_MusicDevice], ax  ; ah is sound device
+
 cmp     al, SND_ADLIB ; 2
 je      setup_adlib_mus_driver ; 2
 jb      no_music_driver        ; 0/1

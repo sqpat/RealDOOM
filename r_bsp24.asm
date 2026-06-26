@@ -14477,7 +14477,8 @@ mov       word ptr cs:[SELFMODIFY_BSP_validcountglobal+1], ax
 
 ;	destview = (byte __far*)(destscreen.w + viewwindowoffset);
 les       ax, dword ptr ds:[_destscreen]
-add       ax, word ptr ds:[_viewwindowoffset]
+SELFMODIFY_BSP_add_viewwindowoffset:
+add       ax, 01000h
 mov       word ptr ds:[_destview], ax
 mov       word ptr ds:[_destview + 2], es
 
@@ -14713,6 +14714,8 @@ mov      es, cx
 
 
 ASSUME DS:R_BSP_24_TEXT
+
+mov      word ptr ds:[SELFMODIFY_BSP_add_viewwindowoffset+1], bx ; _viewwindowoffset passed in bx
 
 
 

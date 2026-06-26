@@ -58,7 +58,7 @@ _spanfunc_prt:
 _spanfunc_outp:
 _planezlight = 0
 _ds_y = 0
-
+_spanfunc_jump_segment_storage = 0
 
 ; NOTE: cs:offset stuff for self modifying code must be zero-normalized
 ;  (subtract offset of R_DrawSpan) because this code is being moved to

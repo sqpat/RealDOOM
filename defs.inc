@@ -88,10 +88,10 @@ _clipangle =				         _NULL_OFFSET + 0001Ch
 _fieldofview =				         _NULL_OFFSET + 0001Eh
 
 _myargc =				 	 	     _NULL_OFFSET + 00020h
-_snd_DesiredSfxDevice =              _NULL_OFFSET + 00022h ; THESE MUST BE ADJACENT
-_snd_DesiredMusicDevice =            _NULL_OFFSET + 00023h ; THESE MUST BE ADJACENT
+_snd_DesiredMusicDevice =            _NULL_OFFSET + 00022h ; THESE MUST BE ADJACENT
+_snd_DesiredSfxDevice =              _NULL_OFFSET + 00023h ; THESE MUST BE ADJACENT
 
-_mousearray = 						 _NULL_OFFSET + 00024h
+_mousearray = 						 _NULL_OFFSET + 00024h ; allow -1
 _mousebuttons = 					 _NULL_OFFSET + 00025h
 
 _usemouse = 						 _NULL_OFFSET + 00028h
@@ -162,7 +162,7 @@ _pendingmusicenumlooping =          _NULL_OFFSET + 000AFh
 
 _skipdirectdraws = 					_NULL_OFFSET + 000B0h
 _is_ultimate = 						_NULL_OFFSET + 000B1h
-_viewwindowoffset = 				 _NULL_OFFSET + 000B2h
+;b2b3 free todo
 _pendingdetail = 				 	 _NULL_OFFSET + 000B4h
 
 _firstspritelump = 					_NULL_OFFSET + 000B6h
@@ -198,17 +198,17 @@ _screen_viewport_height =	  	  	 _NULL_OFFSET + 000D2h
 
 
 _shiftedfixedcolormap = 			_NULL_OFFSET + 000D4h
-_snd_SfxDevice = 					_NULL_OFFSET + 000D6h
-_snd_MusicDevice =				    _NULL_OFFSET + 000D7h
+_snd_MusicDevice =				    _NULL_OFFSET + 000D6h
+_snd_SfxDevice = 					_NULL_OFFSET + 000D7h
 
-_ds_source_offset = 				_NULL_OFFSET + 000D8h
-_ds_source_segment = 				_NULL_OFFSET + 000DAh
-; DA is technically segment and D8 is OFFSET
+_ds_source_offset = 				_NULL_OFFSET + 000D8h ; D8 is OFFSET
+_ds_source_segment = 				_NULL_OFFSET + 000DAh ; DA is segment
 _currentscreen    = 				_NULL_OFFSET + 000DCh
 _destview    = 						_NULL_OFFSET + 000E0h
 _destscreen    = 					_NULL_OFFSET + 000E4h
 _tantoangle_segment  = 				_NULL_OFFSET + 000E8h
-_spanfunc_jump_segment_storage = 	_NULL_OFFSET + 000EAh
+_snd_SBirq =              			_NULL_OFFSET + 000EAh ; THESE MUST BE ADJACENT
+_snd_SBdma =              			_NULL_OFFSET + 000EBh ; THESE MUST BE ADJACENT
 _totalkills = 						_NULL_OFFSET + 000ECh
 _totalitems = 						_NULL_OFFSET + 000EEh
 _totalsecret = 						_NULL_OFFSET + 000F0h
@@ -218,11 +218,11 @@ _validcount_global =				_NULL_OFFSET + 000F4h
 _firstpatch =                       _NULL_OFFSET + 000F6h
 _scaledviewwidth = 					 _NULL_OFFSET + 000F8h
 _st_firsttime =	  	  				 _NULL_OFFSET + 000FAh
-_precache = 						 _NULL_OFFSET + 000FBh
+_precache = 						 _NULL_OFFSET + 000FBh ; todo unused... implement?
 _cached_psetup_level_lump =		     _NULL_OFFSET + 000FCh
-_levelTimer =						 _NULL_OFFSET + 000FEh
+_levelTimer =						 _NULL_OFFSET + 000FEh ;todo can move to cs
 
-_inhelpscreensstate =				 _NULL_OFFSET + 000FFh
+_inhelpscreensstate =				 _NULL_OFFSET + 000FFh ;todo can move to cs
 
 
 
@@ -323,11 +323,9 @@ _gametime = 				        _NULL_OFFSET + 001D2h
 _maketic = 				            _NULL_OFFSET + 001D6h
 _starttime = 				        _NULL_OFFSET + 001D8h
 
-_snd_SBport =                        _NULL_OFFSET + 001DAh
 _shootz =				 			 _NULL_OFFSET + 001DCh
-_snd_Mport =                         _NULL_OFFSET + 001E0h
-_snd_SBirq =              			 _NULL_OFFSET + 001E2h ; THESE MUST BE ADJACENT
-_snd_SBdma =              			 _NULL_OFFSET + 001E3h ; THESE MUST BE ADJACENT
+_snd_SBport =                        _NULL_OFFSET + 001E0h
+_snd_Mport =                         _NULL_OFFSET + 001E2h
 _I_Quit_addr = 			             _NULL_OFFSET + 001E4h
 
 _dirtybox =              			_NULL_OFFSET + 001E8h
@@ -505,7 +503,7 @@ _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 ; 015h bytes
 _wminfo =			                 _NULL_OFFSET + 0045Ch
-; todo not sure if these bytes are really usable?
+
 
 _wadfiles = 						 _NULL_OFFSET + 00478h
 _filetolumpindex = 					 _NULL_OFFSET + 00480h
@@ -547,7 +545,7 @@ _cached_playerMobj_y_highbits =  	 _NULL_OFFSET + 004BEh
 
 
 ; 52 bytes
-_player_message_string =  			 _NULL_OFFSET + 004C0h ; todo physics move candidate
+_player_message_string =  			 _NULL_OFFSET + 004C0h ; todo cs move candidate
 
 ; 3c
 ; ceilings plats buttonlist

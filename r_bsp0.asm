@@ -75,7 +75,7 @@ _segloopcachedbasecol = 0
 _cachedsegmenttex = 0
 _r_cachedplayerMobjsecnum = 0
 _segloopcachedsegment = 0
-
+_viewwindowoffset = 0
 _cachedsegmentlumps =  0
 _cachedlumps =  0
 _cachedtex =  0

@@ -633,7 +633,7 @@ db 0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0
 
 
 
-; todo not heavily optimized
+; todo not heavily optimized. could probably save some code size
 ALIGN_MACRO
 PROC G_BuildTiccmd_ NEAR
 PUBLIC G_BuildTiccmd_
@@ -1118,7 +1118,7 @@ db "sky_quality", 0
 
 
 ; 7 bytes per.
-; todo move the vars all to a cs array?
+; todo they are all adjacent now... get rid of offset?
 ; will need to mirror some vars like screenblocks, detaillevel..
 _defaults:
 dw OFFSET str_defaultname_00, OFFSET _mouseSensitivity

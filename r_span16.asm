@@ -48,6 +48,7 @@ _spanfunc_inner_loop_count:
 
 _spanfunc_destview_offset:
 
+_spanfunc_jump_segment_storage = 0
 _spanfunc_prt:
 
 _spanfunc_outp:

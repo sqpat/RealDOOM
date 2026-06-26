@@ -58,19 +58,19 @@ dw 00, 00, 8000h
 ; 0x80
 dw 8000h,  7000h,  6000h,  9C00h,    00, 00,     00,    00
 ; 0x90
-dw 0, 0, 0, 0, 0, 0, 0, 0
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ;0xA0
-dw 0, 0, 0, 0, 0, 0, 0, 0
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ;0xB0
-dw 0, 0, 0, 0, 0, 0, 0, 0
-; _mfloorclip segment = c2, _mceilingclip segment = c6
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0xC0
-dw 0,  OPENINGS_SEGMENT,  0,  OPENINGS_SEGMENT,  0,  0,  0,  0
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0xD0
 ; _ds_source_segment  0xDA
 dw 00, 00, 00, 00, 00, 00, 00, 00
-; 0xE0    spanfunc_segment_storage EAh
-dw 0, 0, 0, 0, 0, SPANFUNC_SEGMENT, 0, 0
+; 0xE0
+dw  00, 00, 00, 00, 00, 00, 00, 00
+
 
 
 ; 0xF0   validcount (0xF4)= 1
