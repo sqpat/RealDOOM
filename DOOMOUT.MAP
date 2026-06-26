@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/26 09:55:15
+Created on:       26/06/26 10:28:03
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -214,8 +214,8 @@ Module: main.obj(main.ASM)
 0000:4281*     locallib_printstringnear_
 0000:442a      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
 0000:362c      _timingdemo
-0000:46e4*     D_DoomLoop_
 0000:3daf      _defaults
+0000:46e4*     D_DoomLoop_
 0000:3536*     D_MAIN_STARTMARKER_
 0000:41a3*     locallib_printhex_
 0000:35ca      BASE_CHEAT_ADDRESS

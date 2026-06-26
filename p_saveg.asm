@@ -951,6 +951,8 @@ call   CreateThinkerLocal_
 
 call   DivAndGetIndexInBX_
 
+push   di ; store thinker ptr
+
 call   LoadInt16_           ; PLAT_T.plat_secnum   
 call   LoadShortHeight16_   ; PLAT_T.plat_speed    
 call   LoadShortHeight16_   ; PLAT_T.plat_low      
@@ -976,6 +978,7 @@ mov    cx, ds
 push   ss
 pop    ds
 ;call   P_AddActivePlat_
+pop    ax ; retrieve thinker ptr
 db 09Ah
 dw P_ADDACTIVEPLATOFFSET, PHYSICS_HIGHCODE_SEGMENT
 

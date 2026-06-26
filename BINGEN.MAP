@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/06/26 09:55:13
+Created on:       26/06/26 10:28:01
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -29,7 +29,7 @@ WI_STUFF_TEXT          CODE           AUTO           004a:0000       00001141
 M_MENU_TEXT            CODE           AUTO           015f:0000       00001555
 F_WIPE_TEXT            CODE           AUTO           02b5:0000       000005fa
 F_FINALE_TEXT          CODE           AUTO           0315:0000       00000b97
-P_SAVEG_TEXT           CODE           AUTO           03cf:0000       00000b8d
+P_SAVEG_TEXT           CODE           AUTO           03cf:0000       00000b8f
 P_SETUP_TEXT           CODE           AUTO           0488:0000       00000a98
 SM_OPL2_TEXT           CODE           AUTO           0532:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0626:0000       0000100e
@@ -269,25 +269,25 @@ Module: f_finale.obj(f_finale.ASM)
 0315:0af0*     F_MarkRect_
 0315:041b*     F_DrawPatchCol_
 0315:0946*     F_CastResponder_
-0315:0b97      F_FINALE_ENDMARKER_
 0315:0abd*     F_locallib_strlen_
+0315:0b97      F_FINALE_ENDMARKER_
 0315:0659*     F_StartCast_
 0315:0ada*     Z_QuickMapScratch_5000_FinaleLocal_
 Module: p_saveg.obj(p_saveg.ASM)
 03cf:02c2*     P_CheckRepageSaveGame_
 03cf:02f9*     P_UnArchiveThinkers_
-03cf:0b8d      P_SAVEG_ENDMARKER_
+03cf:0b8f      P_SAVEG_ENDMARKER_
 03cf:049d*     P_UnArchiveSpecials_
 03cf:0000      P_SAVEG_STARTMARKER_
-03cf:0b1c      G_ContinueSaveGame_
+03cf:0b1e      G_ContinueSaveGame_
 03cf:01cf*     P_UnArchiveWorld_
-03cf:065d      G_ContinueLoadGame_
-03cf:079f*     P_ArchiveWorld_
-03cf:09e8*     P_ArchiveSpecials_
+03cf:065f      G_ContinueLoadGame_
+03cf:07a1*     P_ArchiveWorld_
+03cf:09ea*     P_ArchiveSpecials_
 03cf:0074*     P_UnArchivePlayers_
 03cf:02e0*     P_CheckRepageLoadGame_
-03cf:06be*     P_ArchivePlayers_
-03cf:086d*     P_ArchiveThinkers_
+03cf:06c0*     P_ArchivePlayers_
+03cf:086f*     P_ArchiveThinkers_
 Module: p_setup.obj(p_setup.ASM)
 0488:020d*     P_LoadLineDefs_
 0488:048c*     P_GroupLines_
@@ -1246,8 +1246,8 @@ Module: main.obj(main.ASM)
 2ff6:5c3f*     locallib_printstringnear_
 2ff6:5de8      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
 2ff6:4fea      _timingdemo
-2ff6:60a2*     D_DoomLoop_
 2ff6:576d      _defaults
+2ff6:60a2*     D_DoomLoop_
 2ff6:4ef4*     D_MAIN_STARTMARKER_
 2ff6:5b61*     locallib_printhex_
 2ff6:4f88*     BASE_CHEAT_ADDRESS
@@ -1662,4 +1662,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e770 (255856.)
 Entry point address: 2ff6:806e
-Link time: 00:00.59
+Link time: 00:00.05
