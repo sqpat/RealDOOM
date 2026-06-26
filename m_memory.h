@@ -325,9 +325,9 @@ scantokey            3194:0000
 
  // 0x92FA
 
-#define psight_codespace      ((byte __far*)             (0x90000000))
+#define physics_codespace      ((byte __far*)             (0x90000000))
 
-#define physics_9000_end      ((byte __far*)             MAKE_FULL_SEGMENT(psight_codespace, PSightCodeSize))
+#define physics_9000_end      ((byte __far*)             MAKE_FULL_SEGMENT(physics_codespace, PhysicsCodeSize))
 // A384 codesize in 8088? physics_9000_end_segment = 9A39
 // perhaps 2k sized data struct can be tossed in here around 9A80
 // 8800 bytes?
@@ -335,8 +335,8 @@ scantokey            3194:0000
 
 // 0x93E9
 
-#define physics_highcode_segment    ((segment_t) ((int32_t)psight_codespace >> 16))
-#define physics_9000_end_segment    ((segment_t) ((int32_t)physics_9000_end >> 16))
+#define physics_highcode_segment    ((segment_t) ((int32_t)physics_codespace >> 16))
+#define physics_9000_end_segment    ((segment_t) ((int32_t)physics_9000_end  >> 16))
 
 
  

@@ -61,8 +61,8 @@ PUBLIC  T_MoveCeiling_
 push  si
 xchg  ax, si ; si gets ceiling
 mov   al, byte ptr ds:[si + CEILING_T.ceiling_direction]
-cmp   al, 0
-je    ceiling_in_stasis_return
+test  al, al
+jz    ceiling_in_stasis_return
 
 push  bx
 push  cx
@@ -458,38 +458,43 @@ push  cx
 push  dx
 
 
-mov   ch, al ; ch gets tag
-xor   cl, cl ; cl is loop counter
+
+xchg  ax, cx ; cl gets tag. could be selfmodified below?
+
+
+xor   bx, bx ; bx is loop counter
 
 loop_next_stasis_ceiling:
-xor   bx, bx
-mov   bl, cl
 
-mov   bx, word ptr ds:[bx + _activeceilings]
-test  bx, bx
+
+mov   ax, word ptr ds:[bx + _activeceilings]
+test  ax, ax
 je    continue_statis_ceiling_loop
-mov   ax, (SIZE THINKER_T)
-mul   bx
+mov   dx, (SIZE THINKER_T)
+mul   dx
+add   ax, _thinkerlist + THINKER_T.t_data
+push  bx
 xchg  ax, bx ; ax gets activeceiling
-xchg  ax, dx ; now dx gets activeceiling.
 
-add   bx, _thinkerlist + THINKER_T.t_data
-cmp   ch, byte ptr ds:[bx  + CEILING_T.ceiling_tag]
-jne   continue_statis_ceiling_loop
-mov   al, byte ptr ds:[bx + CEILING_T.ceiling_direction]
-test  al, al
-jne   continue_statis_ceiling_loop
-mov   al, byte ptr ds:[bx + CEILING_T.ceiling_olddirection]
-mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], al
 
-xchg  ax, dx  ; recover _activeceilings into ax
+cmp   cl, byte ptr ds:[bx  + CEILING_T.ceiling_tag] ; compare tag
+jne   continue_statis_ceiling_loop_restore_bx
+cmp   byte ptr ds:[bx + CEILING_T.ceiling_direction], ah   ; ah is zero because dx maxes at 60 or so
+jne   continue_statis_ceiling_loop_restore_bx
+
+mov   dl, byte ptr ds:[bx + CEILING_T.ceiling_olddirection]
+mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], dl
+
+
 mov   dx, TF_MOVECEILING_HIGHBITS
 call  P_UpdateThinkerFunc_
 
+continue_statis_ceiling_loop_restore_bx:
+pop   bx
 continue_statis_ceiling_loop:
-inc   cx
-inc   cx
-cmp   cl, (MAXCEILINGS * 2)
+inc   bx
+inc   bx  ; word inc
+cmp   bl, (MAXCEILINGS * 2)
 jl    loop_next_stasis_ceiling
 pop   dx
 pop   cx
@@ -499,51 +504,62 @@ ret
 ENDP
 
 
+; todo inline? only used in one spot.
+
 ; return in carry
 PROC    EV_CeilingCrushStop_ NEAR
 PUBLIC  EV_CeilingCrushStop_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
+push  bx
+push  cx
+push  dx
 
-mov   ch, al ; ch gets tag
-xor   cl, cl ; cl is loop counter
+
+cbw   ; ah = 0
+xchg  ax, cx ; cl gets tag. could be selfmodified below? ch gets 0.
+
 mov   byte ptr cs:[OFFSET SELFMODIFY_ceilingcrush_return], CLC_OPCODE
 
+xor   bx, bx ; bx is loop counter
 
 
 loop_next_ceiling_crush_stop:
-xor   bx, bx
-mov   bl, cl
 
-mov   bx, word ptr ds:[bx + _activeceilings]
-test  bx, bx
+mov   ax, word ptr ds:[bx + _activeceilings]
+test  ax, ax
 je    continue_ceiling_crush_stop_loop
-mov   ax, (SIZE THINKER_T)
-mul   bx
+mov   dx, (SIZE THINKER_T)
+mul   dx
+add   ax, _thinkerlist + THINKER_T.t_data
+push  bx
 xchg  ax, bx ; ax gets activeceiling. bx gets thinkerlist offset.
-xchg  ax, dx ; now dx gets activeceiling. ax has nothing.
 
-add   bx, _thinkerlist + THINKER_T.t_data
-cmp   ch, byte ptr ds:[bx  + CEILING_T.ceiling_tag]
-jne   continue_ceiling_crush_stop_loop
-mov   al, byte ptr ds:[bx + CEILING_T.ceiling_direction]
-test  al, al
-je    continue_ceiling_crush_stop_loop
-mov   byte ptr ds:[bx + CEILING_T.ceiling_olddirection], al
-xchg  ax, dx  ; recover _activeceilings into ax
+cmp   cl, byte ptr ds:[bx  + CEILING_T.ceiling_tag] ; compare tag
+jne   continue_ceiling_crush_stop_restore_bx
+mov   dl, byte ptr ds:[bx + CEILING_T.ceiling_direction]
+test  dl, dl
+je    continue_ceiling_crush_stop_restore_bx
+mov   byte ptr ds:[bx + CEILING_T.ceiling_olddirection], dl
+; ax has active_ceilings
 cwd   ; dx gets 0  (TF_NULL)
 mov   byte ptr cs:[OFFSET SELFMODIFY_ceilingcrush_return], STC_OPCODE
 
 call  P_UpdateThinkerFunc_
-mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], 0
+mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], ch ; 0
+continue_ceiling_crush_stop_restore_bx:
+pop   bx
+
 continue_ceiling_crush_stop_loop:
-inc   cx
-inc   cx
-cmp   cl, (MAXCEILINGS * 2)
+inc   bx
+inc   bx
+cmp   bl, (MAXCEILINGS * 2)
 jl    loop_next_ceiling_crush_stop
 
-POPA_NO_AX_OR_BP_MACRO
+pop   dx
+pop   cx
+pop   bx
+
 SELFMODIFY_ceilingcrush_return:
 clc
 

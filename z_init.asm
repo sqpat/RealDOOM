@@ -1521,7 +1521,7 @@ call  locallib_fseek_  ; skip these bytes
 call  Z_QuickMapPhysics_
 
 call  GetCodeSize_
-;    locallib_far_fread(psight_codespace, codesize, fp);
+;    locallib_far_fread(physics_codespace, codesize, fp);
 xor   ax, ax
 mov   dx, PHYSICS_HIGHCODE_SEGMENT
 mov   cx, si

@@ -183,7 +183,7 @@ PUBLIC P_UpdateThinkerFunc_
 push      bx
 
 and       ax, TF_PREVBITS
-mov       bx, ax
+xchg      ax, bx
 sal       bx, 1
 mov       bx, word ptr ds:[bx + _mobjlookuptable]
 

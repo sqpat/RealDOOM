@@ -2333,118 +2333,6 @@ ENDIF
 
 COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
-;R_ClearPlanes
-
-ALIGN_MACRO
-PROC   R_ClearPlanes_ NEAR ; TODO could be better if we only clear up to lastvisplane and then dont clear visplanes when we create new ones.
-PUBLIC R_ClearPlanes_ 
-
-; dont need to preserve registers here
-
-
-SELFMODIFY_BSP_viewwidth_1:
-mov   cx, 01000h  ; preshifted right
-mov   dx, cx
-
-
-mov   ax, cs
-mov   di, OFFSET OFFSET_FLOORCLIP
-SHIFT_MACRO shr di 4
-add   ax, di      ; TODO tasm does not let me do  ((OFFSET_FLOORCLIP) SHR 4). once this is pretty set in stone hardcode it?
-mov   es, ax
-xor   di, di
-
-; viewheight plus one.
-
-SELFMODIFY_BSP_setviewheight_2:
-mov   ax, 01010h
-
-
-rep   stosw  ; write vieweight to es:di
-
-
-mov   ax, cx ; zero
-
-mov   di, SCREENWIDTH  ; offset of ceilingclip within floorclip
-mov   cx, dx
-rep   stosw  ; write 0 to es:di
-
-mov   word ptr ds:[_lastvisplane], cx ; 0  ; todo cs var?
-mov   word ptr cs:[_lastopening], cx ; 0
-SELFMODIFY_set_viewanglesr3_4:
-mov   bx, 01000h
-sub   bh, 08h   ; FINE_ANG90
-and   bh, 01Fh    ; MOD_FINE_ANGLE
-
-shl   bx, 1  ; word lookup
-
- 
-SELFMODIFY_BSP_centerx_2:
-mov   cx, 01000h
-
-mov   ax, FINESINE_SEGMENT
-mov   es, ax
-
-
-xor   dx, dx
-xor   si, si
-mov   ax, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
-
-
-
-
-
-; note: range is -65535 to 65535. High word is already sign bits
-
-; sine/cosine max at +/- 65536 so they wont overflow.
-
-
-div   cx
-
-;    basexscale = FixedDivWholeB(finecosine[angle],temp.w);
-
-
-test  bh, 030h
-jpe   skip_cosine_invert_clearplanes
-neg   ax
-sbb   si, 0  ; neg only if ax nonzero... or else we end up with FFFF:0000 at angle 0x8000
-skip_cosine_invert_clearplanes:
-
-
-mov   word ptr cs:[_lastbasexscale], ax
-mov   word ptr cs:[_lastbasexscale + 2], si
-
-mov   ax, word ptr es:[bx]
-xor   dx, dx
-xor   si, si
-
-test  bh, 020h
-je    skip_sine_invert_clearplanes
-dec   si
-skip_sine_invert_clearplanes:
-
-
-
-
-div   cx
-not   si  ; we want a negative result so neg the sign
-
-
-xor   ax, si ; apply sign
-sub   ax, si
-
-jnz   dont_zero_si  ; weird case where we try to take negative of zero and it was leaving FFFF sign bits...
-mov   si, ax
-dont_zero_si:  
-
-mov   word ptr cs:[_lastbaseyscale], ax
-mov   word ptr cs:[_lastbaseyscale + 2], si
-
-
-ret   
-
-endp
-
 
 
 
@@ -14499,7 +14387,104 @@ mov  word ptr ds:[_newend], OFFSET _solidsegs + 2 * (SIZE CLIPRANGE_T)
 
 
 mov       word ptr cs:[_ds_p_bsp],     (SIZE DRAWSEG_T)             ; drawsegs_PLUSONE
-call      R_ClearPlanes_
+;call      R_ClearPlanes_
+; inlined
+
+
+; dont need to preserve registers here
+
+
+SELFMODIFY_BSP_viewwidth_1:
+mov   cx, 01000h  ; preshifted right
+mov   dx, cx
+
+
+mov   ax, cs
+mov   di, OFFSET OFFSET_FLOORCLIP
+SHIFT_MACRO shr di 4
+add   ax, di      ; TODO tasm does not let me do  ((OFFSET_FLOORCLIP) SHR 4). once this is pretty set in stone hardcode it?
+mov   es, ax
+xor   di, di
+
+; viewheight plus one.
+
+SELFMODIFY_BSP_setviewheight_2:
+mov   ax, 01010h
+
+
+rep   stosw  ; write vieweight to es:di
+
+
+mov   ax, cx ; zero
+
+mov   di, SCREENWIDTH  ; offset of ceilingclip within floorclip
+mov   cx, dx
+rep   stosw  ; write 0 to es:di
+
+mov   word ptr ds:[_lastvisplane], cx ; 0  ; todo cs var?
+mov   word ptr cs:[_lastopening], cx ; 0
+SELFMODIFY_set_viewanglesr3_4:
+mov   bx, 01000h
+sub   bh, 08h   ; FINE_ANG90
+and   bh, 01Fh    ; MOD_FINE_ANGLE
+
+shl   bx, 1  ; word lookup
+
+ 
+SELFMODIFY_BSP_centerx_2:
+mov   cx, 01000h
+
+mov   ax, FINESINE_SEGMENT
+mov   es, ax
+
+
+xor   dx, dx
+xor   si, si
+mov   ax, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
+
+
+; note: range is -65535 to 65535. High word is already sign bits
+
+; sine/cosine max at +/- 65536 so they wont overflow.
+
+div   cx
+
+;    basexscale = FixedDivWholeB(finecosine[angle],temp.w);
+
+
+test  bh, 030h
+jpe   skip_cosine_invert_clearplanes
+neg   ax
+sbb   si, 0  ; neg only if ax nonzero... or else we end up with FFFF:0000 at angle 0x8000
+skip_cosine_invert_clearplanes:
+
+
+mov   word ptr cs:[_lastbasexscale], ax
+mov   word ptr cs:[_lastbasexscale + 2], si
+
+mov   ax, word ptr es:[bx]
+xor   dx, dx
+xor   si, si
+
+test  bh, 020h
+je    skip_sine_invert_clearplanes
+dec   si
+skip_sine_invert_clearplanes:
+
+div   cx
+not   si  ; we want a negative result so neg the sign
+
+xor   ax, si ; apply sign
+sub   ax, si
+
+mov   word ptr cs:[_lastbaseyscale], ax
+
+jnz   dont_zero_si  ; weird case where we try to take negative of zero and it was leaving FFFF sign bits...
+xchg  ax, si
+dont_zero_si:  
+
+mov   word ptr cs:[_lastbaseyscale + 2], si
+
 mov       word ptr ds:[_vissprite_p], OFFSET _vissprites
 
 

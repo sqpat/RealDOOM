@@ -611,7 +611,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_BSPFLCodeSize                0x%X\n", codesize[27]);
 
 	fprintf(fp, "#define WI_StuffCodeSize               0x%X\n", codesize[5]);
-	fprintf(fp, "#define PSightCodeSize                 0x%X\n", codesize[6]);
+	fprintf(fp, "#define PhysicsCodeSize                0x%X\n", codesize[6]);
 	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize[7]);
 	fprintf(fp, "#define FinaleCodeSize                 0x%X\n", codesize[8]);
 	fprintf(fp, "#define SaveLoadCodeSize               0x%X\n", codesize[9]);

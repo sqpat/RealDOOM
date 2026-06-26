@@ -767,7 +767,7 @@ void __near Z_LoadBinaries() {
  
 	Z_QuickMapPhysics();
 	fread(&codesize, 2, 1, fp);
-	locallib_far_fread(psight_codespace, codesize, fp);
+	locallib_far_fread(physics_codespace, codesize, fp);
 	
 	Z_QuickMapMenu();
 	fread(&codesize, 2, 1, fp);
