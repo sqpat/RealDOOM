@@ -14019,9 +14019,9 @@ mov       es, ax
 ; es:di is collumn[currentRLEIndex]
 ; si is nextcollumpRLE
 
-loop_x_nextcollumpRLE:
 cmp       si, cx
 jg        skip_loop_x_nextcollumpRLE
+loop_x_nextcollumpRLE:
 mov       ax, word ptr es:[di + 4]
 mov       word ptr [bp - 01Ah], ax
 mov       al, byte ptr es:[di + 6]

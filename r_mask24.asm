@@ -144,6 +144,9 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 ALIGN_MACRO
 PROC   R_DrawSingleMaskedColumn_  NEAR    ; fairly unoptimized, barely runs though so who cares
 PUBLIC R_DrawSingleMaskedColumn_
+
+; todo pusha?
+
 push  cx
 push  si
 push  di
@@ -5848,11 +5851,7 @@ test      bp, bp
 jl        done_with_subtractor_loop_masked
 
 do_next_subtractor_loop_masked:
-
 ;			subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
-
-
-
 ; ah should be 0
 lodsw     ; ax gets lump
 xchg      ax, di  ; di gets lump
@@ -5860,7 +5859,6 @@ lodsw     ; al gets subtractor
 xor       ah, ah
 inc       ax                     ; subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
 add       dx, ax                 ; runningbasetotal += subtractor;
-sub       bp, ax                 ; col -= subtractor;
 test      di, di
 js        loop_below_zero_subtractor_masked
 
@@ -5868,8 +5866,9 @@ js        loop_below_zero_subtractor_masked
 sub       cl, al
 done_with_loop_check_subtractor_MASKED:
 
-test      bp, bp
-jge       do_next_subtractor_loop_masked
+sub       bp, ax                 ; col -= subtractor;
+jnc       do_next_subtractor_loop_masked
+add       cl, al  ; undo the last one?
 done_with_subtractor_loop_masked:
 
 ;		maskednextlookup     = runningbasetotal; 
