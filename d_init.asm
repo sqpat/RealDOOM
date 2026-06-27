@@ -75,6 +75,8 @@ EXTRN __old_int00:NEAR
 EXTRN _timingdemo
 EXTRN _singletics
 
+EXTRN _doomdata_bin_string
+
 .DATA
 
 ; related to spacing for printing title based on chipset name...
@@ -1470,11 +1472,8 @@ db "-respawn", 0
 str_fast:
 db "-fast", 0
 
-
-str_dstrings_filename_:
-db "dstrings.txt", 0
-str_dstrings_missing:
-db "dstrings.txt missing?", 0
+str_doomdata_missing:
+db "doomdata.bin missing?", 0
 
 str_lmp_file_ext:
 db ".lmp", 0
@@ -1836,6 +1835,8 @@ ret
 
 ENDP
 
+; start offset within the doomdata file for strings.
+D_STRINGS_START_POS = 0C4DCh
 
 
 ; todo constants
@@ -1845,7 +1846,7 @@ STRINGOFFSETS_OFFSET = 03C40h
 
 do_string_error:
 push    cs
-mov     ax, OFFSET str_dstrings_missing
+mov     ax, OFFSET str_doomdata_missing
 push    ax
 call    I_Error_
 
@@ -1854,7 +1855,7 @@ PROC D_InitStrings_ NEAR
 push    bp
 mov     bp, sp
 sub     sp, 14
-lea     si, str_dstrings_filename_
+lea     si, _doomdata_bin_string
 push    cs
 pop     ds
 push    ss
@@ -1882,12 +1883,13 @@ call    locallib_fseek_
 mov     ax, si
 call    locallib_ftell_   ; get filesize
 
+sub     ax, D_STRINGS_START_POS
 xchg    ax, di  ; di gets size
 
 mov     ax, si
-xor     dx, dx ; 0 SEEK_SET
+mov     dx, dx ; 0 SEEK_SET
 xor     cx, cx
-mov     bx, cx
+mov     bx, D_STRINGS_START_POS
 call    locallib_fseek_   ; back to start
 
 ; dump it all to memory then process?
