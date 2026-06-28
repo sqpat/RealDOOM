@@ -1,14 +1,14 @@
 # RealDOOM
 
 
-[![RealDOOM 0.88 Beta Recording](https://i3.ytimg.com/vi/PK0eF9IVNLA/maxresdefault.jpg)](https://www.youtube.com/watch?v=PK0eF9IVNLA)
+[![RealDOOM 0.88 Beta Recording](https://i3.ytimg.com/vi/w407QgRCqE8/maxresdefault.jpg)](https://www.youtube.com/watch?v=w407QgRCqE8)
 
 
 RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
 
 The current release supports Shareware and commercial DOOM/DOOM2 as well as Ultimate DOOM. TNT and Plutonia are not currently supported. Custom wads are not currently supported.
 
-The current development focus is on bugfixing and preparing the project for an upcoming Beta release.
+The current development focus is on finding remaining bugs and adding a few missing features.
 
 ### Running RealDOOM
 
@@ -33,15 +33,11 @@ Simply run the makeall script and select your build option (286, 386, 8086, chip
 There are also a lot of hard caps on things like texture size and count, node count, etc. 
 
 ### Known bugs:
- - DOS text mode scroll errors on exit (CLS at the prompt to fix this)
  - Occasional garbage column drawns
- - Teleport sprites are not always rendered properly
- - Doom2 Map30 produces graphical glitches
- - Sound Effects broken since 0.87 (will be fixed soon)
  - Lots of subpixel graphical inaccuracies compared to Vanilla DOOM
+ - Save name entry eats keys sometimes
  
 ### Release History:
- Not necessarily meant to be accurate, but just to give an overview of the general order in which things are probably going to be built.
 
 (Dec 4, 2023)      
 ~~**v0.10 release**: mostly stable shareware demo~~
@@ -158,26 +154,30 @@ There are also a lot of hard caps on things like texture size and count, node co
 
 (April 4, 2026)  
 ~~**v0.87** : Pre-Pre Beta 1~~
-  - Full ASM engine
+  - Fully ASM engine
   - Near fully render pipeline rewrite
   - 25-30% FPS increase compared to 0.78
 
 (May 5, 2026)  
-**v0.88** : Pre-Pre Beta 2
+~~**v0.88** : Pre-Pre Beta 2~~
   - Full render pipeline rewrite
   - 35-40% FPS increase compared to 0.78
 
+(Jun 27, 2026)  
+**v0.89** : Beta Release 1
+  - Sound bugs fixes
+  - Save bugs fixed
+  - Various DOOM 2 bugs fixed
+  - Small physics framerate improvements.
+
+
 ### Future Roadmap:
   
-**Beta Goals:**
- - helpful user facing diagnostics such as EMS/memory testing
- - fix sound effects
- - support save games > 64k
- - lots of bugfixing
-
 **Post Beta Goals:**
  - Improved custom WAD support
  - Fix Flat Renderer
+ - FPU support
+ - Physics optimization
  
 
 **"1.0" Goals:**
@@ -192,4 +192,4 @@ There are also a lot of hard caps on things like texture size and count, node co
 Various performance benchmarks can be found in this spreadsheet:
 [RealDOOM Benchmark Results](https://docs.google.com/spreadsheets/d/1gt8gqvKrvJh5GH_xDKoZ98G4jY873s6zx_Y5EaFbb7M/)
 
-For the most part, a 386SX currently runs RealDOOM ~75% faster than (vanilla) DOOM 1.9. A 386DX runs 40-50% faster. A 286-25 achieves around 9-10 FPS in high quality, 14-16 in low, and 20-22 in potato quality. 5150/5160 class machines are sub 1 FPS.
+For the most part, a 386SX currently runs RealDOOM ~80-90% faster than (vanilla) DOOM 1.9. A 386DX runs 50-56% faster. A 286-25 achieves around 9-10 FPS in high quality, 14-16 in low, and 20-22 in potato quality. 5150/5160 class machines are sub 1 FPS.
