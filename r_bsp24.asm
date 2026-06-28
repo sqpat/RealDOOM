@@ -7899,13 +7899,67 @@ not_below_viewplane_TWOSIDED:
 
 IF COMPISA GE COMPILE_386
 
-   mov       eax, dword ptr [bp - 026h + SSD]
-   
-   imul  dword ptr [bp - 02Eh + SSD]  ; todo put in  ECX and reuse for next mul
+   mov  eax, dword ptr [bp - 026h + SSD]
+   mov  esi, dword ptr [bp - 02Eh + SSD] ; reuse for next mul
+   test eax, 0FF000000h  ;  same as test si, 0FF00h in the 286 path
+   jne  enable_overflow_checks
+   done_with_overflow_enable:
+   imul esi 
    shr  eax, 16
 
 
-   ; TODO! 386 overflow checks.
+   ; todo optimize for 386. use the EDX fields to check overflow.
+
+   TEST DH, 0C0h
+   JPE  done_with_rw_scale_mul_worldtophi_top
+
+
+   overflow_check_top:
+   public overflow_check_top
+   ; si reg is free...
+   mov   cl, byte ptr [bp - 023h + SSD]
+   xor   cl, byte ptr [bp - 02Bh + SSD]
+   
+   xor   cl, dh  ; cl should have correct sign; compare to result
+   jns   done_with_rw_scale_mul_worldtophi_top    ; correct sign, ignore. 
+   ; adjust DX...
+   
+   ; NOTE: in this path the scale numbers are kind of out of bounds and we assume low frac doesnt matter and we dont selfmodify.
+
+   test  dx, dx
+   mov   cx, 08000h ; if it was signed, its supposed to be unsigned, then make this MAX_INT
+   js    done_with_rw_scale_mul_worldtophi_top_skip_frac ; we made it nonsigned..
+   dec   cx         ; if it was unsigned then its supposed to be signed, then make it MIN_INT
+   jmp   done_with_rw_scale_mul_worldtophi_top_skip_frac
+   
+   ; only need to do this if worldtop is large?
+   enable_overflow_checks:
+   ; turn on later overflow checks.
+   mov    byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_top], 0E9h  ; jmp 3 byte opcode
+   ;mov    byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_bot], 0E9h  ; jmp 3 byte opcode
+
+   jmp   done_with_overflow_enable
+
+   overflow_check_bot:
+   public overflow_check_bot
+   ; si reg is free...
+   mov   cl, byte ptr [bp - 027h + SSD]
+   xor   cl, byte ptr [bp - 02Bh + SSD]
+   
+   xor   cl, dh  ; cl should have correct sign; compare to result
+   jns   done_with_rw_scale_mul_worldbothi_bottop    ; correct sign, ignore. 
+   ; adjust DX...
+   
+   ; NOTE: in this path the scale numbers are kind of out of bounds and we assume low frac doesnt matter and we dont selfmodify.
+
+   ; todo: would be better to set delta to 0 instead in this case so slope never changes and always stays guaranteed offscreen
+
+   test  dx, dx
+   mov   ax, 07FFFh ; if it was signed, its supposed to be unsigned, then make this MAX_INT
+   js    done_with_rw_scale_mul_worldbothi_bottop_skip_frac ; we made it nonsigned..
+   inc   ax         ; if it was unsigned then its supposed to be signed, then make it MIN_INT
+   jmp   done_with_rw_scale_mul_worldbothi_bottop_skip_frac
+
 
 
 ELSE
@@ -8074,13 +8128,13 @@ mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
 
 IF COMPISA GE COMPILE_386
 
-   mov       eax, dword ptr [bp - 02Ah + SSD]
+   xchg  eax, esi ; from last mul
+   imul  dword ptr [bp - 02Ah + SSD]
+   shr   eax, 16
+   ; TODO! optimize for 386, use edx fields
+   TEST DH, 0C0h
+   JPO  overflow_check_bot
 
-
-   imul  dword ptr [bp - 02Eh + SSD]  ; todo reuse from last mul
-   shr  eax, 16
-
-   ; TODO! 386 overflow checks.
 
 
 ELSE
@@ -8318,13 +8372,11 @@ done_hacking_topstep:
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], ax
 
 
-IF COMPISA LE COMPILE_286
 
 SELFMODIFY_BSP_do_overflow_bugfix_detection_top:
 mov       ax, (OFFSET SELFMODIFY_BSP_do_overflow_bugfix_detection_top_TARGET - SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER)
 SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER:
 
-ENDIF
 
 
 
@@ -9704,12 +9756,11 @@ mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_top+1], (SELFMODIFY_BSP_s
 mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], ah
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot+1], (SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER)
 
-IF COMPISA LE COMPILE_286
-   mov   ah, 0B1h
-   mov   byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], ah
-   ; todo not sure this one is necessary
-   ;mov   byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch_bot], ah
-ENDIF
+
+mov   ah, 0B1h
+mov   byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], ah
+; todo not sure this one is necessary
+;mov   byte ptr ds:[SELFMODIFY_adjust_botstep_overflow_branch_bot], ah
 
 
 ; note: we can jump  intot his exit path from far away!!
@@ -9884,19 +9935,17 @@ jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_1_AFTER
 @
 ; di free
 
-IF COMPISA LE COMPILE_286
 
-   SELFMODIFY_BSP_do_overflow_bugfix_detection_top_TARGET:
+SELFMODIFY_BSP_do_overflow_bugfix_detection_top_TARGET:
 
-   test      ax, ax
-   mov       ax, 0B870h  ; al = jo, ah = mov ax, imm16
-   jns       use_jo_topstep_branch  ; we are subtracting. if subtracting positive then we are approaching a jo check
-   mov       al, 073h  ; ah = jnc
-   use_jo_topstep_branch:
-   mov       byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], al
-   mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_top], ah
-   jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER
-ENDIF
+test      ax, ax
+mov       ax, 0B870h  ; al = jo, ah = mov ax, imm16
+jns       use_jo_topstep_branch  ; we are subtracting. if subtracting positive then we are approaching a jo check
+mov       al, 073h  ; ah = jnc
+use_jo_topstep_branch:
+mov       byte ptr ds:[SELFMODIFY_adjust_topstep_overflow_branch_top], al
+mov       byte ptr ds:[SELFMODIFY_BSP_do_overflow_bugfix_detection_top], ah
+jmp       SELFMODIFY_BSP_do_overflow_bugfix_detection_top_AFTER
 
 SEG_LINEDEFS_OFFSET_IN_LINEFLAGSLIST =  ((SEG_LINEDEFS_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)
 SEG_SIDES_OFFSET_IN_LINEFLAGSLIST    = ((SEG_SIDES_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)
